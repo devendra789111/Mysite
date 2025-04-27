@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Lucky Wallet - UPI Payment</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      text-align: center;
+      width: 320px;
+    }
+    h1 {
+      color: #4CAF50;
+    }
+    .wallet {
+      margin: 20px 0;
+      font-size: 20px;
+    }
+    input {
+      width: 90%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    button {
+      padding: 12px 20px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover {
+      background: #45a049;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Lucky Wallet</h1>
+  <div class="wallet">
+    Balance: ₹<span id="walletBalance">0</span>
+  </div>
+
+  <input type="number" id="amount" placeholder="Enter Amount (₹)">
+  <button id="payButton">Add Money via UPI</button>
+</div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<script>
+function getWalletBalance() {
+  return parseFloat(localStorage.getItem('walletBalance')) || 0;
+}
+
+function setWalletBalance(amount) {
+  localStorage.setItem('walletBalance', amount.toFixed(2));
+  document.getElementById('walletBalance').innerText = amount.toFixed(2);
+}
+
+document.getElementById('payButton').onclick = function(e) {
+  const amountInput = document.getElementById('amount');
+  const amount = parseFloat(amountInput.value);
+  if (!amount || amount <= 0) {
+    alert("Please enter a valid amount!");
+    return;
+  }
+
+  var options = {
+    "key": "YOUR_RAZORPAY_KEY_ID", // Yaha apna Razorpay Key ID daalna
+    "amount": amount * 100, // Amount in paise
+    "currency": "INR",
+    "name": "Lucky Wallet",
+    "description": "Wallet Recharge",
+    "handler": function (response){
+      alert("Payment Successful! ID: " + response.razorpay_payment_id);
+      // Wallet balance update
+      const currentBalance = getWalletBalance();
+      setWalletBalance(currentBalance + amount);
+      amountInput.value = '';
+    },
+    "prefill": {
+      "name": "Your Name",
+      "email": "youremail@example.com",
+      "contact": "9999999999"
+    },
+    "theme": {
+      "color": "#4CAF50"
+    }
+  };
+  var rzp1 = new Razorpay(options);
+  rzp1.open();
+  e.preventDefault();
+};
+
+window.onload = () => {
+  setWalletBalance(getWalletBalance());
+};
+</script>
+
+</body>
+</html>
