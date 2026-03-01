@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quality Education - Smart Attendance</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     
     <style>
         :root {
@@ -40,8 +42,11 @@
         .btn-t-end { background: #a29bfe; color: black; } .btn-t-end:hover { background: #877fdb; }
         .btn-out { background: var(--danger); } .btn-out:hover { background: #a93226; }
         .btn-leave { background: var(--warning); color: black; } .btn-leave:hover { background: #f1c40f; }
-        .btn-export { background: #16a085; width: 100%; margin-top: 15px; font-size: 16px; padding: 15px;}
-        .btn-export:hover { background: #138a72; }
+        
+        .action-container { display: flex; gap: 15px; margin-top: 15px; flex-wrap: wrap; }
+        .btn-export { flex: 1; min-width: 250px; font-size: 15px; padding: 15px;}
+        .btn-excel { background: #16a085; } .btn-excel:hover { background: #138a72; }
+        .btn-pdf { background: #c0392b; } .btn-pdf:hover { background: #9e2a2b; }
         
         table { width: 100%; border-collapse: collapse; margin-top: 15px; min-width: 900px; }
         .table-wrap { overflow-x: auto; }
@@ -53,8 +58,8 @@
         /* Live Badges & Timers */
         .live-timer { color: var(--danger); font-weight: bold; background: #ffeaa7; padding: 3px 8px; border-radius: 12px; font-size: 11px; display: inline-block; margin-top: 5px; animation: pulse 1s infinite; }
         .duty-badge { color: white; font-weight: bold; background: var(--duty); padding: 3px 8px; border-radius: 12px; font-size: 11px; display: inline-block; margin-top: 5px; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
-
+        .break-badge { color: white; font-weight: bold; background: var(--break); padding: 3px 8px; border-radius: 12px; font-size: 11px; display: inline-block; margin-top: 5px; }
+        
         /* Camera Modal */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
         .modal { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; }
@@ -80,8 +85,8 @@
 
     <div class="btn-grid">
         <button class="btn-in" onclick="startProcess('Punch In')">📸 Punch In</button>
-        <button class="btn-t-start" onclick="markDuty('Start')">🏃‍♂️ Start Training/Work</button>
-        <button class="btn-t-end" onclick="markDuty('End')">✅ End Training/Work</button>
+        <button class="btn-t-start" onclick="markDuty('Start')">🏃‍♂️ Start Training</button>
+        <button class="btn-t-end" onclick="markDuty('End')">✅ End Training</button>
         <button class="btn-b-start" onclick="markBreak('Start')">☕ Start Break</button>
         <button class="btn-b-end" onclick="markBreak('End')">✅ End Break</button>
         <button class="btn-leave" onclick="markLeave()">📝 Mark Leave</button>
@@ -97,7 +102,7 @@
                     <th>Status</th>
                     <th>Punch In</th>
                     <th>Total Break</th>
-                    <th>Penalty (Outside 50m)</th>
+                    <th>Penalty (Out 50m)</th>
                     <th>Punch Out</th>
                     <th>Net Work Hours</th>
                     <th>Photos</th>
@@ -106,9 +111,12 @@
             <tbody id="tableBody"></tbody>
         </table>
     </div>
-    <div class="note-text">⚠️ टेबल में सिर्फ पिछले 2 दिन का डाटा दिखेगा। पूरा डाटा एक्सेल में सेव है।</div>
+    <div class="note-text">⚠️ टेबल में सिर्फ आज और कल का डाटा दिखेगा। पूरा डाटा PDF या Excel में सुरक्षित है।</div>
 
-    <button class="btn-export" onclick="downloadSecureExcel()">🔒 Download Full Excel File (Password Required)</button>
+    <div class="action-container">
+        <button class="btn-export btn-excel" onclick="downloadSecureExcel()">📊 Download Excel (Password)</button>
+        <button class="btn-export btn-pdf" onclick="downloadSecurePDF()">📄 Download PDF with Photos (Password)</button>
+    </div>
 </div>
 
 <div class="modal-overlay" id="cameraModal">
@@ -123,28 +131,34 @@
 
 <script>
     // =========================================================
-    // ⚙️ HOLIDAY SETTINGS (छुट्टियां यहाँ ऐड या चेंज करें)
-    // =========================================================
+    // ⚙️ HOLIDAY SETTINGS 
     const HOLIDAY_CALENDAR = {
-        "04/03/2026": "Holi (होली)",
+        "04/03/2026": "Holi",
         "15/08/2026": "Independence Day",
-        "08/11/2026": "Diwali (दीवाली)",
+        "08/11/2026": "Diwali",
         "25/12/2026": "Christmas"
     };
-    // =========================================================
-    
-    // OFFICIAL DUTY PASSWORD
     const DUTY_PASSWORD = "8888"; 
+    // =========================================================
 
     let attendanceData = JSON.parse(localStorage.getItem('attendanceLogs')) || [];
     let currentAction = ""; 
     let watchId = null;
     let outOfZoneStartMs = 0;
 
-    // Live Clock & Break Timer Updates
+    function getTodayStr() {
+        const d = new Date();
+        return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+    }
+    function getYesterdayStr() {
+        const d = new Date();
+        d.setDate(d.getDate() - 1);
+        return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+    }
+
+    // Live Clock & Break Timer
     setInterval(() => { 
         document.getElementById('clock').innerText = new Date().toLocaleString('en-IN'); 
-        
         attendanceData.forEach(row => {
             if (row.isOnBreak) {
                 const timerEl = document.getElementById(`breakTimer-${row.id}`);
@@ -157,27 +171,21 @@
         });
     }, 1000);
 
-    window.onload = () => { 
-        renderTable(); 
-        resumeTrackingIfPunchedIn(); 
-    };
+    window.onload = () => { renderTable(); resumeTrackingIfPunchedIn(); };
 
     function checkAutoOffs(id, name, dateStr) {
-        const todayDateObj = new Date();
-        const isMonday = todayDateObj.getDay() === 1; // 1 = Monday
+        const isMonday = new Date().getDay() === 1; // 1 = Monday
         const holidayName = HOLIDAY_CALENDAR[dateStr];
 
         if (holidayName || isMonday) {
-            let statusText = holidayName ? `Holiday: ${holidayName}` : "Weekly Off (Monday)";
+            let statusText = holidayName ? `Holiday: ${holidayName}` : "Weekly Off";
             attendanceData.push({ 
                 date: dateStr, id, name, status: statusText, 
                 punchIn: '-', punchOut: '-', totalBreakMs: 0, outOfZonePenaltyMs: 0, totalHours: '-', isOnBreak: false, isOnDuty: false 
             });
             localStorage.setItem('attendanceLogs', JSON.stringify(attendanceData));
             renderTable();
-
-            let alertMsg = holidayName ? `❌ आज ${holidayName} की छुट्टी है! आपकी छुट्टी लग गई है।` : `❌ आज सोमवार है (Weekly Off)! आपकी छुट्टी लग गई है।`;
-            alert(alertMsg);
+            alert(holidayName ? `❌ आज ${holidayName} की छुट्टी है!` : `❌ आज सोमवार है (Weekly Off)!`);
             return true; 
         }
         return false;
@@ -187,7 +195,7 @@
         const id = document.getElementById('empId').value.trim();
         const name = document.getElementById('empName').value.trim();
         if (!name || !id) return alert("⚠️ पहले अपना नाम और ID दर्ज करें!");
-        const date = new Date().toLocaleDateString('en-GB');
+        const date = getTodayStr();
         if(attendanceData.find(r => r.id === id && r.date === date)) return alert("❌ आज का रिकॉर्ड पहले ही मौजूद है!");
 
         attendanceData.push({ date, id, name, status: 'Leave', punchIn: '-', punchOut: '-', totalBreakMs: 0, outOfZonePenaltyMs: 0, totalHours: '-', isOnBreak: false, isOnDuty: false });
@@ -198,7 +206,7 @@
     function markBreak(type) {
         const id = document.getElementById('empId').value.trim();
         if (!id) return alert("⚠️ पहले Employee ID दर्ज करें!");
-        const date = new Date().toLocaleDateString('en-GB');
+        const date = getTodayStr();
         let record = attendanceData.find(r => r.id === id && r.date === date);
 
         if (!record || record.status !== 'Present') return alert("❌ पहले Punch In करें!");
@@ -217,11 +225,10 @@
         localStorage.setItem('attendanceLogs', JSON.stringify(attendanceData)); renderTable();
     }
 
-    // --- OFFICIAL DUTY / TRAINING LOGIC ---
     function markDuty(type) {
         const id = document.getElementById('empId').value.trim();
         if (!id) return alert("⚠️ पहले Employee ID दर्ज करें!");
-        const date = new Date().toLocaleDateString('en-GB');
+        const date = getTodayStr();
         let record = attendanceData.find(r => r.id === id && r.date === date);
 
         if (!record || record.status !== 'Present') return alert("❌ पहले Punch In करें!");
@@ -230,15 +237,12 @@
 
         if (type === 'Start') {
             if (record.isOnDuty) return alert("❌ आप पहले से Official Duty पर हैं!");
-            
-            // Password Verification
-            const pass = prompt("सुरक्षा अलर्ट: ऑफिस से बाहर जाने के लिए मैनेजर का पासवर्ड डालें (Hint: 8888)");
+            const pass = prompt("सुरक्षा अलर्ट: ऑफिस से बाहर जाने के लिए मैनेजर का पासवर्ड डालें:");
             if(pass !== DUTY_PASSWORD) return alert("❌ गलत पासवर्ड! आप ट्रेनिंग मोड चालू नहीं कर सकते।");
 
             record.isOnDuty = true; 
-            alert("🏃‍♂️ Official Duty Started! अब आपका 50 मीटर वाला टाइम नहीं कटेगा।");
+            alert("🏃‍♂️ Official Duty Started! आपका 50 मीटर वाला टाइम नहीं कटेगा।");
             
-            // अगर पहले से पेनल्टी टाइमर चल रहा था, तो उसे रीसेट (माफ़) कर दो
             if (outOfZoneStartMs > 0) {
                  let timeOutside = new Date().getTime() - outOfZoneStartMs;
                  if(timeOutside > 120000) { record.outOfZonePenaltyMs += timeOutside; }
@@ -257,7 +261,7 @@
         const id = document.getElementById('empId').value.trim();
         if (!name || !id) return alert("⚠️ पहले अपना नाम और ID दर्ज करें!");
 
-        const date = new Date().toLocaleDateString('en-GB');
+        const date = getTodayStr();
         let record = attendanceData.find(r => r.id === id && r.date === date);
 
         if (action === 'Punch In') {
@@ -302,7 +306,13 @@
     function getLocationAndMarkAttendance(photoBase64) {
         if (!navigator.geolocation) return alert("Location not supported!");
         navigator.geolocation.getCurrentPosition(
-            (pos) => { saveAttendance(pos.coords.latitude, pos.coords.longitude, photoBase64); },
+            (pos) => { 
+                if (pos.coords.accuracy > 80 && currentAction === 'Punch In') {
+                    alert(`⚠️ आपका GPS सिग्नल बहुत कमजोर है (Accuracy: ${Math.round(pos.coords.accuracy)}m)। \nकृपया खिड़की के पास जाएं या खुले आसमान के नीचे आकर दोबारा Punch In करें।`);
+                    return; 
+                }
+                saveAttendance(pos.coords.latitude, pos.coords.longitude, photoBase64); 
+            },
             (err) => { alert("⚠️ Location is required for attendance!"); },
             { enableHighAccuracy: true }
         );
@@ -317,7 +327,7 @@
     function saveAttendance(lat, lon, photoBase64) {
         const name = document.getElementById('empName').value.trim();
         const id = document.getElementById('empId').value.trim();
-        const date = new Date().toLocaleDateString('en-GB');
+        const date = getTodayStr();
         const rawTimeMs = new Date().getTime();
         const timeString = new Date().toLocaleTimeString('en-US', { hour12: true });
 
@@ -374,13 +384,9 @@
                 let record = attendanceData.find(r => r.id === empId && r.date === date);
                 if(!record || record.punchOut !== '-') return;
 
-                // 🚨 OFFICIAL DUTY CHECK: अगर ड्यूटी चालू है, तो लोकेशन इग्नोर करो
                 if (record.isOnDuty) {
-                    banner.className = 'duty-mode'; 
-                    banner.innerText = `🏃‍♂️ Official Work Active. (Location Penalty Paused)`;
-                    return; // यहीं से वापस भेज दो, कोई टाइम नहीं कटेगा
+                    banner.className = 'duty-mode'; banner.innerText = `🏃‍♂️ Official Work Active. (Location Paused)`; return; 
                 }
-
                 if(pos.coords.accuracy > 80) {
                     banner.className = 'gps-weak'; banner.innerText = `🔄 Weak GPS Signal... Waiting.`; return; 
                 }
@@ -408,7 +414,7 @@
     }
 
     function resumeTrackingIfPunchedIn() {
-        const date = new Date().toLocaleDateString('en-GB');
+        const date = getTodayStr();
         const act = attendanceData.find(r => r.date === date && r.status === 'Present' && r.punchOut === '-');
         if(act) startGeofencing(act.id, date, act.punchInLat, act.punchInLon);
     }
@@ -431,9 +437,8 @@
     function renderTable() {
         const tbody = document.getElementById('tableBody'); tbody.innerHTML = ''; 
         
-        const todayStr = new Date().toLocaleDateString('en-GB');
-        const yesterdayDate = new Date(); yesterdayDate.setDate(yesterdayDate.getDate() - 1);
-        const yesterdayStr = yesterdayDate.toLocaleDateString('en-GB');
+        const todayStr = getTodayStr();
+        const yesterdayStr = getYesterdayStr();
 
         let displayData = attendanceData.filter(r => r.date === todayStr || r.date === yesterdayStr);
 
@@ -450,6 +455,8 @@
 
             let statusColor = row.status === 'Present' ? 'var(--success)' : 'var(--danger)';
             let statusHtml = `<span style="color:${statusColor}; font-weight:bold;">${row.status}</span>`;
+            
+            if(row.isOnBreak) statusHtml += `<br><span class="break-badge">☕ On Break</span>`;
             if(row.isOnDuty) statusHtml += `<br><span class="duty-badge">🏃‍♂️ On Official Duty</span>`;
 
             tr.innerHTML = `
@@ -468,7 +475,7 @@
     }
 
     function downloadSecureExcel() {
-        const pass = prompt("🔒 पूरा डाटा डाउनलोड करने के लिए पासवर्ड डालें:");
+        const pass = prompt("🔒 Excel डाउनलोड करने के लिए पासवर्ड डालें:");
         if (pass === "1234") { 
             let exportData = attendanceData.map(row => ({
                 "Date": row.date,
@@ -477,16 +484,78 @@
                 "Status": row.status,
                 "Punch In": row.punchIn,
                 "Total Break": formatMs(row.totalBreakMs || 0),
-                "Penalty (Outside 50m)": formatMs(row.outOfZonePenaltyMs || 0),
+                "Penalty (Out 50m)": formatMs(row.outOfZonePenaltyMs || 0),
                 "Punch Out": row.punchOut,
-                "Net Work Hours": row.totalHours
+                "Net Work Hours": row.totalHours,
+                "Photo Captured": (row.photos && row.photos.in) ? "Yes" : "No"
             }));
 
             let ws = XLSX.utils.json_to_sheet(exportData);
             let wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Full Attendance Report");
+            XLSX.utils.book_append_sheet(wb, ws, "Attendance Report");
             XLSX.writeFile(wb, "Quality_Education_Full_Report.xlsx");
             alert("✅ असली Excel File डाउनलोड हो गई है!");
+        } else if (pass !== null) {
+            alert("❌ पासवर्ड गलत है! डाउनलोड कैंसिल कर दिया गया।");
+        }
+    }
+
+    // --- NEW: PDF EXPORT WITH IMAGES ---
+    function downloadSecurePDF() {
+        const pass = prompt("🔒 PDF डाउनलोड करने के लिए पासवर्ड डालें:");
+        if (pass === "1234") { 
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('landscape'); // Landscape to fit all columns
+
+            doc.setFontSize(16);
+            doc.text("Quality Education - Official Attendance Report", 14, 15);
+
+            const tableColumn = ["Date", "Emp ID", "Name", "Status", "Punch In", "Break", "Penalty", "Punch Out", "Net Hours", "Selfie In", "Selfie Out"];
+            const tableRows = [];
+
+            attendanceData.forEach(row => {
+                const rowData = [
+                    row.date,
+                    row.id,
+                    row.name,
+                    row.status,
+                    row.punchIn,
+                    formatMs(row.totalBreakMs || 0),
+                    formatMs(row.outOfZonePenaltyMs || 0),
+                    row.punchOut,
+                    row.totalHours,
+                    row.photos && row.photos.in ? row.photos.in : "", 
+                    row.photos && row.photos.out ? row.photos.out : "" 
+                ];
+                tableRows.push(rowData);
+            });
+
+            doc.autoTable({
+                head: [tableColumn],
+                body: tableRows,
+                startY: 25,
+                rowPageBreak: 'auto',
+                bodyStyles: { minCellHeight: 18, valign: 'middle' }, 
+                didDrawCell: function(data) {
+                    // Render image in "Selfie In" column (index 9)
+                    if (data.column.index === 9 && data.cell.raw !== "") {
+                        doc.addImage(data.cell.raw, 'JPEG', data.cell.x + 2, data.cell.y + 2, 14, 14);
+                    }
+                    // Render image in "Selfie Out" column (index 10)
+                    if (data.column.index === 10 && data.cell.raw !== "") {
+                        doc.addImage(data.cell.raw, 'JPEG', data.cell.x + 2, data.cell.y + 2, 14, 14);
+                    }
+                },
+                didParseCell: function(data) {
+                    // Hide the base64 text strings from appearing in the table cells
+                    if (data.column.index === 9 || data.column.index === 10) {
+                        data.cell.text = ''; 
+                    }
+                }
+            });
+
+            doc.save("Quality_Education_Attendance_With_Photos.pdf");
+            alert("✅ PDF फाइल फोटो के साथ डाउनलोड हो गई है!");
         } else if (pass !== null) {
             alert("❌ पासवर्ड गलत है! डाउनलोड कैंसिल कर दिया गया।");
         }
