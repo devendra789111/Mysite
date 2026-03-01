@@ -7,12 +7,12 @@
     <style>
         :root {
             --primary: #2c3e50; --success: #27ae60; --danger: #c0392b; 
-            --warning: #f39c12; --info: #2980b9; --bg: #f4f7f6;
+            --warning: #f39c12; --info: #2980b9; --break: #e67e22; --bg: #f4f7f6;
         }
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background: var(--bg); margin: 0; padding: 15px; display: flex; justify-content: center; }
         
-        .dashboard { width: 100%; max-width: 1000px; background: white; border-radius: 12px; padding: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .dashboard { width: 100%; max-width: 1100px; background: white; border-radius: 12px; padding: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         h2 { text-align: center; color: var(--primary); margin-bottom: 5px; }
         .clock { text-align: center; font-size: 16px; color: #7f8c8d; margin-bottom: 20px; font-weight: bold; }
         
@@ -26,30 +26,33 @@
         input { padding: 12px; border: 1px solid #bdc3c7; border-radius: 6px; flex: 1; font-size: 15px; outline: none;}
         input:focus { border-color: var(--info); }
         
-        .btn-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 25px; }
-        button { padding: 12px; font-size: 15px; font-weight: bold; color: white; border: none; border-radius: 6px; cursor: pointer; transition: 0.3s; }
-        button:disabled { opacity: 0.5; cursor: not-allowed; }
-        .btn-in { background: var(--success); } .btn-out { background: var(--danger); }
-        .btn-leave { background: var(--warning); color: black; }
+        .btn-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 20px; }
+        button { padding: 12px 10px; font-size: 14px; font-weight: bold; color: white; border: none; border-radius: 6px; cursor: pointer; transition: 0.3s; }
+        button:active { transform: scale(0.98); }
         
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; min-width: 800px; }
+        .btn-in { background: var(--success); } .btn-in:hover { background: #219653; }
+        .btn-b-start { background: var(--break); } .btn-b-start:hover { background: #d35400; }
+        .btn-b-end { background: #8e44ad; } .btn-b-end:hover { background: #732d91; }
+        .btn-out { background: var(--danger); } .btn-out:hover { background: #a93226; }
+        .btn-leave { background: var(--warning); color: black; } .btn-leave:hover { background: #f1c40f; }
+        .btn-export { background: var(--primary); width: 100%; margin-top: 15px; font-size: 16px; padding: 15px;}
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; min-width: 900px; }
         .table-wrap { overflow-x: auto; }
         th, td { padding: 12px; text-align: center; border: 1px solid #ecf0f1; font-size: 14px; }
         th { background: var(--primary); color: white; }
         tr:nth-child(even) { background: #f9f9f9; }
-        .photo-thumb { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #ddd; cursor: pointer; }
+        .photo-thumb { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #ddd; }
 
-        /* Modals (Camera & Leave) */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center; }
+        /* Camera Modal */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
         .modal { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; }
-        .modal h3 { margin-top: 0; }
-        
         video { width: 100%; border-radius: 8px; background: #000; margin-bottom: 15px; transform: scaleX(-1); }
         .btn-capture { background: var(--info); width: 100%; margin-bottom: 10px; }
         .btn-cancel { background: #7f8c8d; width: 100%; }
         
-        .leave-input { width: 100%; margin-bottom: 15px; }
-        .notice-text { color: var(--danger); font-size: 13px; font-weight: bold; margin-top: 10px; }
+        .badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; color: white; display: inline-block; margin-top: 5px;}
+        .bg-on-break { background: var(--break); }
     </style>
 </head>
 <body>
@@ -58,9 +61,7 @@
     <h2>🏢 Quality Education App</h2>
     <div class="clock" id="clock">00:00:00</div>
 
-    <div id="trackingBanner" class="in-zone">
-        📍 Location Tracking Active...
-    </div>
+    <div id="trackingBanner" class="in-zone">📍 Location Tracking Active...</div>
 
     <div class="form-group">
         <input type="text" id="empName" placeholder="👤 Your Name" required>
@@ -68,9 +69,11 @@
     </div>
 
     <div class="btn-grid">
-        <button class="btn-in" onclick="startProcess('Punch In')">📸 📍 Punch In</button>
-        <button class="btn-out" onclick="startProcess('Punch Out')">📸 🛑 Punch Out</button>
-        <button class="btn-leave" onclick="openLeaveModal()">📝 Apply Leave</button>
+        <button class="btn-in" onclick="startProcess('Punch In')">📸 Punch In</button>
+        <button class="btn-b-start" onclick="markBreak('Start')">☕ Start Break</button>
+        <button class="btn-b-end" onclick="markBreak('End')">✅ End Break</button>
+        <button class="btn-leave" onclick="markLeave()">📝 Mark Leave</button>
+        <button class="btn-out" onclick="startProcess('Punch Out')">📸 Punch Out</button>
     </div>
 
     <div class="table-wrap">
@@ -81,8 +84,8 @@
                     <th>ID & Name</th>
                     <th>Status</th>
                     <th>Punch In</th>
+                    <th>Total Break</th>
                     <th>Punch Out</th>
-                    <th>Out of 50m Range</th>
                     <th>Net Work Hours</th>
                     <th>Photos</th>
                 </tr>
@@ -90,6 +93,8 @@
             <tbody id="tableBody"></tbody>
         </table>
     </div>
+
+    <button class="btn-export" onclick="downloadSecureExcel()">🔒 Download Data as Excel (Password Required)</button>
 </div>
 
 <div class="modal-overlay" id="cameraModal">
@@ -102,92 +107,88 @@
     </div>
 </div>
 
-<div class="modal-overlay" id="leaveModal">
-    <div class="modal">
-        <h3>Apply for Leave</h3>
-        <input type="date" id="leaveDate" class="leave-input">
-        <input type="text" id="leaveReason" class="leave-input" placeholder="Reason for leave...">
-        <button class="btn-capture" onclick="submitLeave()">✅ Submit Leave</button>
-        <button class="btn-cancel" onclick="document.getElementById('leaveModal').style.display='none'">❌ Cancel</button>
-    </div>
-</div>
-
 <script>
     let attendanceData = JSON.parse(localStorage.getItem('attendanceLogs')) || [];
     let currentAction = ""; 
     let watchId = null;
-    let outOfZoneStartMs = 0; // 50 मीटर से बाहर जाने का समय
+    let outOfZoneStartMs = 0;
 
     // Live Clock
-    setInterval(() => {
-        document.getElementById('clock').innerText = new Date().toLocaleString('en-IN');
-    }, 1000);
+    setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleString('en-IN'); }, 1000);
+    window.onload = () => { renderTable(); resumeTrackingIfPunchedIn(); };
 
-    window.onload = () => {
-        renderTable();
-        resumeTrackingIfPunchedIn();
-    };
-
-    // --- 1. LEAVE LOGIC (Date & Reason) ---
-    function openLeaveModal() {
+    // --- 1. DIRECT MARK LEAVE ---
+    function markLeave() {
         const name = document.getElementById('empName').value.trim();
         const id = document.getElementById('empId').value.trim();
-        if (!name || !id) return alert("⚠️ पहले अपना Name और ID दर्ज करें!");
-        document.getElementById('leaveModal').style.display = 'flex';
-    }
+        if (!name || !id) return alert("⚠️ Pehle apna Name aur ID darj karein!");
 
-    function submitLeave() {
-        const date = document.getElementById('leaveDate').value;
-        const reason = document.getElementById('leaveReason').value.trim();
-        const name = document.getElementById('empName').value.trim();
-        const id = document.getElementById('empId').value.trim();
-
-        if(!date || !reason) return alert("तारीख और कारण (Reason) डालना अनिवार्य है!");
-
-        // Format Date to DD/MM/YYYY
-        const dateParts = date.split('-');
-        const formattedDate = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
-
-        let existingRecord = attendanceData.find(r => r.id === id && r.date === formattedDate);
-        if(existingRecord) return alert("इस तारीख का रिकॉर्ड पहले ही मौजूद है!");
+        const date = new Date().toLocaleDateString('en-GB');
+        let existingRecord = attendanceData.find(r => r.id === id && r.date === date);
+        if(existingRecord) return alert("❌ Aaj ka record pehle hi maujood hai!");
 
         attendanceData.push({
-            date: formattedDate, id, name, status: 'Leave', reason: reason,
-            punchIn: '-', punchOut: '-', totalHours: '-', outOfZonePenalty: 0, photos: {}
+            date, id, name, status: 'Leave', 
+            punchIn: '-', punchOut: '-', totalBreakMs: 0, outOfZonePenaltyMs: 0, totalHours: '-', photos: {}
         });
 
         localStorage.setItem('attendanceLogs', JSON.stringify(attendanceData));
-        document.getElementById('leaveModal').style.display = 'none';
         renderTable();
-        alert(`✅ ${formattedDate} के लिए छुट्टी का आवेदन भेज दिया गया है।`);
+        alert(`✅ Leave marked successfully for today!`);
     }
 
-    // --- 2. CAMERA & PROCESS LOGIC (Selfie) ---
+    // --- 2. BREAK LOGIC ---
+    function markBreak(type) {
+        const id = document.getElementById('empId').value.trim();
+        if (!id) return alert("⚠️ Pehle Employee ID darj karein!");
+        
+        const date = new Date().toLocaleDateString('en-GB');
+        let record = attendanceData.find(r => r.id === id && r.date === date);
+
+        if (!record || record.status !== 'Present') return alert("❌ Pehle Punch In karein!");
+        if (record.punchOut !== '-') return alert("❌ Aap Punch Out kar chuke hain!");
+
+        const rawTimeMs = new Date().getTime();
+
+        if (type === 'Start') {
+            if (record.isOnBreak) return alert("❌ Aap pehle se hi break par hain!");
+            record.isOnBreak = true;
+            record.breakStartMs = rawTimeMs;
+            alert("☕ Break Started!");
+        } else if (type === 'End') {
+            if (!record.isOnBreak) return alert("❌ Aap break par nahi hain!");
+            record.isOnBreak = false;
+            record.totalBreakMs = (record.totalBreakMs || 0) + (rawTimeMs - record.breakStartMs);
+            alert("✅ Break Ended! Welcome back to work.");
+        }
+        
+        localStorage.setItem('attendanceLogs', JSON.stringify(attendanceData));
+        renderTable();
+    }
+
+    // --- 3. CAMERA & PROCESS LOGIC ---
     function startProcess(action) {
         const name = document.getElementById('empName').value.trim();
         const id = document.getElementById('empId').value.trim();
-        if (!name || !id) return alert("⚠️ पहले अपना Name और ID दर्ज करें!");
+        if (!name || !id) return alert("⚠️ Pehle apna Name aur ID darj karein!");
 
         const date = new Date().toLocaleDateString('en-GB');
         let record = attendanceData.find(r => r.id === id && r.date === date);
 
-        if (action === 'Punch In' && record) return alert("❌ आप आज पहले ही Punch In कर चुके हैं!");
+        if (action === 'Punch In' && record) return alert("❌ Aap aaj pehle hi Punch In kar chuke hain!");
         if (action === 'Punch Out') {
-            if (!record || record.status !== 'Present') return alert("❌ पहले Punch In करें!");
-            if (record.punchOut !== '-') return alert("❌ आप Punch Out कर चुके हैं!");
+            if (!record || record.status !== 'Present') return alert("❌ Pehle Punch In karein!");
+            if (record.isOnBreak) return alert("⚠️ Pehle apna Break End karein!");
+            if (record.punchOut !== '-') return alert("❌ Aap Punch Out kar chuke hain!");
         }
 
         currentAction = action;
         document.getElementById('cameraTitle').innerText = `${action} - Take Selfie`;
         document.getElementById('cameraModal').style.display = 'flex';
         
-        // Start Camera
         navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
             .then(stream => { document.getElementById('video').srcObject = stream; })
-            .catch(err => {
-                alert("⚠️ कैमरा एक्सेस अनिवार्य है! कृपया ब्राउज़र में कैमरा Allow करें।");
-                closeCamera();
-            });
+            .catch(err => { alert("⚠️ Camera access is required!"); closeCamera(); });
     }
 
     function closeCamera() {
@@ -199,42 +200,29 @@
     document.getElementById('captureBtn').onclick = () => {
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
+        canvas.width = video.videoWidth; canvas.height = video.videoHeight;
         const ctx = canvas.getContext('2d');
-        // मिरर इमेज ठीक करने के लिए
-        ctx.translate(canvas.width, 0);
-        ctx.scale(-1, 1);
+        ctx.translate(canvas.width, 0); ctx.scale(-1, 1);
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         
-        const photoData = canvas.toDataURL('image/jpeg', 0.5); // Image compression
+        const photoData = canvas.toDataURL('image/jpeg', 0.4); 
         closeCamera();
-        
-        // फोटो क्लिक होने के तुरंत बाद लोकेशन चेक करो
         getLocationAndMarkAttendance(photoData);
     };
 
-    // --- 3. LOCATION & GEOFENCE LOGIC (50 Meters strict) ---
+    // --- 4. LOCATION LOGIC ---
     function getLocationAndMarkAttendance(photoBase64) {
-        if (!navigator.geolocation) return alert("आपके डिवाइस में लोकेशन सपोर्ट नहीं है!");
-
+        if (!navigator.geolocation) return alert("Location not supported!");
         navigator.geolocation.getCurrentPosition(
-            (pos) => {
-                const lat = pos.coords.latitude;
-                const lon = pos.coords.longitude;
-                saveAttendance(lat, lon, photoBase64);
-            },
-            (err) => { alert("⚠️ लोकेशन अनिवार्य है! बिना लोकेशन के हाजिरी नहीं लगेगी।"); },
+            (pos) => { saveAttendance(pos.coords.latitude, pos.coords.longitude, photoBase64); },
+            (err) => { alert("⚠️ Location is required for attendance!"); },
             { enableHighAccuracy: true }
         );
     }
 
-    // Haversine Formula: दो लोकेशन के बीच की दूरी (मीटर में)
     function getDistance(lat1, lon1, lat2, lon2) {
-        const R = 6371e3; // Earth radius in meters
-        const rad = Math.PI / 180;
-        const dLat = (lat2 - lat1) * rad;
-        const dLon = (lon2 - lon1) * rad;
+        const R = 6371e3; const rad = Math.PI / 180;
+        const dLat = (lat2 - lat1) * rad; const dLon = (lon2 - lon1) * rad;
         const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * rad) * Math.cos(lat2 * rad) * Math.sin(dLon/2) * Math.sin(dLon/2);
         return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
     }
@@ -253,15 +241,13 @@
             attendanceData.push({
                 date, id, name, status: 'Present',
                 punchIn: timeString, punchInMs: rawTimeMs, punchOut: '-', punchOutMs: 0,
-                punchInLat: lat, punchInLon: lon, // ऑफिस की फिक्स लोकेशन
-                outOfZonePenaltyMs: 0, totalHours: '-',
-                photos: { in: photoBase64 }
+                punchInLat: lat, punchInLon: lon, totalBreakMs: 0, isOnBreak: false,
+                outOfZonePenaltyMs: 0, totalHours: '-', photos: { in: photoBase64 }
             });
-            alert("✅ Punch In & Selfie Saved! अब आपकी लोकेशन ट्रैक हो रही है।");
-            startGeofencing(id, date, lat, lon); // ट्रैकिंग शुरू
+            alert("✅ Punch In Successful! Live tracking started.");
+            startGeofencing(id, date, lat, lon);
         } 
         else if (currentAction === 'Punch Out') {
-            // अगर बाहर था तो आउट-ऑफ़-ज़ोन का बचा हुआ समय जोड़ो
             if (outOfZoneStartMs > 0) {
                 record.outOfZonePenaltyMs += (now.getTime() - outOfZoneStartMs);
                 outOfZoneStartMs = 0;
@@ -271,20 +257,18 @@
             record.punchOutMs = rawTimeMs;
             record.photos.out = photoBase64;
             
-            // काम के घंटे कैलकुलेट करना (कुल समय - 50m के बाहर बिताया समय)
+            // Net Hours = Total Time - Break Time - Out of Zone Time
             let grossMs = record.punchOutMs - record.punchInMs;
-            let netMs = grossMs - record.outOfZonePenaltyMs;
+            let netMs = grossMs - (record.totalBreakMs || 0) - (record.outOfZonePenaltyMs || 0);
             if(netMs < 0) netMs = 0;
 
             record.totalHours = formatMs(netMs);
-            
-            // ट्रैकिंग बंद करो
             if(watchId) navigator.geolocation.clearWatch(watchId);
             document.getElementById('trackingBanner').style.display = 'none';
 
             let msg = "🛑 Punch Out Successful!";
-            if(record.outOfZonePenaltyMs > 60000) { // अगर 1 मिनट से ज्यादा बाहर रहा
-                msg += `\n⚠️ नोटिस: आप ${formatMs(record.outOfZonePenaltyMs)} समय तक 50 मीटर से बाहर थे, यह समय आपके वर्किंग ऑवर से काट लिया गया है।`;
+            if(record.outOfZonePenaltyMs > 60000) { 
+                msg += `\n⚠️ Notice: Aap 50m range se bahar the, wo time deduct kar liya gaya hai.`;
             }
             alert(msg);
         }
@@ -293,32 +277,27 @@
         renderTable();
     }
 
-    // --- 4. CONTINUOUS TRACKING (Geofencing) ---
     function startGeofencing(empId, date, officeLat, officeLon) {
         const banner = document.getElementById('trackingBanner');
         banner.style.display = 'block';
 
         watchId = navigator.geolocation.watchPosition(
             (pos) => {
-                const currentLat = pos.coords.latitude;
-                const currentLon = pos.coords.longitude;
+                const currentLat = pos.coords.latitude; const currentLon = pos.coords.longitude;
                 const distance = getDistance(officeLat, officeLon, currentLat, currentLon);
-                
                 let record = attendanceData.find(r => r.id === empId && r.date === date);
                 if(!record || record.punchOut !== '-') return;
 
-                if (distance > 50) { // 50 मीटर से बाहर
+                if (distance > 50) { 
                     banner.className = 'out-zone';
-                    banner.innerText = `⚠️ चेतावनी! आप ऑफिस एरिया से ${Math.round(distance)}m दूर हैं। आपका वर्किंग टाइम काउंट नहीं हो रहा है।`;
-                    if (outOfZoneStartMs === 0) {
-                        outOfZoneStartMs = new Date().getTime(); // बाहर जाने का टाइमर स्टार्ट
-                    }
-                } else { // 50 मीटर के अंदर आ गया
+                    banner.innerText = `⚠️ Alert! You are ${Math.round(distance)}m away. Working time not counting!`;
+                    if (outOfZoneStartMs === 0) outOfZoneStartMs = new Date().getTime();
+                } else { 
                     banner.className = 'in-zone';
-                    banner.innerText = `✅ आप 50 मीटर वर्किंग ज़ोन के अंदर हैं।`;
+                    banner.innerText = `✅ You are within the 50m working zone.`;
                     if (outOfZoneStartMs > 0) {
                         record.outOfZonePenaltyMs += (new Date().getTime() - outOfZoneStartMs);
-                        outOfZoneStartMs = 0; // टाइमर रिसेट
+                        outOfZoneStartMs = 0; 
                         localStorage.setItem('attendanceLogs', JSON.stringify(attendanceData));
                     }
                 }
@@ -328,13 +307,10 @@
         );
     }
 
-    // पेज रीलोड होने पर अगर कोई प्रेजेंट है तो उसकी ट्रैकिंग दोबारा चालू करना
     function resumeTrackingIfPunchedIn() {
         const date = new Date().toLocaleDateString('en-GB');
         const activeRecord = attendanceData.find(r => r.date === date && r.status === 'Present' && r.punchOut === '-');
-        if(activeRecord) {
-            startGeofencing(activeRecord.id, date, activeRecord.punchInLat, activeRecord.punchInLon);
-        }
+        if(activeRecord) startGeofencing(activeRecord.id, date, activeRecord.punchInLat, activeRecord.punchInLon);
     }
 
     function formatMs(ms) {
@@ -352,33 +328,57 @@
         reversedData.forEach(row => {
             const tr = document.createElement('tr');
             
-            // Photos HTML
             let photosHtml = '';
-            if(row.photos && row.photos.in) photosHtml += `<img src="${row.photos.in}" class="photo-thumb" title="Punch In Selfie"> `;
-            if(row.photos && row.photos.out) photosHtml += `<img src="${row.photos.out}" class="photo-thumb" title="Punch Out Selfie">`;
+            if(row.photos && row.photos.in) photosHtml += `<img src="${row.photos.in}" class="photo-thumb"> `;
+            if(row.photos && row.photos.out) photosHtml += `<img src="${row.photos.out}" class="photo-thumb">`;
 
-            // Penalty Formatting
-            let penaltyStr = '-';
-            if(row.outOfZonePenaltyMs > 0) {
-                penaltyStr = `<span style="color:red;font-weight:bold;">-${formatMs(row.outOfZonePenaltyMs)}</span><br><span style="font-size:11px;color:#c0392b;">(Deducted)</span>`;
-            }
-
-            // Reason for Leave
             let statusHtml = `<strong>${row.status}</strong>`;
-            if(row.status === 'Leave' && row.reason) statusHtml += `<br><span style="font-size:12px; color:#7f8c8d">Reason: ${row.reason}</span>`;
+            if(row.isOnBreak) statusHtml += `<br><span class="badge bg-on-break">On Break</span>`;
 
             tr.innerHTML = `
                 <td><strong>${row.date}</strong></td>
                 <td>${row.id}<br><small>${row.name}</small></td>
                 <td>${statusHtml}</td>
                 <td>${row.punchIn}</td>
+                <td>${formatMs(row.totalBreakMs || 0)}</td>
                 <td>${row.punchOut}</td>
-                <td>${penaltyStr}</td>
                 <td><strong style="color:var(--success)">${row.totalHours}</strong></td>
                 <td>${photosHtml}</td>
             `;
             tbody.appendChild(tr);
         });
+    }
+
+    // --- 5. SECURE EXCEL DOWNLOAD ---
+    function downloadSecureExcel() {
+        const password = prompt("🔒 Excel Data download karne ke liye Admin Password enter karein:");
+        
+        // Default password '1234' rakha hai (Aap badal sakte hain)
+        if (password === "1234") {
+            let csv = [];
+            let rows = document.querySelectorAll("#attendanceTable tr");
+            
+            for (let i = 0; i < rows.length; i++) {
+                let row = [], cols = rows[i].querySelectorAll("td, th");
+                for (let j = 0; j < cols.length - 1; j++) { // Last 'Photos' column Excel mein nahi aayega
+                    let text = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, " ");
+                    row.push('"' + text + '"'); 
+                }
+                csv.push(row.join(","));
+            }
+
+            let csvFile = new Blob([csv.join("\n")], {type: "text/csv;charset=utf-8;"});
+            let downloadLink = document.createElement("a");
+            downloadLink.download = "Secure_Attendance_Data.csv";
+            downloadLink.href = window.URL.createObjectURL(csvFile);
+            downloadLink.style.display = "none";
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+            alert("✅ Data Download ho gaya hai! Excel mein open karne ke baad aap isme 'Protect Sheet' feature ka use karke isko completely lock kar sakte hain.");
+        } else if (password !== null) {
+            alert("❌ Password Galat Hai! Download Cancelled.");
+        }
     }
 </script>
 
