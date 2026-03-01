@@ -73,7 +73,7 @@
 <body>
 
 <div class="dashboard">
-    <h2>🏢 Quality Education App</h2>
+    <h2>🏢 Quality Education Attendance</h2>
     <div class="clock" id="clock">00:00:00</div>
     
     <div id="trackingBanner" class="in-zone">📍 Location Tracking Active...</div>
@@ -133,8 +133,8 @@
     // =========================================================
     // ⚙️ HOLIDAY SETTINGS 
     const HOLIDAY_CALENDAR = {
-        "04/03/2026": "Holi",
-        "15/08/2026": "Independence Day",
+        "03/03/2026": "Holi Holiday",
+        "04/03/2026": "Holi Holiday",
         "08/11/2026": "Diwali",
         "25/12/2026": "Christmas"
     };
@@ -476,7 +476,7 @@
 
     function downloadSecureExcel() {
         const pass = prompt("🔒 Excel डाउनलोड करने के लिए पासवर्ड डालें:");
-        if (pass === "1234") { 
+        if (pass === "0000") { 
             let exportData = attendanceData.map(row => ({
                 "Date": row.date,
                 "Emp ID": row.id,
@@ -503,7 +503,7 @@
     // --- NEW: PDF EXPORT WITH IMAGES ---
     function downloadSecurePDF() {
         const pass = prompt("🔒 PDF डाउनलोड करने के लिए पासवर्ड डालें:");
-        if (pass === "1234") { 
+        if (pass === "0000") { 
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('landscape'); // Landscape to fit all columns
 
