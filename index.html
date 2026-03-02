@@ -9,80 +9,48 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     
     <style>
-        :root {
-            --primary: #2c3e50; --success: #27ae60; --danger: #c0392b; 
-            --warning: #f39c12; --info: #2980b9; --break: #d35400; --duty: #6c5ce7; --bg: #f4f7f6;
-        }
-        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        :root { --primary: #2c3e50; --success: #27ae60; --danger: #c0392b; --warning: #f39c12; --info: #2980b9; --break: #d35400; --duty: #6c5ce7; --bg: #f4f7f6; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         body { background: var(--bg); margin: 0; padding: 15px; display: flex; justify-content: center; }
-        
         .dashboard { width: 100%; max-width: 1200px; background: white; border-radius: 12px; padding: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         h2 { text-align: center; color: var(--primary); margin-bottom: 5px; }
         .clock { text-align: center; font-size: 16px; color: #7f8c8d; margin-bottom: 20px; font-weight: bold; }
-        
-        #trackingBanner { display: none; padding: 10px; text-align: center; font-weight: bold; color: white; border-radius: 8px; margin-bottom: 20px; font-size: 14px;}
-        .in-zone { background-color: var(--success); }
-        .out-zone { background-color: var(--danger); animation: blink 1.5s infinite; }
-        .gps-weak { background-color: var(--warning); color: black; }
-        .duty-mode { background-color: var(--duty); animation: pulse 2s infinite; }
+        #trackingBanner { display: none; padding: 10px; text-align: center; font-weight: bold; color: white; border-radius: 8px; margin-bottom: 20px;}
+        .in-zone { background-color: var(--success); } .out-zone { background-color: var(--danger); animation: blink 1.5s infinite; }
+        .gps-weak { background-color: var(--warning); color: black; } .duty-mode { background-color: var(--duty); animation: pulse 2s infinite; }
         @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.8; } 100% { opacity: 1; } }
-
         .form-group { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
         input { padding: 12px; border: 1px solid #bdc3c7; border-radius: 6px; flex: 1; font-size: 15px; outline: none;}
-        input:focus { border-color: var(--info); }
-        
         .btn-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 20px; }
         button { padding: 12px 10px; font-size: 13px; font-weight: bold; color: white; border: none; border-radius: 6px; cursor: pointer; transition: 0.3s; }
-        button:active { transform: scale(0.98); }
-        
-        .btn-in { background: var(--success); } .btn-in:hover { background: #219653; }
-        .btn-b-start { background: var(--break); } .btn-b-start:hover { background: #a84300; }
-        .btn-b-end { background: #e1b12c; color: black; } .btn-b-end:hover { background: #c2951f; }
-        .btn-t-start { background: var(--duty); } .btn-t-start:hover { background: #5042b3; }
-        .btn-t-end { background: #a29bfe; color: black; } .btn-t-end:hover { background: #877fdb; }
-        .btn-out { background: var(--danger); } .btn-out:hover { background: #a93226; }
-        .btn-leave { background: var(--warning); color: black; } .btn-leave:hover { background: #f1c40f; }
-        
+        .btn-in { background: var(--success); } .btn-b-start { background: var(--break); } .btn-b-end { background: #e1b12c; color: black; }
+        .btn-t-start { background: var(--duty); } .btn-t-end { background: #a29bfe; color: black; } .btn-out { background: var(--danger); }
+        .btn-leave { background: var(--warning); color: black; }
         .action-container { display: flex; gap: 15px; margin-top: 15px; flex-wrap: wrap; }
-        .btn-export { flex: 1; min-width: 250px; font-size: 15px; padding: 15px;}
-        .btn-excel { background: #16a085; } .btn-excel:hover { background: #138a72; }
-        .btn-pdf { background: #c0392b; } .btn-pdf:hover { background: #9e2a2b; }
-        
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; min-width: 900px; }
-        .table-wrap { overflow-x: auto; }
-        th, td { padding: 10px; text-align: center; border: 1px solid #ecf0f1; font-size: 13.5px; }
-        th { background: var(--primary); color: white; }
-        tr:nth-child(even) { background: #f9f9f9; }
+        .btn-export { flex: 1; font-size: 15px; padding: 15px;} .btn-excel { background: #16a085; } .btn-pdf { background: #c0392b; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; min-width: 900px; } .table-wrap { overflow-x: auto; }
+        th, td { padding: 10px; text-align: center; border: 1px solid #ecf0f1; font-size: 13.5px; } th { background: var(--primary); color: white; }
         .photo-thumb { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #ddd; margin: 2px;}
-
-        /* Live Badges & Timers */
-        .live-timer { color: var(--danger); font-weight: bold; background: #ffeaa7; padding: 3px 8px; border-radius: 12px; font-size: 11px; display: inline-block; margin-top: 5px; animation: pulse 1s infinite; }
-        .duty-badge { color: white; font-weight: bold; background: var(--duty); padding: 3px 8px; border-radius: 12px; font-size: 11px; display: inline-block; margin-top: 5px; }
-        .break-badge { color: white; font-weight: bold; background: var(--break); padding: 3px 8px; border-radius: 12px; font-size: 11px; display: inline-block; margin-top: 5px; }
-        
-        /* Camera Modal */
+        .live-timer, .duty-badge, .break-badge { color: white; font-weight: bold; padding: 3px 8px; border-radius: 12px; font-size: 11px; display: inline-block; margin-top: 5px; }
+        .live-timer { background: #ffeaa7; color: var(--danger); animation: pulse 1s infinite; } .duty-badge { background: var(--duty); } .break-badge { background: var(--break); }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
         .modal { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; }
         video { width: 100%; border-radius: 8px; background: #000; margin-bottom: 15px; transform: scaleX(-1); }
-        .btn-capture { background: var(--info); width: 100%; margin-bottom: 10px; font-size: 16px;}
-        .btn-cancel { background: #7f8c8d; width: 100%; font-size: 16px;}
-        
+        .btn-capture { background: var(--info); width: 100%; margin-bottom: 10px; } .btn-cancel { background: #7f8c8d; width: 100%; }
         .note-text { text-align: center; font-size: 12px; color: #7f8c8d; margin-top: 10px; }
     </style>
 </head>
 <body>
 
 <div class="dashboard">
-    <h2>🏢 Quality Education Attendance</h2>
+    <h2>🏢 Quality Education App</h2>
     <div class="clock" id="clock">00:00:00</div>
-    
     <div id="trackingBanner" class="in-zone">📍 Location Tracking Active...</div>
-
     <div class="form-group">
         <input type="text" id="empName" placeholder="👤 Your Name" required>
         <input type="text" id="empId" placeholder="🔢 Employee ID" required>
     </div>
-
     <div class="btn-grid">
         <button class="btn-in" onclick="startProcess('Punch In')">📸 Punch In</button>
         <button class="btn-t-start" onclick="markDuty('Start')">🏃‍♂️ Start Training</button>
@@ -92,27 +60,19 @@
         <button class="btn-leave" onclick="markLeave()">📝 Mark Leave</button>
         <button class="btn-out" onclick="startProcess('Punch Out')">📸 Punch Out</button>
     </div>
-
     <div class="table-wrap">
         <table id="attendanceTable">
             <thead>
                 <tr>
-                    <th>Date</th>
-                    <th>ID & Name</th>
-                    <th>Status</th>
-                    <th>Punch In</th>
-                    <th>Total Break</th>
-                    <th>Penalty (Out 50m)</th>
-                    <th>Punch Out</th>
-                    <th>Net Work Hours</th>
-                    <th>Photos</th>
+                    <th>Date</th><th>ID & Name</th><th>Status</th><th>Punch In</th>
+                    <th>Break Time</th><th>Penalty (Out 50m)</th><th>Punch Out</th>
+                    <th>Net Work Hours</th><th>Photos</th>
                 </tr>
             </thead>
             <tbody id="tableBody"></tbody>
         </table>
     </div>
-    <div class="note-text">⚠️ टेबल में सिर्फ आज और कल का डाटा दिखेगा। पूरा डाटा PDF या Excel में सुरक्षित है।</div>
-
+    <div class="note-text">⚠️ टेबल में सिर्फ आज और कल का डाटा दिखेगा। पूरा डाटा PDF और Google Sheet में सुरक्षित है।</div>
     <div class="action-container">
         <button class="btn-export btn-excel" onclick="downloadSecureExcel()">📊 Download Excel (Password)</button>
         <button class="btn-export btn-pdf" onclick="downloadSecurePDF()">📄 Download PDF with Photos (Password)</button>
@@ -131,32 +91,41 @@
 
 <script>
     // =========================================================
-    // ⚙️ HOLIDAY SETTINGS 
-    const HOLIDAY_CALENDAR = {
-        "03/03/2026": "Holi Holiday",
-        "04/03/2026": "Holi Holiday",
-        "08/11/2026": "Diwali",
-        "25/12/2026": "Christmas"
-    };
-    const DUTY_PASSWORD = "8888"; 
+    // 🌐 GOOGLE SHEET API URL (यहाँ आपका लिंक लगा दिया गया है)
     // =========================================================
-
+    const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbzhxynD9MFcO0t-ZJdTWfTH48lfyeL3N5SEjxyYdsqOIpfUiv0SNPQcJl9j8MXoaPBTbw/exec";
+    
+    const HOLIDAY_CALENDAR = { "04/03/2026": "Holi", "15/08/2026": "Independence Day", "08/11/2026": "Diwali", "25/12/2026": "Christmas" };
+    const DUTY_PASSWORD = "8888"; 
     let attendanceData = JSON.parse(localStorage.getItem('attendanceLogs')) || [];
-    let currentAction = ""; 
-    let watchId = null;
-    let outOfZoneStartMs = 0;
+    let currentAction = ""; let watchId = null; let outOfZoneStartMs = 0;
 
-    function getTodayStr() {
-        const d = new Date();
-        return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
-    }
-    function getYesterdayStr() {
-        const d = new Date();
-        d.setDate(d.getDate() - 1);
-        return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+    function getTodayStr() { const d = new Date(); return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`; }
+    function getYesterdayStr() { const d = new Date(); d.setDate(d.getDate() - 1); return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`; }
+
+    // --- 🚀 NEW: Function to send data to Google Sheet ---
+    function sendDataToCloud(record) {
+        let payload = {
+            date: record.date,
+            empId: record.id,
+            name: record.name,
+            status: record.status,
+            punchIn: record.punchIn,
+            breakTime: formatMs(record.totalBreakMs || 0),
+            penalty: formatMs(record.outOfZonePenaltyMs || 0),
+            punchOut: record.punchOut,
+            netHours: record.totalHours,
+            photoIn: (record.photos && record.photos.in) ? "Captured (In App)" : "No",
+            photoOut: (record.photos && record.photos.out) ? "Captured (In App)" : "No"
+        };
+
+        fetch(GOOGLE_SHEET_URL, {
+            method: "POST",
+            body: JSON.stringify(payload)
+        }).then(res => console.log("Cloud Backup Successful!"))
+          .catch(err => console.error("Cloud Error: ", err));
     }
 
-    // Live Clock & Break Timer
     setInterval(() => { 
         document.getElementById('clock').innerText = new Date().toLocaleString('en-IN'); 
         attendanceData.forEach(row => {
@@ -164,8 +133,7 @@
                 const timerEl = document.getElementById(`breakTimer-${row.id}`);
                 if (timerEl) {
                     const currentSessionMs = new Date().getTime() - row.breakStartMs;
-                    const totalMs = (row.totalBreakMs || 0) + currentSessionMs;
-                    timerEl.innerText = formatMsWithSec(totalMs);
+                    timerEl.innerText = formatMsWithSec((row.totalBreakMs || 0) + currentSessionMs);
                 }
             }
         });
@@ -174,17 +142,14 @@
     window.onload = () => { renderTable(); resumeTrackingIfPunchedIn(); };
 
     function checkAutoOffs(id, name, dateStr) {
-        const isMonday = new Date().getDay() === 1; // 1 = Monday
+        const isMonday = new Date().getDay() === 1;
         const holidayName = HOLIDAY_CALENDAR[dateStr];
-
         if (holidayName || isMonday) {
             let statusText = holidayName ? `Holiday: ${holidayName}` : "Weekly Off";
-            attendanceData.push({ 
-                date: dateStr, id, name, status: statusText, 
-                punchIn: '-', punchOut: '-', totalBreakMs: 0, outOfZonePenaltyMs: 0, totalHours: '-', isOnBreak: false, isOnDuty: false 
-            });
-            localStorage.setItem('attendanceLogs', JSON.stringify(attendanceData));
-            renderTable();
+            let newRecord = { date: dateStr, id, name, status: statusText, punchIn: '-', punchOut: '-', totalBreakMs: 0, outOfZonePenaltyMs: 0, totalHours: '-', isOnBreak: false, isOnDuty: false };
+            attendanceData.push(newRecord);
+            localStorage.setItem('attendanceLogs', JSON.stringify(attendanceData)); renderTable();
+            sendDataToCloud(newRecord); // Send to Cloud
             alert(holidayName ? `❌ आज ${holidayName} की छुट्टी है!` : `❌ आज सोमवार है (Weekly Off)!`);
             return true; 
         }
@@ -192,373 +157,208 @@
     }
 
     function markLeave() {
-        const id = document.getElementById('empId').value.trim();
-        const name = document.getElementById('empName').value.trim();
+        const id = document.getElementById('empId').value.trim(); const name = document.getElementById('empName').value.trim();
         if (!name || !id) return alert("⚠️ पहले अपना नाम और ID दर्ज करें!");
-        const date = getTodayStr();
-        if(attendanceData.find(r => r.id === id && r.date === date)) return alert("❌ आज का रिकॉर्ड पहले ही मौजूद है!");
-
-        attendanceData.push({ date, id, name, status: 'Leave', punchIn: '-', punchOut: '-', totalBreakMs: 0, outOfZonePenaltyMs: 0, totalHours: '-', isOnBreak: false, isOnDuty: false });
+        if(attendanceData.find(r => r.id === id && r.date === getTodayStr())) return alert("❌ आज का रिकॉर्ड पहले ही मौजूद है!");
+        
+        let newRecord = { date: getTodayStr(), id, name, status: 'Leave', punchIn: '-', punchOut: '-', totalBreakMs: 0, outOfZonePenaltyMs: 0, totalHours: '-', isOnBreak: false, isOnDuty: false };
+        attendanceData.push(newRecord);
         localStorage.setItem('attendanceLogs', JSON.stringify(attendanceData)); renderTable();
+        sendDataToCloud(newRecord); // Send to Cloud
         alert(`✅ Leave marked successfully!`);
     }
 
     function markBreak(type) {
         const id = document.getElementById('empId').value.trim();
-        if (!id) return alert("⚠️ पहले Employee ID दर्ज करें!");
-        const date = getTodayStr();
-        let record = attendanceData.find(r => r.id === id && r.date === date);
-
+        if (!id) return alert("⚠️ पहले ID दर्ज करें!");
+        let record = attendanceData.find(r => r.id === id && r.date === getTodayStr());
         if (!record || record.status !== 'Present') return alert("❌ पहले Punch In करें!");
         if (record.punchOut !== '-') return alert("❌ आप Punch Out कर चुके हैं!");
-        if (record.isOnDuty) return alert("⚠️ आप अभी 'Official Duty' पर हैं। पहले Duty End करें!");
-
-        const nowMs = new Date().getTime();
+        if (record.isOnDuty) return alert("⚠️ आप अभी 'Official Duty' पर हैं!");
 
         if (type === 'Start') {
             if (record.isOnBreak) return alert("❌ आप पहले से ब्रेक पर हैं!");
-            record.isOnBreak = true; record.breakStartMs = nowMs; 
+            record.isOnBreak = true; record.breakStartMs = new Date().getTime(); 
         } else {
             if (!record.isOnBreak) return alert("❌ आप ब्रेक पर नहीं हैं!");
-            record.isOnBreak = false; record.totalBreakMs += (nowMs - record.breakStartMs); 
+            record.isOnBreak = false; record.totalBreakMs += (new Date().getTime() - record.breakStartMs); 
         }
         localStorage.setItem('attendanceLogs', JSON.stringify(attendanceData)); renderTable();
     }
 
     function markDuty(type) {
         const id = document.getElementById('empId').value.trim();
-        if (!id) return alert("⚠️ पहले Employee ID दर्ज करें!");
-        const date = getTodayStr();
-        let record = attendanceData.find(r => r.id === id && r.date === date);
-
+        if (!id) return alert("⚠️ पहले ID दर्ज करें!");
+        let record = attendanceData.find(r => r.id === id && r.date === getTodayStr());
         if (!record || record.status !== 'Present') return alert("❌ पहले Punch In करें!");
         if (record.punchOut !== '-') return alert("❌ आप Punch Out कर चुके हैं!");
-        if (record.isOnBreak) return alert("⚠️ आप अभी 'Break' पर हैं। पहले Break End करें!");
+        if (record.isOnBreak) return alert("⚠️ आप अभी 'Break' पर हैं!");
 
         if (type === 'Start') {
-            if (record.isOnDuty) return alert("❌ आप पहले से Official Duty पर हैं!");
-            const pass = prompt("सुरक्षा अलर्ट: ऑफिस से बाहर जाने के लिए मैनेजर का पासवर्ड डालें:");
-            if(pass !== DUTY_PASSWORD) return alert("❌ गलत पासवर्ड! आप ट्रेनिंग मोड चालू नहीं कर सकते।");
-
-            record.isOnDuty = true; 
-            alert("🏃‍♂️ Official Duty Started! आपका 50 मीटर वाला टाइम नहीं कटेगा।");
-            
+            if (record.isOnDuty) return alert("❌ आप पहले से Duty पर हैं!");
+            if(prompt("मैनेजर का पासवर्ड डालें:") !== DUTY_PASSWORD) return alert("❌ गलत पासवर्ड!");
+            record.isOnDuty = true; alert("🏃‍♂️ Official Duty Started!");
             if (outOfZoneStartMs > 0) {
-                 let timeOutside = new Date().getTime() - outOfZoneStartMs;
-                 if(timeOutside > 120000) { record.outOfZonePenaltyMs += timeOutside; }
+                 if(new Date().getTime() - outOfZoneStartMs > 120000) record.outOfZonePenaltyMs += (new Date().getTime() - outOfZoneStartMs);
                  outOfZoneStartMs = 0;
             }
         } else {
-            if (!record.isOnDuty) return alert("❌ आप Official Duty पर नहीं हैं!");
-            record.isOnDuty = false; 
-            alert("✅ Official Duty Ended! 50 मीटर वाली लोकेशन ट्रैकिंग फिर से चालू हो गई है।");
+            if (!record.isOnDuty) return alert("❌ आप Duty पर नहीं हैं!");
+            record.isOnDuty = false; alert("✅ Official Duty Ended!");
         }
         localStorage.setItem('attendanceLogs', JSON.stringify(attendanceData)); renderTable();
     }
 
     function startProcess(action) {
-        const name = document.getElementById('empName').value.trim();
-        const id = document.getElementById('empId').value.trim();
-        if (!name || !id) return alert("⚠️ पहले अपना नाम और ID दर्ज करें!");
-
-        const date = getTodayStr();
-        let record = attendanceData.find(r => r.id === id && r.date === date);
+        const name = document.getElementById('empName').value.trim(); const id = document.getElementById('empId').value.trim();
+        if (!name || !id) return alert("⚠️ नाम और ID दर्ज करें!");
+        const date = getTodayStr(); let record = attendanceData.find(r => r.id === id && r.date === date);
 
         if (action === 'Punch In') {
-            if (record) return alert("❌ आप आज पहले ही अपनी अटेंडेंस/छुट्टी लगा चुके हैं!");
+            if (record) return alert("❌ आप आज पहले ही अटेंडेंस लगा चुके हैं!");
             if(checkAutoOffs(id, name, date)) return; 
         }
         if (action === 'Punch Out') {
             if (!record || record.status !== 'Present') return alert("❌ पहले Punch In करें!");
-            if (record.isOnBreak) return alert("⚠️ पहले अपना Break End करें!");
-            if (record.isOnDuty) return alert("⚠️ पहले अपनी Official Duty / Training End करें!");
+            if (record.isOnBreak || record.isOnDuty) return alert("⚠️ पहले अपना Break/Duty End करें!");
             if (record.punchOut !== '-') return alert("❌ आप Punch Out कर चुके हैं!");
         }
-
-        currentAction = action;
-        document.getElementById('cameraTitle').innerText = `${action} - Take Selfie`;
-        document.getElementById('cameraModal').style.display = 'flex';
-        
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
-            .then(stream => { document.getElementById('video').srcObject = stream; })
-            .catch(err => { alert("⚠️ Camera access is required!"); closeCamera(); });
+        currentAction = action; document.getElementById('cameraTitle').innerText = `${action} - Take Selfie`; document.getElementById('cameraModal').style.display = 'flex';
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } }).then(s => { document.getElementById('video').srcObject = s; }).catch(e => { alert("⚠️ Camera required!"); closeCamera(); });
     }
 
     function closeCamera() {
-        const video = document.getElementById('video');
-        if (video.srcObject) video.srcObject.getTracks().forEach(t => t.stop());
-        document.getElementById('cameraModal').style.display = 'none';
+        const v = document.getElementById('video'); if (v.srcObject) v.srcObject.getTracks().forEach(t => t.stop()); document.getElementById('cameraModal').style.display = 'none';
     }
 
     document.getElementById('captureBtn').onclick = () => {
-        const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
-        canvas.width = video.videoWidth; canvas.height = video.videoHeight;
-        const ctx = canvas.getContext('2d');
-        ctx.translate(canvas.width, 0); ctx.scale(-1, 1);
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const photoData = canvas.toDataURL('image/jpeg', 0.4); 
-        
-        closeCamera();
-        getLocationAndMarkAttendance(photoData);
+        const v = document.getElementById('video'); const c = document.getElementById('canvas');
+        c.width = v.videoWidth; c.height = v.videoHeight; const ctx = c.getContext('2d');
+        ctx.translate(c.width, 0); ctx.scale(-1, 1); ctx.drawImage(v, 0, 0, c.width, c.height);
+        const photoData = c.toDataURL('image/jpeg', 0.4); closeCamera(); getLocationAndMarkAttendance(photoData);
     };
 
     function getLocationAndMarkAttendance(photoBase64) {
         if (!navigator.geolocation) return alert("Location not supported!");
         navigator.geolocation.getCurrentPosition(
             (pos) => { 
-                if (pos.coords.accuracy > 80 && currentAction === 'Punch In') {
-                    alert(`⚠️ आपका GPS सिग्नल बहुत कमजोर है (Accuracy: ${Math.round(pos.coords.accuracy)}m)। \nकृपया खिड़की के पास जाएं या खुले आसमान के नीचे आकर दोबारा Punch In करें।`);
-                    return; 
-                }
+                if (pos.coords.accuracy > 80 && currentAction === 'Punch In') return alert(`⚠️ GPS कमजोर है (Accuracy: ${Math.round(pos.coords.accuracy)}m)। खिड़की के पास जाएं।`);
                 saveAttendance(pos.coords.latitude, pos.coords.longitude, photoBase64); 
             },
-            (err) => { alert("⚠️ Location is required for attendance!"); },
-            { enableHighAccuracy: true }
+            (err) => { alert("⚠️ Location is required!"); }, { enableHighAccuracy: true }
         );
     }
 
     function getDistance(lat1, lon1, lat2, lon2) {
-        const R = 6371e3; const rad = Math.PI / 180;
-        const a = Math.sin((lat2-lat1)*rad/2) ** 2 + Math.cos(lat1*rad) * Math.cos(lat2*rad) * Math.sin((lon2-lon1)*rad/2) ** 2;
-        return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+        const p = Math.PI / 180; const a = Math.sin((lat2-lat1)*p/2)**2 + Math.cos(lat1*p) * Math.cos(lat2*p) * Math.sin((lon2-lon1)*p/2)**2;
+        return 6371e3 * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
     }
 
     function saveAttendance(lat, lon, photoBase64) {
-        const name = document.getElementById('empName').value.trim();
-        const id = document.getElementById('empId').value.trim();
-        const date = getTodayStr();
-        const rawTimeMs = new Date().getTime();
-        const timeString = new Date().toLocaleTimeString('en-US', { hour12: true });
-
+        const id = document.getElementById('empId').value.trim(); const name = document.getElementById('empName').value.trim();
+        const date = getTodayStr(); const rawTimeMs = new Date().getTime(); const timeString = new Date().toLocaleTimeString('en-US', { hour12: true });
         let record = attendanceData.find(r => r.id === id && r.date === date);
 
         if (currentAction === 'Punch In') {
-            attendanceData.push({
-                date, id, name, status: 'Present', punchIn: timeString, punchInMs: rawTimeMs, 
-                punchOut: '-', punchOutMs: 0, punchInLat: lat, punchInLon: lon, 
-                totalBreakMs: 0, outOfZonePenaltyMs: 0, totalHours: '-', isOnBreak: false, isOnDuty: false,
-                photos: { in: photoBase64 }
-            });
-            alert("✅ Punch In Saved! 50m Smart tracking started.");
-            startGeofencing(id, date, lat, lon);
-        } 
-        else if (currentAction === 'Punch Out') {
+            let newRecord = {
+                date, id, name, status: 'Present', punchIn: timeString, punchInMs: rawTimeMs, punchOut: '-', punchOutMs: 0, punchInLat: lat, punchInLon: lon, 
+                totalBreakMs: 0, outOfZonePenaltyMs: 0, totalHours: '-', isOnBreak: false, isOnDuty: false, photos: { in: photoBase64 }
+            };
+            attendanceData.push(newRecord);
+            alert("✅ Punch In Saved!"); startGeofencing(id, date, lat, lon);
+            sendDataToCloud(newRecord); // Send to Cloud
+        } else if (currentAction === 'Punch Out') {
             if (outOfZoneStartMs > 0) {
                 let timeOutside = rawTimeMs - outOfZoneStartMs;
-                if(timeOutside > 120000) { record.outOfZonePenaltyMs += timeOutside; }
+                if(timeOutside > 120000) record.outOfZonePenaltyMs += timeOutside;
                 outOfZoneStartMs = 0; 
             }
-
             record.punchOut = timeString; record.punchOutMs = rawTimeMs; record.photos.out = photoBase64;
-            
-            let totalGrossTimeMs = record.punchOutMs - record.punchInMs;
-            let totalBreakTimeMs = record.totalBreakMs || 0;
-            let totalPenaltyTimeMs = record.outOfZonePenaltyMs || 0;
-            
-            let netWorkMs = totalGrossTimeMs - totalBreakTimeMs - totalPenaltyTimeMs;
-            if(netWorkMs < 0) netWorkMs = 0;
-
-            record.totalHours = formatMs(netWorkMs);
+            let netWorkMs = (record.punchOutMs - record.punchInMs) - (record.totalBreakMs || 0) - (record.outOfZonePenaltyMs || 0);
+            record.totalHours = formatMs(netWorkMs < 0 ? 0 : netWorkMs);
             if(watchId) navigator.geolocation.clearWatch(watchId);
             document.getElementById('trackingBanner').style.display = 'none';
-
-            let billMessage = `🛑 Punch Out Successful!\n\n--- TODAY'S REPORT ---\n`;
-            billMessage += `Total Office Time: ${formatMs(totalGrossTimeMs)}\n`;
-            billMessage += `(-) Total Break: ${formatMs(totalBreakTimeMs)}\n`;
-            billMessage += `(-) 50m Penalty: ${formatMs(totalPenaltyTimeMs)}\n`;
-            billMessage += `------------------------\n`;
-            billMessage += `✅ NET WORK HOURS: ${formatMs(netWorkMs)}`;
-            alert(billMessage); 
+            alert(`🛑 Punch Out Done!\nTotal Office: ${formatMs(record.punchOutMs - record.punchInMs)}\nBreak: ${formatMs(record.totalBreakMs||0)}\nPenalty: ${formatMs(record.outOfZonePenaltyMs||0)}\n--- NET HOURS: ${record.totalHours} ---`); 
+            sendDataToCloud(record); // Send Updated row to Cloud
         }
-
         localStorage.setItem('attendanceLogs', JSON.stringify(attendanceData)); renderTable();
     }
 
     function startGeofencing(empId, date, officeLat, officeLon) {
-        const banner = document.getElementById('trackingBanner');
-        banner.style.display = 'block';
-        
+        const banner = document.getElementById('trackingBanner'); banner.style.display = 'block';
         watchId = navigator.geolocation.watchPosition(
             (pos) => {
                 let record = attendanceData.find(r => r.id === empId && r.date === date);
                 if(!record || record.punchOut !== '-') return;
-
-                if (record.isOnDuty) {
-                    banner.className = 'duty-mode'; banner.innerText = `🏃‍♂️ Official Work Active. (Location Paused)`; return; 
-                }
-                if(pos.coords.accuracy > 80) {
-                    banner.className = 'gps-weak'; banner.innerText = `🔄 Weak GPS Signal... Waiting.`; return; 
-                }
+                if (record.isOnDuty) { banner.className = 'duty-mode'; banner.innerText = `🏃‍♂️ Official Work Active.`; return; }
+                if(pos.coords.accuracy > 80) { banner.className = 'gps-weak'; banner.innerText = `🔄 Weak GPS Signal...`; return; }
 
                 const dist = getDistance(officeLat, officeLon, pos.coords.latitude, pos.coords.longitude);
-
                 if (dist > 50) { 
-                    banner.className = 'out-zone'; banner.innerText = `⚠️ Alert! You are ${Math.round(dist)}m away. Returning to 50m...`;
+                    banner.className = 'out-zone'; banner.innerText = `⚠️ Alert! You are ${Math.round(dist)}m away.`;
                     if (outOfZoneStartMs === 0) outOfZoneStartMs = new Date().getTime(); 
                 } else { 
-                    banner.className = 'in-zone'; banner.innerText = `✅ You are within 50m working zone.`;
+                    banner.className = 'in-zone'; banner.innerText = `✅ You are within 50m zone.`;
                     if (outOfZoneStartMs > 0) {
                         let timeOutside = new Date().getTime() - outOfZoneStartMs;
-                        if (timeOutside > 120000) { 
-                            record.outOfZonePenaltyMs += timeOutside;
-                            localStorage.setItem('attendanceLogs', JSON.stringify(attendanceData)); renderTable();
-                        }
+                        if (timeOutside > 120000) { record.outOfZonePenaltyMs += timeOutside; localStorage.setItem('attendanceLogs', JSON.stringify(attendanceData)); renderTable(); }
                         outOfZoneStartMs = 0; 
                     }
                 }
-            },
-            (err) => { console.warn("Live tracking issue:", err); },
-            { enableHighAccuracy: true, maximumAge: 10000, timeout: 5000 }
+            }, (err) => {}, { enableHighAccuracy: true, maximumAge: 10000, timeout: 5000 }
         );
     }
 
     function resumeTrackingIfPunchedIn() {
-        const date = getTodayStr();
-        const act = attendanceData.find(r => r.date === date && r.status === 'Present' && r.punchOut === '-');
-        if(act) startGeofencing(act.id, date, act.punchInLat, act.punchInLon);
+        const act = attendanceData.find(r => r.date === getTodayStr() && r.status === 'Present' && r.punchOut === '-');
+        if(act) startGeofencing(act.id, act.date, act.punchInLat, act.punchInLon);
     }
 
-    function formatMs(ms) {
-        if (ms <= 0) return '0h 0m';
-        const hrs = Math.floor(ms / (1000 * 60 * 60));
-        const mins = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
-        return `${hrs}h ${mins}m`;
-    }
-
-    function formatMsWithSec(ms) {
-        if (ms <= 0) return '0h 0m 0s';
-        const hrs = Math.floor(ms / (1000 * 60 * 60));
-        const mins = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
-        const secs = Math.floor((ms % (1000 * 60)) / 1000);
-        return `${hrs}h ${mins}m ${secs}s`;
-    }
+    function formatMs(ms) { if (ms <= 0) return '0h 0m'; return `${Math.floor(ms / 3600000)}h ${Math.floor((ms % 3600000) / 60000)}m`; }
+    function formatMsWithSec(ms) { if (ms <= 0) return '0h 0m 0s'; return `${Math.floor(ms / 3600000)}h ${Math.floor((ms % 3600000) / 60000)}m ${Math.floor((ms % 60000) / 1000)}s`; }
 
     function renderTable() {
         const tbody = document.getElementById('tableBody'); tbody.innerHTML = ''; 
-        
-        const todayStr = getTodayStr();
-        const yesterdayStr = getYesterdayStr();
-
-        let displayData = attendanceData.filter(r => r.date === todayStr || r.date === yesterdayStr);
+        let displayData = attendanceData.filter(r => r.date === getTodayStr() || r.date === getYesterdayStr());
 
         [...displayData].reverse().forEach(row => {
             const tr = document.createElement('tr');
-            let photos = '';
-            if(row.photos && row.photos.in) photos += `<img src="${row.photos.in}" class="photo-thumb" title="Punch In">`;
-            if(row.photos && row.photos.out) photos += `<img src="${row.photos.out}" class="photo-thumb" title="Punch Out">`;
-
+            let photos = (row.photos?.in ? `<img src="${row.photos.in}" class="photo-thumb">` : '') + (row.photos?.out ? `<img src="${row.photos.out}" class="photo-thumb">` : '');
             let penaltyHtml = row.outOfZonePenaltyMs > 0 ? `<span style="color:var(--danger); font-weight:bold;">-${formatMs(row.outOfZonePenaltyMs)}</span>` : '-';
-            
-            let breakHtml = formatMs(row.totalBreakMs || 0);
-            if(row.isOnBreak) breakHtml += `<br><span class="live-timer" id="breakTimer-${row.id}">Loading...</span>`;
+            let breakHtml = formatMs(row.totalBreakMs || 0) + (row.isOnBreak ? `<br><span class="live-timer" id="breakTimer-${row.id}">..</span>` : '');
+            let statusHtml = `<span style="color:${row.status === 'Present' ? 'var(--success)' : 'var(--danger)'}; font-weight:bold;">${row.status}</span>` + 
+                             (row.isOnBreak ? `<br><span class="break-badge">☕ Break</span>` : '') + 
+                             (row.isOnDuty ? `<br><span class="duty-badge">🏃‍♂️ Duty</span>` : '');
 
-            let statusColor = row.status === 'Present' ? 'var(--success)' : 'var(--danger)';
-            let statusHtml = `<span style="color:${statusColor}; font-weight:bold;">${row.status}</span>`;
-            
-            if(row.isOnBreak) statusHtml += `<br><span class="break-badge">☕ On Break</span>`;
-            if(row.isOnDuty) statusHtml += `<br><span class="duty-badge">🏃‍♂️ On Official Duty</span>`;
-
-            tr.innerHTML = `
-                <td><strong>${row.date}</strong></td>
-                <td>${row.id} - ${row.name}</td>
-                <td>${statusHtml}</td>
-                <td>${row.punchIn}</td>
-                <td>${breakHtml}</td>
-                <td>${penaltyHtml}</td>
-                <td>${row.punchOut}</td>
-                <td><strong style="color:var(--success)">${row.totalHours}</strong></td>
-                <td>${photos}</td>
-            `;
+            tr.innerHTML = `<td><strong>${row.date}</strong></td><td>${row.id} - ${row.name}</td><td>${statusHtml}</td><td>${row.punchIn}</td><td>${breakHtml}</td><td>${penaltyHtml}</td><td>${row.punchOut}</td><td><strong style="color:var(--success)">${row.totalHours}</strong></td><td>${photos}</td>`;
             tbody.appendChild(tr);
         });
     }
 
     function downloadSecureExcel() {
-        const pass = prompt("🔒 Excel डाउनलोड करने के लिए पासवर्ड डालें:");
-        if (pass === "0000") { 
-            let exportData = attendanceData.map(row => ({
-                "Date": row.date,
-                "Emp ID": row.id,
-                "Name": row.name,
-                "Status": row.status,
-                "Punch In": row.punchIn,
-                "Total Break": formatMs(row.totalBreakMs || 0),
-                "Penalty (Out 50m)": formatMs(row.outOfZonePenaltyMs || 0),
-                "Punch Out": row.punchOut,
-                "Net Work Hours": row.totalHours,
-                "Photo Captured": (row.photos && row.photos.in) ? "Yes" : "No"
-            }));
-
-            let ws = XLSX.utils.json_to_sheet(exportData);
-            let wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Attendance Report");
-            XLSX.writeFile(wb, "Quality_Education_Full_Report.xlsx");
-            alert("✅ असली Excel File डाउनलोड हो गई है!");
-        } else if (pass !== null) {
-            alert("❌ पासवर्ड गलत है! डाउनलोड कैंसिल कर दिया गया।");
-        }
+        if (prompt("🔒 Excel Password:") === "1234") { 
+            let exportData = attendanceData.map(r => ({ "Date": r.date, "Emp ID": r.id, "Name": r.name, "Status": r.status, "Punch In": r.punchIn, "Break": formatMs(r.totalBreakMs || 0), "Penalty": formatMs(r.outOfZonePenaltyMs || 0), "Punch Out": r.punchOut, "Net Hours": r.totalHours, "Photo": (r.photos?.in) ? "Yes" : "No" }));
+            let wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(exportData), "Report"); XLSX.writeFile(wb, "Quality_Education_Report.xlsx"); alert("✅ Done!");
+        } else alert("❌ Wrong Password!");
     }
 
-    // --- NEW: PDF EXPORT WITH IMAGES ---
     function downloadSecurePDF() {
-        const pass = prompt("🔒 PDF डाउनलोड करने के लिए पासवर्ड डालें:");
-        if (pass === "0000") { 
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('landscape'); // Landscape to fit all columns
-
-            doc.setFontSize(16);
-            doc.text("Quality Education - Official Attendance Report", 14, 15);
-
-            const tableColumn = ["Date", "Emp ID", "Name", "Status", "Punch In", "Break", "Penalty", "Punch Out", "Net Hours", "Selfie In", "Selfie Out"];
-            const tableRows = [];
-
-            attendanceData.forEach(row => {
-                const rowData = [
-                    row.date,
-                    row.id,
-                    row.name,
-                    row.status,
-                    row.punchIn,
-                    formatMs(row.totalBreakMs || 0),
-                    formatMs(row.outOfZonePenaltyMs || 0),
-                    row.punchOut,
-                    row.totalHours,
-                    row.photos && row.photos.in ? row.photos.in : "", 
-                    row.photos && row.photos.out ? row.photos.out : "" 
-                ];
-                tableRows.push(rowData);
-            });
+        if (prompt("🔒 PDF Password:") === "1234") { 
+            const { jsPDF } = window.jspdf; const doc = new jsPDF('landscape');
+            doc.setFontSize(16); doc.text("Quality Education - Attendance Report", 14, 15);
+            const tableRows = attendanceData.map(r => [r.date, r.id, r.name, r.status, r.punchIn, formatMs(r.totalBreakMs || 0), formatMs(r.outOfZonePenaltyMs || 0), r.punchOut, r.totalHours, r.photos?.in || "", r.photos?.out || ""]);
 
             doc.autoTable({
-                head: [tableColumn],
-                body: tableRows,
-                startY: 25,
-                rowPageBreak: 'auto',
-                bodyStyles: { minCellHeight: 18, valign: 'middle' }, 
-                didDrawCell: function(data) {
-                    // Render image in "Selfie In" column (index 9)
-                    if (data.column.index === 9 && data.cell.raw !== "") {
-                        doc.addImage(data.cell.raw, 'JPEG', data.cell.x + 2, data.cell.y + 2, 14, 14);
-                    }
-                    // Render image in "Selfie Out" column (index 10)
-                    if (data.column.index === 10 && data.cell.raw !== "") {
-                        doc.addImage(data.cell.raw, 'JPEG', data.cell.x + 2, data.cell.y + 2, 14, 14);
-                    }
+                head: [["Date", "Emp ID", "Name", "Status", "In", "Break", "Penalty", "Out", "Net Hours", "Selfie In", "Selfie Out"]],
+                body: tableRows, startY: 25, bodyStyles: { minCellHeight: 18, valign: 'middle' }, 
+                didDrawCell: function(d) {
+                    if (d.column.index === 9 && d.cell.raw) doc.addImage(d.cell.raw, 'JPEG', d.cell.x + 2, d.cell.y + 2, 14, 14);
+                    if (d.column.index === 10 && d.cell.raw) doc.addImage(d.cell.raw, 'JPEG', d.cell.x + 2, d.cell.y + 2, 14, 14);
                 },
-                didParseCell: function(data) {
-                    // Hide the base64 text strings from appearing in the table cells
-                    if (data.column.index === 9 || data.column.index === 10) {
-                        data.cell.text = ''; 
-                    }
-                }
+                didParseCell: function(d) { if (d.column.index === 9 || d.column.index === 10) d.cell.text = ''; }
             });
-
-            doc.save("Quality_Education_Attendance_With_Photos.pdf");
-            alert("✅ PDF फाइल फोटो के साथ डाउनलोड हो गई है!");
-        } else if (pass !== null) {
-            alert("❌ पासवर्ड गलत है! डाउनलोड कैंसिल कर दिया गया।");
-        }
+            doc.save("Quality_Education_Report.pdf"); alert("✅ PDF Downloaded!");
+        } else alert("❌ Wrong Password!");
     }
 </script>
 
