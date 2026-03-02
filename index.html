@@ -169,13 +169,13 @@
     function checkAutoOffs(id, name, dateStr) {
         const isTuesday = new Date().getDay() === 2;
         const holidayName = HOLIDAY_CALENDAR[dateStr];
-        if (holidayName || isMonday) {
+        if (holidayName || isTuesday) {
             let statusText = holidayName ? `Holiday: ${holidayName}` : "Weekly Off";
             let newRecord = { date: dateStr, id, name, status: statusText, punchIn: '-', punchOut: '-', totalBreakMs: 0, outOfZonePenaltyMs: 0, totalHours: '-', isOnBreak: false, isOnDuty: false };
             attendanceData.push(newRecord);
             localStorage.setItem('attendanceLogs', JSON.stringify(attendanceData)); renderTable();
             sendDataToCloud(newRecord); 
-            alert(holidayName ? `❌ आज ${holidayName} की छुट्टी है!` : `❌ आज सोमवार है (Weekly Off)!`);
+            alert(holidayName ? `❌ आज ${holidayName} की छुट्टी है!` : `❌ आज मंगलवार है (Weekly Off)!`);
             return true; 
         }
         return false;
