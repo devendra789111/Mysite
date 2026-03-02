@@ -493,8 +493,8 @@
             return { array: monthlyData, monthName: targetDate.toLocaleString('en-IN', { month: 'long', year: 'numeric' }) };
         }
 
-        function downloadPDF() {
-            let pass = prompt(`PDF डाउनलोड करने के लिए एडमिन पासवर्ड (1234) डालें:`);
+                function downloadPDF() {
+            let pass = prompt(`PDF डाउनलोड करने के लिए एडमिन पासवर्ड डालें:`);
             if(pass !== ADMIN_PASS) return alert("पासवर्ड गलत है!");
             
             let monthInfo = getMonthlyDataArray();
@@ -509,19 +509,33 @@
             let header = document.getElementById('pdfMonthHeader');
             
             tableWrap.style.overflowX = 'visible'; header.style.display = 'block';
+            
+            // मोबाइल में ब्लैंक PDF की समस्या को रोकने के लिए नया कोड
             let opt = {
-                margin: 0.3, filename: `Attendance_${monthInfo.monthName.replace(' ', '_')}.pdf`, image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true, windowWidth: exportDiv.scrollWidth }, jsPDF: { unit: 'in', format: 'a3', orientation: 'landscape' }
+                margin: 0.2, 
+                filename: `Attendance_${monthInfo.monthName.replace(' ', '_')}.pdf`, 
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { 
+                    scale: 1.5, // मोबाइल के लिए हल्का किया गया 
+                    useCORS: true, 
+                    scrollY: 0, // यह स्क्रॉल की वजह से ब्लैंक आने से रोकेगा
+                    backgroundColor: '#ffffff' // यह पेज को वाइट बैकग्राउंड देगा
+                }, 
+                jsPDF: { unit: 'in', format: 'a3', orientation: 'landscape' },
+                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
             };
             
-            html2pdf().set(opt).from(exportDiv).save().then(() => { 
-                header.style.display = 'none'; tableWrap.style.overflowX = 'auto'; 
-                renderTable(); // PDF जनरेट होने के बाद वापस लाइव स्क्रीन (उल्टा क्रम) पर लाना
-            });
-        }
-
+            setTimeout(() => {
+                html2pdf().set(opt).from(exportDiv).save().then(() => { 
+                    header.style.display = 'none'; 
+                    tableWrap.style.overflowX = 'auto'; 
+                    renderTable(); // वापस लाइव स्क्रीन सेट करें
+                });
+            }, 500);
+                               }
+                
         function downloadExcel() {
-            let pass = prompt(`Excel डाउनलोड करने के लिए एडमिन पासवर्ड (1234) डालें:`);
+            let pass = prompt(`Excel डाउनलोड करने के लिए एडमिन पासवर्ड डालें:`);
             if(pass !== ADMIN_PASS) return alert("पासवर्ड गलत है!");
 
             let monthInfo = getMonthlyDataArray();
