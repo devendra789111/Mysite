@@ -11,9 +11,11 @@
         .header h2 { margin: 5px 0; font-size: 22px; }
         .live-time { font-size: 16px; font-weight: bold; color: #ffeb3b; }
         .container { background: white; padding: 20px; border-radius: 10px; max-width: 1150px; margin: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        
         .input-group { margin-bottom: 20px; background: #f5f5f5; padding: 15px; border-radius: 8px; border: 2px solid #ddd; }
-        input[type="text"], input[type="password"] { padding: 12px; width: 30%; margin: 5px; border: 2px solid #1a237e; border-radius: 5px; font-size: 16px; font-weight: bold; text-align: center; }
+        input[type="text"], input[type="password"], input[type="date"] { padding: 10px; width: 30%; margin: 5px; border: 2px solid #1a237e; border-radius: 5px; font-size: 15px; font-weight: bold; text-align: center; }
         #empName { background-color: #e9ecef; cursor: not-allowed; }
+        
         .btn-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 10px; }
         button { padding: 10px 15px; font-size: 14px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; color: white; transition: 0.2s; position: relative; }
         button:hover { filter: brightness(0.9); }
@@ -44,9 +46,7 @@
         th { background-color: #1a237e; color: white; }
         .badge { display: inline-block; padding: 3px 6px; border-radius: 4px; font-size: 11px; color: white; margin-top: 3px; }
         .badge-break { background-color: #F57C00; } .badge-train { background-color: #7B1FA2; }
-        
-        .export-btns { margin-top: 20px; display: flex; justify-content: center; gap: 15px; }
-        .btn-pdf { background-color: #D32F2F; padding: 10px 20px; } .btn-excel { background-color: #2E7D32; padding: 10px 20px; }
+        .btn-pdf { background-color: #D32F2F; padding: 10px 20px; margin-top: 20px; }
         .log-photo { width: 45px; height: 45px; border-radius: 4px; border: 1px solid #ccc; object-fit: cover; }
     </style>
 </head>
@@ -67,7 +67,12 @@
             <input type="text" id="empId" placeholder="एम्प्लॉई ID (e.g. QE101)" oninput="autoFillName()">
             <input type="text" id="empName" placeholder="कर्मचारी का नाम" readonly><br>
             
-            <div id="pointsBox" style="display:none; background:#fff; border:2px dashed #3F51B5; padding:8px; border-radius:5px; margin-top:10px; font-size:14px;"></div>
+            <div id="pointsBox" style="display:none; background:#fff; border:2px dashed #f44336; padding:8px; border-radius:5px; margin-top:10px; font-size:14px; color:#d32f2f;"></div>
+            
+            <div id="leaveBalanceBox" style="display:none; background:#e8f5e9; border:2px dashed #4CAF50; padding:8px; border-radius:5px; margin-top:10px; font-size:14px; font-weight:bold; color:#2E7D32;">
+                ⏳ Leave Balances loading...
+            </div>
+
             <button class="btn-check-leave" onclick="checkMyLeaveStatus()">👀 Check My Leave Status</button>
         </div>
 
@@ -104,10 +109,7 @@
             </div>
         </div>
 
-        <div class="export-btns">
-            <button class="btn-pdf" onclick="downloadPDF()">Download PDF</button>
-            <button class="btn-excel" onclick="downloadExcel()">Download Excel</button>
-        </div>
+        <button class="btn-pdf" onclick="downloadPDF()">Download PDF</button>
     </div>
 
     <div id="taskModal" class="modal">
@@ -128,7 +130,7 @@
                 <textarea id="taskDesc" placeholder="Write task details here..." style="width:95%; padding:8px; margin-bottom:10px; height:60px; border:1px solid #1a237e; border-radius:5px;"></textarea>
                 
                 <div style="background:#e8f5e9; padding:8px; border:1px solid #4CAF50; border-radius:5px; margin-bottom:10px;">
-                    <label style="font-weight:bold; font-size:12px; color:#2E7D32;">🔒 Set Task Password (Optional but Recommended):</label>
+                    <label style="font-weight:bold; font-size:12px; color:#2E7D32;">🔒 Set Task Password (Optional):</label>
                     <input type="password" id="taskSecurePass" placeholder="e.g. 1234" style="width:95%; padding:6px; margin-top:5px; font-size:14px; border:1px solid #ccc;">
                     <small style="color:#555; font-size:11px; display:block; margin-top:3px;">यह पासवर्ड किसी को नहीं दिखेगा। काम पूरा होने पर चेक करने के लिए यह काम आएगा।</small>
                 </div>
@@ -140,10 +142,10 @@
                 <p id="taskLoadingMsg" style="text-align:center; color:#555; font-weight:bold;">Loading tasks...</p>
                 <div id="taskContainer"></div>
             </div>
-
             <button style="width:100%; margin-top:15px; background:#aaa; padding:10px; border:none; border-radius:5px; color:white; font-weight:bold; cursor:pointer;" onclick="document.getElementById('taskModal').style.display='none';">Close</button>
         </div>
     </div>
+
     <div id="selfieModal" class="modal">
         <div class="modal-content" style="text-align: center;">
             <h3 id="modalTitle" style="margin-top:0; color:#1a237e;">📍 लोकेशन कन्फर्म, सेल्फी लें</h3>
@@ -168,11 +170,14 @@
                     <option value="LWP">Leave Without Pay</option>
                 </select>
                 <label>कारण:</label><input type="text" id="leaveReason" placeholder="कारण लिखें..." required>
+                
                 <div id="medicalCertBox" style="display: none; background: #ffebee; padding: 10px; border-radius: 5px; border: 1px solid #ef5350; margin-top: 5px;">
-                    <label style="color:#c62828; font-size: 12px; font-weight:bold;">लगातार 2 दिन से ज्यादा SL के लिए मेडिकल सर्टिफिकेट अनिवार्य है:</label>
+                    <label style="color:#c62828; font-size: 12px; font-weight:bold;">मेडिकल सर्टिफिकेट (यदि लागू हो):</label>
                     <input type="file" id="medicalCert" accept="image/*, .pdf">
                 </div>
-                <p style="color:red; font-size:12px; font-weight:bold; display:none; text-align:center;" id="leaveAlert"></p>
+                
+                <p style="color:red; font-size:13px; font-weight:bold; display:none; text-align:center; border:1px solid red; padding:5px; border-radius:4px;" id="leaveAlert"></p>
+                
                 <button class="btn-leave" style="width:100%; margin-top:10px;" id="submitLeaveBtn" onclick="submitLeave()">सबमिट करें</button>
                 <button style="width:100%; margin-top:10px; background:#aaa; padding:10px; border:none; border-radius:5px; color:white; font-weight:bold; cursor:pointer;" onclick="document.getElementById('leaveModal').style.display='none';">रद्द करें</button>
             </div>
@@ -187,18 +192,19 @@
         </div>
     </div>
 
-        <script>
+       <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw8VuJmfGWdSEHLlzhyIaJnu_vwjdP00CrEjgdNJSpcHeVxcC3JFG6o1a7F3MyZAMW18Q/exec";
 
         let attendanceDb = JSON.parse(localStorage.getItem('qe_attendance_test')) || {};
+        let leaveDb = JSON.parse(localStorage.getItem('qe_leave_db')) || {}; // 🌟 RESTORED: Leave Tracker
         let EMP_LIST = {}; 
         let TODAY_SERVER_LOGS = {}; 
         let isSystemReady = false;
 
-        let stream; 
-        let currentAction = ""; 
-        let geoPass = false;
+        let stream; let currentAction = ""; let geoPass = false;
         let todayDateStr = new Date().toLocaleDateString('en-IN');
+        let currentMonthStr = new Date().getMonth() + "-" + new Date().getFullYear();
+        let currentYearStr = new Date().getFullYear().toString();
         let currentTaskType = 'incoming';
 
         window.onload = async () => {
@@ -213,24 +219,18 @@
             document.getElementById("systemStatusText").innerText = "✅ सिस्टम तैयार है!";
             setTimeout(() => { document.getElementById("systemStatusBox").style.display = "none"; }, 3000);
 
-            // ⚡ FAST SPEED: Data will sync to Google Sheet every 5 minutes (300000ms) to prevent overload
+            // ⚡ FAST SPEED: Sync to Google Sheet every 5 minutes (300000ms)
             setInterval(syncAllActiveUsers, 300000); 
-            
-            // ⚙️ FAST COMMANDS: Fetch Admin Commands (Undo, Stop Train) every 45 seconds
+            // ⚙️ FAST COMMANDS: Fetch Admin Commands every 45 seconds
             setInterval(fetchSystemData, 45000); 
-            
-            // 🔴 LIVE BADGE: Check Notifications every 1 minute
-            setInterval(() => {
-                let id = document.getElementById("empId").value.trim();
-                if(id) checkTaskNotifications(id);
-            }, 60000);
+            // 🔴 LIVE BADGE: Check Task Notifications every 1 minute
+            setInterval(() => { let id = document.getElementById("empId").value.trim(); if(id) checkTaskNotifications(id); }, 60000);
             
             renderTable();
         };
 
         function updateClock() {
             document.getElementById('liveDateTime').innerText = new Date().toLocaleString('hi-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            
             for(let id in attendanceDb) {
                 let emp = attendanceDb[id];
                 if(emp.date !== todayDateStr) continue;
@@ -251,18 +251,14 @@
 
                 let tRes = await fetch(`${SCRIPT_URL}?action=getTodayLogs&date=${todayDateStr}&nocache=${Date.now()}`);
                 TODAY_SERVER_LOGS = await tRes.json(); 
-                
                 let isUpdated = false;
 
                 for(let activeId in attendanceDb) {
-                    if(TODAY_SERVER_LOGS[activeId]) {
-                        if(TODAY_SERVER_LOGS[activeId].outByAdmin && !attendanceDb[activeId].isPunchedOut) {
-                            attendanceDb[activeId].isPunchedOut = true; attendanceDb[activeId].mode = "out";
-                            attendanceDb[activeId].outTime = TODAY_SERVER_LOGS[activeId].outTime || new Date().toLocaleTimeString('en-IN'); 
-                            attendanceDb[activeId].outByAdmin = true;
-                            alert(`⚠️ Admin forced Punch-Out for ${activeId}`);
-                            isUpdated = true;
-                        }
+                    if(TODAY_SERVER_LOGS[activeId] && TODAY_SERVER_LOGS[activeId].outByAdmin && !attendanceDb[activeId].isPunchedOut) {
+                        attendanceDb[activeId].isPunchedOut = true; attendanceDb[activeId].mode = "out";
+                        attendanceDb[activeId].outTime = TODAY_SERVER_LOGS[activeId].outTime || new Date().toLocaleTimeString('en-IN'); 
+                        attendanceDb[activeId].outByAdmin = true;
+                        alert(`⚠️ Admin forced Punch-Out for ${activeId}`); isUpdated = true;
                     }
 
                     let cmdRes = await fetch(`${SCRIPT_URL}?action=checkCommands&id=${activeId}&nocache=${Date.now()}`);
@@ -274,13 +270,11 @@
                         if (cmdTime > lastCmdTime) {
                             if (cmd.forceType === "endTrain" && attendanceDb[activeId].mode === "train") {
                                 attendanceDb[activeId].mode = "work"; 
-                                alert(`⚠️ Admin stopped training for ${activeId}. Back to Work mode.`);
-                                isUpdated = true;
+                                alert(`⚠️ Admin stopped training for ${activeId}. Back to Work mode.`); isUpdated = true;
                             }
                             if (cmd.forceType === "undoPunchOut" && attendanceDb[activeId].isPunchedOut) {
                                 attendanceDb[activeId].isPunchedOut = false; attendanceDb[activeId].mode = "work"; attendanceDb[activeId].outTime = "-"; attendanceDb[activeId].outByAdmin = false;
-                                alert(`🟢 Admin undid Punch-Out for ${activeId}! Timer resumed.`);
-                                isUpdated = true;
+                                alert(`🟢 Admin undid Punch-Out for ${activeId}! Timer resumed.`); isUpdated = true;
                             }
                             localStorage.setItem(`lastCmd_${activeId}`, cmdTime);
                         }
@@ -288,10 +282,10 @@
                 }
                 if(isUpdated) { saveData(); renderTable(); }
                 isSystemReady = true; 
-            } catch(e) { console.log("Fetch Error:", e); }
+            } catch(e) {}
         }
 
-        // --- EMPLOYEE & ATTENDANCE LOGIC ---
+        // --- EMPLOYEE AUTOFILL & LEAVE BALANCE ---
         function autoFillName() {
             let id = document.getElementById("empId").value.trim().toUpperCase();
             document.getElementById("empId").value = id;
@@ -299,43 +293,144 @@
                 document.getElementById("empName").value = EMP_LIST[id].name;
                 document.getElementById("pointsBox").style.display = "block";
                 document.getElementById("pointsBox").innerHTML = `🛑 Penalty Points: <b>${EMP_LIST[id].penalty || 0}</b> | 🏆 Reward Points: <b>${EMP_LIST[id].reward || 0}</b>`;
-                checkTaskNotifications(id); // 🔴 Check Badge
+                checkTaskNotifications(id); 
+                updateLeaveBalanceDisplay(id); // 🌟 RESTORED: Show Leave Balance
             } else { 
                 document.getElementById("empName").value = ""; 
                 document.getElementById("pointsBox").style.display = "none";
+                document.getElementById("leaveBalanceBox").style.display = "none";
                 document.getElementById("taskFlowBtn").innerHTML = "📋 TaskFlow";
             }
         }
 
-        // 🌟 NAYA: RED NOTIFICATION BADGE 🌟
+        // --- 🌟 RESTORED: STRICT LEAVE LOGIC (6 SL, 6 CL, Med Cert) 🌟 ---
+        function initLeaveDb(id) {
+            if(!leaveDb[id]) leaveDb[id] = {};
+            if(!leaveDb[id][currentYearStr]) leaveDb[id][currentYearStr] = { SL: 0, CL: 0, EL: EMP_LIST[id] ? (EMP_LIST[id].carryForward || 0) : 0 };
+            if(!leaveDb[id][currentMonthStr]) leaveDb[id][currentMonthStr] = { SL_taken: 0 };
+        }
+
+        function updateLeaveBalanceDisplay(id) {
+            let box = document.getElementById("leaveBalanceBox");
+            initLeaveDb(id);
+            let yData = leaveDb[id][currentYearStr];
+            box.style.display = "block";
+            box.innerHTML = `🗓️ <b>Live Balances:</b> SL: ${6 - yData.SL} left | CL: ${6 - yData.CL} left | EL: ${yData.EL} earned<br>
+                             <small style="color:#555;">(Max 6 SL & 6 CL per year. >2 SL/month needs Medical Cert.)</small>`;
+        }
+
+        function openLeaveModal() { 
+            if(!document.getElementById("empId").value.trim() || !document.getElementById("empName").value) return alert("पहले ID दर्ज करें!");
+            document.getElementById('leaveType').value = ""; document.getElementById('leaveDateInput').value = "";
+            document.getElementById('leaveReason').value = ""; document.getElementById('medicalCert').value = "";
+            document.getElementById('medicalCertBox').style.display = "none"; document.getElementById('leaveAlert').style.display = "none";
+            document.getElementById('leaveModal').style.display = 'flex'; 
+        }
+
+        function checkLeaveLimits() {
+            let id = document.getElementById("empId").value.trim();
+            let type = document.getElementById('leaveType').value;
+            let certBox = document.getElementById('medicalCertBox');
+            let alertBox = document.getElementById('leaveAlert');
+            alertBox.style.display = "none"; certBox.style.display = "none";
+            
+            if(!id || !type) return;
+            initLeaveDb(id);
+            let yData = leaveDb[id][currentYearStr]; let mData = leaveDb[id][currentMonthStr];
+
+            if(type === 'SL') {
+                if(yData.SL >= 6) {
+                    alertBox.innerText = "❌ आपकी इस साल की 6 SL (Sick Leave) खत्म हो चुकी हैं। अब LWP लगेगी।"; alertBox.style.display = "block";
+                }
+                if(mData.SL_taken >= 2) {
+                    certBox.style.display = 'block';
+                    alertBox.innerText = "⚠️ आपने इस महीने 2 SL ले ली हैं। अब मेडिकल सर्टिफिकेट देना अनिवार्य है!"; alertBox.style.display = "block";
+                }
+            } else if(type === 'CL') {
+                if(yData.CL >= 6) {
+                    alertBox.innerText = "❌ आपकी इस साल की 6 CL (Casual Leave) खत्म हो चुकी हैं। अब LWP लगेगी।"; alertBox.style.display = "block";
+                }
+            } else if(type === 'EL') {
+                if(yData.EL <= 0) {
+                    alertBox.innerText = "❌ आपके पास कोई EL बैलेंस नहीं है।"; alertBox.style.display = "block";
+                }
+            }
+        }
+
+        async function submitLeave() {
+            let id = document.getElementById("empId").value.trim(); let name = document.getElementById("empName").value;
+            let date = document.getElementById("leaveDateInput").value; let type = document.getElementById("leaveType").value;
+            let reason = document.getElementById("leaveReason").value; let hasCert = document.getElementById('medicalCert').value ? "Yes" : "No";
+
+            if(!date || !type || !reason) return alert("कृपया सभी जानकारी भरें!");
+
+            initLeaveDb(id);
+            let yData = leaveDb[id][currentYearStr]; let mData = leaveDb[id][currentMonthStr];
+
+            // 🚨 STRICT VALIDATION (Blocks submission if rules broken) 🚨
+            if(type === 'SL') {
+                if(yData.SL >= 6) return alert("❌ आपकी इस साल की 6 SL खत्म हो चुकी हैं। कृपया LWP (Leave Without Pay) चुनें।");
+                if(mData.SL_taken >= 2 && hasCert === "No") return alert("❌ सख्त नियम: इस महीने 2 से ज्यादा SL के लिए मेडिकल सर्टिफिकेट अपलोड करना अनिवार्य है!");
+            } else if(type === 'CL') {
+                if(yData.CL >= 6) return alert("❌ आपकी इस साल की 6 CL खत्म हो चुकी हैं। कृपया LWP चुनें।");
+            } else if(type === 'EL') {
+                if(yData.EL <= 0) return alert("❌ आपके खाते में EL बैलेंस नहीं है!");
+            }
+
+            document.getElementById("submitLeaveBtn").innerText = "⏳ भेज रहे हैं...";
+            try {
+                await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "requestLeave", reqId: "REQ_" + Date.now(), id: id, name: name, date: todayDateStr, leaveDate: date, leaveType: type, reason: reason, hasCert: hasCert }) });
+                
+                // Deduct local balance
+                if(type === 'SL') { yData.SL++; mData.SL_taken++; } else if(type === 'CL') { yData.CL++; } else if(type === 'EL') { yData.EL--; }
+                localStorage.setItem('qe_leave_db', JSON.stringify(leaveDb)); updateLeaveBalanceDisplay(id);
+
+                alert("✅ छुट्टी का अनुरोध सफलतापूर्वक भेज दिया गया!");
+                document.getElementById('leaveModal').style.display = 'none';
+            } catch(e) { alert("❌ त्रुटि हुई!"); }
+            document.getElementById("submitLeaveBtn").innerText = "सबमिट करें";
+        }
+
+        async function checkMyLeaveStatus() {
+            let id = document.getElementById("empId").value.trim();
+            if(!id) return alert("पहले अपनी ID दर्ज करें!");
+            document.getElementById("leaveStatusModal").style.display = "flex";
+            let body = document.getElementById("leaveStatusBody");
+            body.innerHTML = "⏳ रिकॉर्ड खोजा जा रहा है...";
+            try {
+                let res = await fetch(`${SCRIPT_URL}?action=checkMyLeave&id=${id}&nocache=${Date.now()}`);
+                let data = await res.json();
+                body.innerHTML = "";
+                if(data.length === 0) return body.innerHTML = "<p style='text-align:center;'>आपका कोई लीव रिकॉर्ड नहीं मिला।</p>";
+                data.reverse().forEach(req => {
+                    let color = req.status === 'Approved' ? 'green' : (req.status === 'Rejected' ? 'red' : 'orange');
+                    body.innerHTML += `<div style="border-bottom:1px solid #ccc; padding:8px 0;"><b>Date:</b> ${req.leaveDate} | <b>Type:</b> ${req.type}<br><b>Status:</b> <span style="color:${color}; font-weight:bold;">${req.status}</span></div>`;
+                });
+            } catch(e) { body.innerHTML = "❌ त्रुटि हुई!"; }
+        }
+
+        // --- 🌟 NAYA: RED NOTIFICATION BADGE 🌟 ---
         async function checkTaskNotifications(empId) {
             try {
                 let res = await fetch(`${SCRIPT_URL}?action=getMyTasks&empId=${empId}&nocache=${Date.now()}`);
                 let tasks = await res.json();
                 let pendingCount = tasks.filter(t => t.currentOwner === empId && t.status !== 'Closed').length;
-                
                 let btn = document.getElementById("taskFlowBtn");
                 if(pendingCount > 0) {
                     btn.innerHTML = `📋 TaskFlow <span style="background:red; color:white; border-radius:50%; padding:2px 7px; font-size:12px; position:absolute; top:-5px; right:-10px; font-weight:bold; box-shadow:0 0 5px rgba(0,0,0,0.5); animation: blinker 1s linear infinite;">${pendingCount}</span>`;
-                } else {
-                    btn.innerHTML = "📋 TaskFlow";
-                }
+                } else { btn.innerHTML = "📋 TaskFlow"; }
             } catch(e) {}
         }
 
-        function checkLocation() {
-            document.getElementById('statusBox').style.display = 'block';
-            document.getElementById('geoText').innerText = "📍 लोकेशन कन्फर्म हो गई है!";
-            document.getElementById('geoText').style.color = "green";
-            geoPass = true;
-        }
+        // --- CAMERA, GEO & PUNCH ---
+        function checkLocation() { document.getElementById('statusBox').style.display = 'block'; document.getElementById('geoText').innerText = "📍 लोकेशन कन्फर्म हो गई है!"; document.getElementById('geoText').style.color = "green"; geoPass = true; }
 
         async function openCamera(action) {
             let id = document.getElementById("empId").value.trim();
             if (!id || !document.getElementById("empName").value) return alert("पहले सही एम्प्लॉई ID दर्ज करें!");
             if (!isSystemReady) return alert("सिस्टम डेटा सिंक कर रहा है, कृपया 10 सेकंड रुकें...");
-            
             currentAction = action; geoPass = false;
+            
             if(action === 'in') {
                 if(attendanceDb[id] && attendanceDb[id].date === todayDateStr) return alert("आप आज पहले ही Punch In कर चुके हैं!");
                 checkLocation();
@@ -347,7 +442,6 @@
             
             document.getElementById('selfieModal').style.display = 'flex';
             document.getElementById('modalTitle').innerText = action === 'in' ? "📍 Punch IN - सेल्फी लें" : "📍 Punch OUT - सेल्फी लें";
-            
             try {
                 stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
                 document.getElementById('video').srcObject = stream;
@@ -362,11 +456,10 @@
             let video = document.getElementById('video'); let canvas = document.getElementById('canvas');
             canvas.width = video.videoWidth; canvas.height = video.videoHeight;
             canvas.getContext('2d').drawImage(video, 0, 0);
-            let photoData = canvas.toDataURL('image/jpeg', 0.6); // Compress
+            let photoData = canvas.toDataURL('image/jpeg', 0.6); 
             
             stream.getTracks().forEach(track => track.stop());
-            document.getElementById('selfieModal').style.display = 'none';
-            document.getElementById('statusBox').style.display = 'none';
+            document.getElementById('selfieModal').style.display = 'none'; document.getElementById('statusBox').style.display = 'none';
             
             let id = document.getElementById("empId").value.trim();
             if(currentAction === 'in') {
@@ -385,22 +478,15 @@
             if(!attendanceDb[id] || attendanceDb[id].date !== todayDateStr) return alert("पहले Punch In करें!");
             if(attendanceDb[id].isPunchedOut) return alert("आप Punch Out कर चुके हैं!");
             if(attendanceDb[id].mode === newMode) return alert("आप पहले से ही इस मोड में हैं!");
-            
-            attendanceDb[id].mode = newMode;
-            saveData(); renderTable(); syncAction(id);
+            attendanceDb[id].mode = newMode; saveData(); renderTable(); syncAction(id);
         }
+        function startTraining() { let pass = prompt("ट्रेनिंग शुरू करने के लिए एडमिन/ट्रेनर पासवर्ड डालें:"); if(pass) actionBtn('train'); }
 
-        function startTraining() {
-            let pass = prompt("ट्रेनिंग शुरू करने के लिए एडमिन/ट्रेनर पासवर्ड डालें:");
-            if(pass) actionBtn('train');
-        }
-
-        // --- 🌟 SECURE TASKFLOW LOGIC 🌟 ---
+        // --- 🌟 SECURE TASKFLOW LOGIC (Short ID & Password) 🌟 ---
         function openTaskModal() {
             let id = document.getElementById("empId").value.trim();
             if (!id || !EMP_LIST[id]) return alert("कृपया पहले सही एम्प्लॉई ID दर्ज करें!");
-            document.getElementById("taskModal").style.display = "flex";
-            switchTaskTab('incoming');
+            document.getElementById("taskModal").style.display = "flex"; switchTaskTab('incoming');
         }
 
         function switchTaskTab(tab) {
@@ -430,127 +516,65 @@
 
         async function loadMyTasks(type) { 
             let myId = document.getElementById("empId").value.trim();
-            let container = document.getElementById("taskContainer");
-            let msg = document.getElementById("taskLoadingMsg");
-
+            let container = document.getElementById("taskContainer"); let msg = document.getElementById("taskLoadingMsg");
             container.innerHTML = ""; msg.style.display = "block"; msg.innerText = "⏳ Loading tasks & checking deadlines...";
 
             try {
                 let res = await fetch(`${SCRIPT_URL}?action=getMyTasks&empId=${myId}&nocache=${Date.now()}`);
-                let tasks = await res.json();
-                msg.style.display = "none";
-
-                let filteredTasks = tasks.filter(t => 
-                    (type === 'incoming' ? String(t.currentOwner) === myId : (t.chain.includes(myId) && t.currentOwner !== myId)) && 
-                    t.status !== 'Closed' 
-                );
-
-                if(filteredTasks.length === 0) {
-                    container.innerHTML = `<p style="text-align:center; color:#777; font-weight:bold;">No ${type} tasks found.</p>`;
-                    return;
-                }
+                let tasks = await res.json(); msg.style.display = "none";
+                let filteredTasks = tasks.filter(t => (type === 'incoming' ? String(t.currentOwner) === myId : (t.chain.includes(myId) && t.currentOwner !== myId)) && t.status !== 'Closed' );
+                if(filteredTasks.length === 0) return container.innerHTML = `<p style="text-align:center; color:#777; font-weight:bold;">No ${type} tasks found.</p>`;
 
                 filteredTasks.reverse().forEach(t => {
                     let color = t.status === 'Pending' ? '#FF9800' : (t.status === 'In-Progress' ? '#2196F3' : (t.status === 'Returned' ? '#f44336' : '#9C27B0'));
                     let rName = EMP_LIST[t.currentOwner] ? EMP_LIST[t.currentOwner].name : t.currentOwner;
                     let sName = EMP_LIST[t.assignedBy] ? EMP_LIST[t.assignedBy].name : t.assignedBy;
                     
-                    // 🌟 SHORT TASK ID 🌟
-                    let shortId = t.taskId.includes("TSK_") ? "TSK-" + t.taskId.slice(-5) : t.taskId;
+                    let shortId = t.taskId.includes("TSK_") ? "TSK-" + t.taskId.slice(-5) : t.taskId; // Short ID
                     
                     let chainArr = t.chain.split("➡").map(s => s.trim());
                     let myIdx = chainArr.indexOf(myId);
                     let hasNextInChain = (myIdx > -1 && myIdx < chainArr.length - 1);
                     let nextEmpName = hasNextInChain && EMP_LIST[chainArr[myIdx + 1]] ? EMP_LIST[chainArr[myIdx + 1]].name : "Worker";
 
-                    let isIncoming = (type === 'incoming');
-                    let scoreAlert = "";
+                    let isIncoming = (type === 'incoming'); let scoreAlert = "";
                     
-                    if(t.status === 'Returned' && isIncoming) {
-                        scoreAlert += `<div style="background:#f44336; color:white; padding:8px; margin-bottom:8px; border-radius:4px; font-weight:bold; font-size:13px; text-align:center; animation: blinker 1s linear infinite;">⚠️ TASK RETURNED! INCOMPLETE WORK!</div>`;
-                    }
-                    if(parseInt(t.penalty) > 0 && isIncoming) {
-                        scoreAlert += `<div style="background:#ffebee; color:#d32f2f; padding:5px; margin-bottom:8px; border-radius:4px; border:1px solid #f44336; font-weight:bold; font-size:12px;">🚨 Penalty Applied: ${t.penalty} Points</div>`;
-                    }
+                    if(t.status === 'Returned' && isIncoming) scoreAlert += `<div style="background:#f44336; color:white; padding:8px; margin-bottom:8px; border-radius:4px; font-weight:bold; font-size:13px; text-align:center; animation: blinker 1s linear infinite;">⚠️ TASK RETURNED! INCOMPLETE WORK!</div>`;
+                    if(parseInt(t.penalty) > 0 && isIncoming) scoreAlert += `<div style="background:#ffebee; color:#d32f2f; padding:5px; margin-bottom:8px; border-radius:4px; border:1px solid #f44336; font-weight:bold; font-size:12px;">🚨 Penalty Applied: ${t.penalty} Points</div>`;
 
-                    let timerWarning = "";
-                    let now = new Date();
-                    if(t.status === 'Pending') {
-                        timerWarning = `<span style="color:#E91E63; font-size:12px; font-weight:bold; background:#fce4ec; padding:2px 5px; border-radius:3px;">⏳ 24h Limit</span>`;
-                    } else if ((t.status === 'In-Progress' || t.status === 'Returned') && t.expectedTime) {
+                    let timerWarning = ""; let now = new Date();
+                    if(t.status === 'Pending') timerWarning = `<span style="color:#E91E63; font-size:12px; font-weight:bold; background:#fce4ec; padding:2px 5px; border-radius:3px;">⏳ 24h Limit</span>`;
+                    else if ((t.status === 'In-Progress' || t.status === 'Returned') && t.expectedTime) {
                         let expDate = new Date(t.expectedTime);
                         if(now > expDate) timerWarning = `<span style="color:white; background:red; font-size:12px; font-weight:bold; padding:3px 6px; border-radius:3px;">⚠️ LATE (Deadline Missed)</span>`;
                         else timerWarning = `<span style="color:#E65100; font-size:12px; font-weight:bold; background:#fff3e0; padding:2px 5px; border-radius:3px;">⏱️ ${expDate.toLocaleString('en-IN', {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'})}</span>`;
                     }
 
                     let actionHTML = "";
-
                     if(isIncoming && t.status === 'Pending') {
-                        actionHTML = `
-                            <div style="margin-top:10px; padding-top:10px; border-top:1px dashed #ccc;">
-                                <div style="background:#e3f2fd; padding:8px; border-radius:5px; margin-top:5px;">
-                                    <b style="font-size:12px; color:#1a237e;">▶️ Start Work</b><br>
-                                    <input type="text" id="reply_${t.taskId}" placeholder="Short reply..." style="width:90%; padding:5px; margin-top:5px; font-size:12px; border:1px solid #ccc;">
-                                    <input type="datetime-local" id="time_${t.taskId}" style="width:90%; padding:5px; margin-top:5px; font-size:12px; border:1px solid #ccc;" title="Expected Completion Time">
-                                    <button style="background:#4CAF50; color:white; border:none; padding:6px 10px; margin-top:5px; border-radius:4px; cursor:pointer; font-weight:bold; width:100%;" onclick="taskAction('${t.taskId}', 'start')">Acknowledge & Start Timer</button>
-                                </div>
-                                <div style="background:#fff3e0; padding:8px; border-radius:5px; margin-top:5px;">
-                                    <b style="font-size:12px; color:#E65100;">⏭️ Forward Task</b><br>
-                                    <input type="text" id="fwd_${t.taskId}" placeholder="Emp ID (e.g. QE102)" style="width:60%; padding:5px; margin-top:5px; font-size:12px; border:1px solid #ccc;">
-                                    <button style="background:#FF9800; color:white; border:none; padding:6px 10px; border-radius:4px; cursor:pointer; font-weight:bold;" onclick="taskAction('${t.taskId}', 'forward')">Forward</button>
-                                </div>
-                            </div>`;
+                        actionHTML = `<div style="margin-top:10px; padding-top:10px; border-top:1px dashed #ccc;"><div style="background:#e3f2fd; padding:8px; border-radius:5px; margin-top:5px;"><b style="font-size:12px; color:#1a237e;">▶️ Start Work</b><br><input type="text" id="reply_${t.taskId}" placeholder="Short reply..." style="width:90%; padding:5px; margin-top:5px; font-size:12px; border:1px solid #ccc;"><input type="datetime-local" id="time_${t.taskId}" style="width:90%; padding:5px; margin-top:5px; font-size:12px; border:1px solid #ccc;" title="Expected Completion Time"><button style="background:#4CAF50; color:white; border:none; padding:6px 10px; margin-top:5px; border-radius:4px; cursor:pointer; font-weight:bold; width:100%;" onclick="taskAction('${t.taskId}', 'start')">Acknowledge & Start Timer</button></div><div style="background:#fff3e0; padding:8px; border-radius:5px; margin-top:5px;"><b style="font-size:12px; color:#E65100;">⏭️ Forward Task</b><br><input type="text" id="fwd_${t.taskId}" placeholder="Emp ID (e.g. QE102)" style="width:60%; padding:5px; margin-top:5px; font-size:12px; border:1px solid #ccc;"><button style="background:#FF9800; color:white; border:none; padding:6px 10px; border-radius:4px; cursor:pointer; font-weight:bold;" onclick="taskAction('${t.taskId}', 'forward')">Forward</button></div></div>`;
                     } 
                     else if(isIncoming && (t.status === 'In-Progress' || t.status === 'Returned')) {
-                        actionHTML = `
-                            <div style="margin-top:10px; padding-top:10px; border-top:1px dashed #ccc;">
-                                <button style="background:#2196F3; color:white; border:none; padding:8px 15px; border-radius:4px; cursor:pointer; width:100%; font-weight:bold;" onclick="taskAction('${t.taskId}', 'complete')">✅ Task Completed (Send UP)</button>
-                            </div>`;
-                            
-                        if(hasNextInChain) {
-                            actionHTML += `
-                            <div style="background:#ffebee; padding:8px; border-radius:5px; margin-top:10px;">
-                                <button style="background:#f44336; color:white; border:none; padding:8px 15px; border-radius:4px; cursor:pointer; font-weight:bold; width:100%;" onclick="taskAction('${t.taskId}', 'reject')">⬇️ Return DOWN to ${nextEmpName}</button>
-                            </div>`;
-                        }
+                        actionHTML = `<div style="margin-top:10px; padding-top:10px; border-top:1px dashed #ccc;"><button style="background:#2196F3; color:white; border:none; padding:8px 15px; border-radius:4px; cursor:pointer; width:100%; font-weight:bold;" onclick="taskAction('${t.taskId}', 'complete')">✅ Task Completed (Send UP)</button></div>`;
+                        if(hasNextInChain) actionHTML += `<div style="background:#ffebee; padding:8px; border-radius:5px; margin-top:10px;"><button style="background:#f44336; color:white; border:none; padding:8px 15px; border-radius:4px; cursor:pointer; font-weight:bold; width:100%;" onclick="taskAction('${t.taskId}', 'reject')">⬇️ Return DOWN to ${nextEmpName}</button></div>`;
                     } 
                     else if(isIncoming && t.status === 'Review') {
-                        let isFinal = myId === t.originalAssigner;
-                        let acceptText = isFinal ? "🏆 Final Accept & Close" : "✅ Approve & Pass UP";
-                        
-                        actionHTML = `
-                            <div style="margin-top:10px; padding-top:10px; border-top:1px dashed #ccc;">
-                                <b style="color:#9C27B0; font-size:12px;">👀 Ready for your review</b><br>
-                                <button style="background:#4CAF50; color:white; border:none; padding:8px 15px; margin-top:8px; border-radius:4px; cursor:pointer; width:100%; font-weight:bold;" onclick="taskAction('${t.taskId}', 'accept')">🔒 ${acceptText}</button>
-                                <button style="background:#f44336; color:white; border:none; padding:8px 15px; border-radius:4px; cursor:pointer; font-weight:bold; margin-top:5px; width:100%;" onclick="taskAction('${t.taskId}', 'reject')">🔒 ❌ Reject & Return Work</button>
-                            </div>`;
+                        let acceptText = myId === t.originalAssigner ? "🏆 Final Accept & Close" : "✅ Approve & Pass UP";
+                        actionHTML = `<div style="margin-top:10px; padding-top:10px; border-top:1px dashed #ccc;"><b style="color:#9C27B0; font-size:12px;">👀 Ready for your review</b><br><button style="background:#4CAF50; color:white; border:none; padding:8px 15px; margin-top:8px; border-radius:4px; cursor:pointer; width:100%; font-weight:bold;" onclick="taskAction('${t.taskId}', 'accept')">🔒 ${acceptText}</button><button style="background:#f44336; color:white; border:none; padding:8px 15px; border-radius:4px; cursor:pointer; font-weight:bold; margin-top:5px; width:100%;" onclick="taskAction('${t.taskId}', 'reject')">🔒 ❌ Reject & Return Work</button></div>`;
                     }
 
-                    container.innerHTML += `
-                        <div style="border: 1px solid #ccc; border-left: 5px solid ${color}; padding: 10px; margin-bottom: 10px; border-radius: 5px; background: #fafafa; text-align:left; font-size:13px;">
-                            ${scoreAlert}
-                            <div style="display:flex; justify-content:space-between; align-items:center;">
-                                <span style="background:#e8eaf6; color:#1a237e; padding:3px 6px; border-radius:4px; font-weight:bold;">ID: ${shortId}</span>
-                                ${timerWarning}
-                            </div>
-                            <div style="margin-top:8px;"><b style="color:#1a237e;">From:</b> ${sName} | <b style="color:#1a237e;">To:</b> ${rName}</div>
-                            <div style="background:white; padding:8px; border:1px solid #eee; margin-top:8px; border-radius:4px;"><b>Task:</b> ${t.details}</div>
-                            <div style="margin-top:8px;"><span style="background:${color}; color:white; padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">Status: ${t.status}</span></div>
-                            ${actionHTML}
-                        </div>
-                    `;
+                    container.innerHTML += `<div style="border: 1px solid #ccc; border-left: 5px solid ${color}; padding: 10px; margin-bottom: 10px; border-radius: 5px; background: #fafafa; text-align:left; font-size:13px;">${scoreAlert}<div style="display:flex; justify-content:space-between; align-items:center;"><span style="background:#e8eaf6; color:#1a237e; padding:3px 6px; border-radius:4px; font-weight:bold;">ID: ${shortId}</span>${timerWarning}</div><div style="margin-top:8px;"><b style="color:#1a237e;">From:</b> ${sName} | <b style="color:#1a237e;">To:</b> ${rName}</div><div style="background:white; padding:8px; border:1px solid #eee; margin-top:8px; border-radius:4px;"><b>Task:</b> ${t.details}</div><div style="margin-top:8px;"><span style="background:${color}; color:white; padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">Status: ${t.status}</span></div>${actionHTML}</div>`;
                 });
-            } catch(e) { msg.innerText = "❌ Error loading tasks. Check internet."; }
+            } catch(e) { msg.innerText = "❌ Error loading tasks."; }
         }
 
         async function taskAction(taskId, actionType) {
             let myId = document.getElementById("empId").value.trim();
             let payload = { action: "taskAction", taskId: taskId, actionType: actionType, empId: myId };
             
-            // 🔒 NAYA: PASSWORD VERIFICATION 🔒
             if(actionType === 'accept' || actionType === 'reject') {
                 let pwd = prompt("🔒 सुरक्षा जाँच: कृपया इस टास्क का पासवर्ड दर्ज करें (अगर सेट किया गया था):");
-                if(pwd === null) return; // User pressed cancel
+                if(pwd === null) return; 
                 payload.enteredPassword = pwd.trim();
             }
 
@@ -568,12 +592,8 @@
                 let response = await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) });
                 let resData = await response.json();
                 
-                if(resData.status === "error") {
-                    alert(resData.message); // Show Password Error
-                    btn.innerText = oldTxt; btn.disabled = false;
-                } else {
-                    alert("✅ Action Completed!"); loadMyTasks(currentTaskType); checkTaskNotifications(myId);
-                }
+                if(resData.status === "error") { alert(resData.message); btn.innerText = oldTxt; btn.disabled = false; } 
+                else { alert("✅ Action Completed!"); loadMyTasks(currentTaskType); checkTaskNotifications(myId); }
             } catch(e) { alert("Failed to process action."); }
         }
 
@@ -582,62 +602,13 @@
         
         async function syncAction(id) {
             if(!attendanceDb[id]) return;
-            try {
-                await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" },
-                    body: JSON.stringify({ action: "syncPunch", id: id, date: todayDateStr, fullData: JSON.stringify(attendanceDb[id]) })
-                });
-            } catch(e) {}
+            try { await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "syncPunch", id: id, date: todayDateStr, fullData: JSON.stringify(attendanceDb[id]) }) }); } catch(e) {}
         }
         
         async function syncAllActiveUsers() {
             for(let id in attendanceDb) {
-                if(attendanceDb[id].date === todayDateStr && (!attendanceDb[id].isPunchedOut || attendanceDb[id].outByAdmin)) {
-                    await syncAction(id);
-                }
+                if(attendanceDb[id].date === todayDateStr && (!attendanceDb[id].isPunchedOut || attendanceDb[id].outByAdmin)) { await syncAction(id); }
             }
-        }
-
-        // --- LEAVE MANAGEMENT ---
-        function openLeaveModal() { 
-            if(!document.getElementById("empId").value.trim() || !document.getElementById("empName").value) return alert("पहले ID दर्ज करें!");
-            document.getElementById('leaveModal').style.display = 'flex'; 
-        }
-        function checkLeaveLimits() {
-            let type = document.getElementById('leaveType').value;
-            document.getElementById('medicalCertBox').style.display = (type === 'SL') ? 'block' : 'none';
-        }
-        async function submitLeave() {
-            let id = document.getElementById("empId").value.trim();
-            let name = document.getElementById("empName").value;
-            let date = document.getElementById("leaveDateInput").value;
-            let type = document.getElementById("leaveType").value;
-            let reason = document.getElementById("leaveReason").value;
-            if(!date || !type || !reason) return alert("सभी जानकारी भरें!");
-
-            document.getElementById("submitLeaveBtn").innerText = "⏳ भेज रहे हैं...";
-            try {
-                await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "requestLeave", reqId: "REQ_" + Date.now(), id: id, name: name, date: todayDateStr, leaveDate: date, leaveType: type, reason: reason, hasCert: document.getElementById('medicalCert').value ? "Yes" : "No" }) });
-                alert("✅ छुट्टी का अनुरोध सफलतापूर्वक भेज दिया गया!");
-                document.getElementById('leaveModal').style.display = 'none';
-            } catch(e) { alert("त्रुटि हुई!"); }
-            document.getElementById("submitLeaveBtn").innerText = "सबमिट करें";
-        }
-        async function checkMyLeaveStatus() {
-            let id = document.getElementById("empId").value.trim();
-            if(!id) return alert("पहले अपनी ID दर्ज करें!");
-            document.getElementById("leaveStatusModal").style.display = "flex";
-            let body = document.getElementById("leaveStatusBody");
-            body.innerHTML = "⏳ रिकॉर्ड खोजा जा रहा है...";
-            try {
-                let res = await fetch(`${SCRIPT_URL}?action=checkMyLeave&id=${id}&nocache=${Date.now()}`);
-                let data = await res.json();
-                body.innerHTML = "";
-                if(data.length === 0) return body.innerHTML = "<p style='text-align:center;'>आपका कोई लीव रिकॉर्ड नहीं मिला।</p>";
-                data.reverse().forEach(req => {
-                    let color = req.status === 'Approved' ? 'green' : (req.status === 'Rejected' ? 'red' : 'orange');
-                    body.innerHTML += `<div style="border-bottom:1px solid #ccc; padding:8px 0;"><b>Date:</b> ${req.leaveDate} | <b>Type:</b> ${req.type}<br><b>Status:</b> <span style="color:${color}; font-weight:bold;">${req.status}</span></div>`;
-                });
-            } catch(e) { body.innerHTML = "❌ त्रुटि हुई!"; }
         }
 
         // --- TABLE RENDERING ---
@@ -652,7 +623,6 @@
         }
 
         function downloadPDF() { alert("PDF डाउनलोड करने के लिए कृपया Admin पैनल का उपयोग करें।"); }
-        function downloadExcel() { alert("Excel डाउनलोड करने के लिए कृपया Admin पैनल का उपयोग करें।"); }
 
         /* Style for Badge Animation */
         let style = document.createElement('style');
@@ -660,4 +630,4 @@
         document.head.appendChild(style);
     </script>
 </body>
-</html>
+</html> 
