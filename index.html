@@ -907,14 +907,16 @@
             switchTaskTab('myTasks'); 
         }
 
-        async function submitNewTask() {
-            let assignerId = document.getElementById("empId").value.trim();
-            let assigneeId = document.getElementById("newTaskAssignee").value.trim();
+       async function submitNewTask() {
+            // IDs को अपने आप बड़े अक्षरों (Uppercase) में कर देगा
+            let assignerId = document.getElementById("empId").value.trim().toUpperCase();
+            let assigneeId = document.getElementById("newTaskAssignee").value.trim().toUpperCase();
             let desc = document.getElementById("newTaskDesc").value.trim();
             let pass = document.getElementById("newTaskPass").value.trim();
 
-            if(!assigneeId || !desc || !pass) return alert("Please fill all fields!");
-            if(!EMP_LIST[assigneeId] || EMP_LIST[assigneeId].status !== "Active") return alert("Assignee ID is invalid or inactive!");
+            if(!assignerId) return alert("❌ Error: सबसे ऊपर अपनी Employee ID दर्ज करें!");
+            if(!assigneeId || !desc || !pass) return alert("❌ Error: कृपया सभी बॉक्स भरें!");
+            if(!EMP_LIST[assigneeId] || EMP_LIST[assigneeId].status !== "Active") return alert(`❌ Error: Assignee ID (${assigneeId}) गलत है या इनएक्टिव है!`);
 
             let payload = {
                 action: "assignTask",
@@ -925,20 +927,36 @@
                 taskId: "TSK_" + Date.now()
             };
 
-            alert("⏳ Assigning task...");
-            fetch(SCRIPT_URL, { 
-                method: "POST", 
-                headers: { "Content-Type": "text/plain;charset=utf-8" }, 
-                body: JSON.stringify(payload) 
-            }).then(() => {
-                alert("✅ Task Assigned Successfully!");
-                document.getElementById("newTaskAssignee").value = "";
-                document.getElementById("newTaskDesc").value = "";
-                document.getElementById("newTaskPass").value = "";
-                switchTaskTab('myTasks');
-            }).catch(() => alert("Error assigning task."));
-        }
+            let btn = event.target;
+            let originalText = btn.innerText;
+            btn.innerText = "⏳ Assigning...";
+            btn.disabled = true;
 
+            try {
+                let res = await fetch(SCRIPT_URL, { 
+                    method: "POST", 
+                    headers: { "Content-Type": "text/plain;charset=utf-8" }, 
+                    body: JSON.stringify(payload) 
+                });
+                let data = await res.json();
+                
+                if(data.success) {
+                    alert("✅ Task Assigned Successfully!");
+                    document.getElementById("newTaskAssignee").value = "";
+                    document.getElementById("newTaskDesc").value = "";
+                    document.getElementById("newTaskPass").value = "";
+                    switchTaskTab('myTasks');
+                } else {
+                    alert("❌ Backend Error: " + (data.error || "Unknown Error"));
+                }
+            } catch (err) {
+                alert("❌ Network Error: कृपया Google Apps Script में 'New Version' Deploy करें।");
+            }
+            
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }  
+                              
         async function loadMyTasks() {
             let myId = document.getElementById("empId").value.trim();
             document.getElementById("myTasksList").innerHTML = "<p>Loading...</p>";
