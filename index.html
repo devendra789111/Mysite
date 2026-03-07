@@ -853,23 +853,97 @@
                 }
 
                 filteredTasks.reverse().forEach(t => {
-                    let color = t.status === 'Pending' ? '#FF9800' : (t.status === 'In-Progress' ? '#2196F3' : '#4CAF50');
+                    let color = t.status === 'Pending' ? '#FF9800' : (t.status === 'In-Progress' ? '#2196F3' : (t.status === 'Review' ? '#9C27B0' : '#4CAF50'));
                     let rName = EMP_LIST[t.currentOwner] ? EMP_LIST[t.currentOwner].name : t.currentOwner;
                     let sName = EMP_LIST[t.assignedBy] ? EMP_LIST[t.assignedBy].name : t.assignedBy;
                     
+                    let actionHTML = "";
+                    let isIncoming = (type === 'incoming');
+
+                    // 1. Start Work / Forward Actions (Pending)
+                    if(isIncoming && t.status === 'Pending') {
+                        actionHTML = `
+                            <div style="margin-top:10px; padding-top:10px; border-top:1px dashed #ccc;">
+                                <b style="color:#E91E63; font-size:12px;">⏳ 24h Acknowledge Timer Active!</b><br>
+                                
+                                <div style="background:#e3f2fd; padding:8px; border-radius:5px; margin-top:5px;">
+                                    <b style="font-size:12px; color:#1a237e;">▶️ Start Work (Acknowledge)</b><br>
+                                    <input type="text" id="reply_${t.taskId}" placeholder="Short reply..." style="width:90%; padding:5px; margin-top:5px; font-size:12px; border:1px solid #ccc;">
+                                    <input type="datetime-local" id="time_${t.taskId}" style="width:90%; padding:5px; margin-top:5px; font-size:12px; border:1px solid #ccc;" title="Expected Completion Time">
+                                    <button style="background:#4CAF50; color:white; border:none; padding:6px 10px; margin-top:5px; border-radius:4px; cursor:pointer; font-weight:bold; width:100%;" onclick="taskAction('${t.taskId}', 'start')">Acknowledge & Start Timer</button>
+                                </div>
+
+                                <div style="background:#fff3e0; padding:8px; border-radius:5px; margin-top:5px;">
+                                    <b style="font-size:12px; color:#E65100;">⏭️ Forward Task</b><br>
+                                    <input type="text" id="fwd_${t.taskId}" placeholder="Emp ID (e.g. QE102)" style="width:60%; padding:5px; margin-top:5px; font-size:12px; border:1px solid #ccc;">
+                                    <button style="background:#FF9800; color:white; border:none; padding:6px 10px; border-radius:4px; cursor:pointer; font-weight:bold;" onclick="taskAction('${t.taskId}', 'forward')">Forward</button>
+                                </div>
+                            </div>
+                        `;
+                    } 
+                    // 2. Mark Complete Action (In-Progress)
+                    else if(isIncoming && t.status === 'In-Progress') {
+                        actionHTML = `
+                            <div style="margin-top:10px; padding-top:10px; border-top:1px dashed #ccc;">
+                                <b style="font-size:12px; color:#1a237e;">🎯 Deadline: ${new Date(t.expectedTime).toLocaleString('en-IN')}</b><br>
+                                <b style="font-size:12px; color:#555;">💬 Your Reply: ${t.startReply}</b><br>
+                                <button style="background:#2196F3; color:white; border:none; padding:8px 15px; margin-top:8px; border-radius:4px; cursor:pointer; width:100%; font-weight:bold;" onclick="taskAction('${t.taskId}', 'complete')">✅ Task Completed (Send for Review)</button>
+                            </div>
+                        `;
+                    }
+                    // 3. Accept & Close Action (Original Assigner Reviewing)
+                    else if(isIncoming && t.status === 'Review' && t.originalAssigner === myId) {
+                        actionHTML = `
+                            <div style="margin-top:10px; padding-top:10px; border-top:1px dashed #ccc;">
+                                <b style="color:#9C27B0; font-size:12px;">👀 Ready for your final review</b><br>
+                                <button style="background:#4CAF50; color:white; border:none; padding:8px 15px; margin-top:8px; border-radius:4px; cursor:pointer; width:100%; font-weight:bold;" onclick="taskAction('${t.taskId}', 'accept')">🏆 Accept & Officially Close Task</button>
+                            </div>
+                        `;
+                    }
+
                     container.innerHTML += `
                         <div style="border: 1px solid #ccc; border-left: 5px solid ${color}; padding: 10px; margin-bottom: 10px; border-radius: 5px; background: #fafafa; text-align:left; font-size:13px;">
-                            <small style="color:#777; font-weight:bold;">ID: ${t.taskId} | Assigned: ${t.assignedTime}</small><br>
-                            <b style="color:#1a237e;">From:</b> ${sName} <br>
-                            <b style="color:#1a237e;">To:</b> ${rName} <br>
+                            <small style="color:#777; font-weight:bold;">ID: ${t.taskId}</small><br>
+                            <b style="color:#1a237e;">From:</b> ${sName} | <b style="color:#1a237e;">To:</b> ${rName} <br>
+                            <small style="color:#555;"><b>Chain:</b> ${t.chain}</small>
                             <div style="background:white; padding:5px; border:1px solid #eee; margin-top:5px; border-radius:4px;"><b>Task:</b> ${t.details}</div>
                             <span style="display:inline-block; margin-top:8px; background:${color}; color:white; padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">Status: ${t.status}</span>
+                            ${actionHTML}
                         </div>
                     `;
                 });
             } catch(e) { msg.innerText = "❌ Error loading tasks. Check internet."; }
         }
-        // 🌟🌟 TASKFLOW JAVASCRIPT END 🌟🌟
+
+        async function taskAction(taskId, actionType) {
+            let myId = document.getElementById("empId").value.trim();
+            let payload = { action: "taskAction", taskId: taskId, actionType: actionType, empId: myId };
+
+            if(actionType === 'start') {
+                let reply = document.getElementById(`reply_${taskId}`).value.trim();
+                let expTime = document.getElementById(`time_${taskId}`).value;
+                if(!reply || !expTime) return alert("❌ Acknowledge करने के लिए Reply और Expected Time दोनों भरना ज़रूरी है!");
+                payload.reply = reply; payload.expectedTime = expTime;
+            } 
+            else if(actionType === 'forward') {
+                let fwdTo = document.getElementById(`fwd_${taskId}`).value.trim();
+                if(!fwdTo || !EMP_LIST[fwdTo]) return alert("❌ सही Employee ID डालें जिसे Forward करना है!");
+                payload.forwardTo = fwdTo;
+            }
+            else if(actionType === 'complete') {
+                if(!confirm("Are you sure this task is 100% completed?")) return;
+            }
+            else if(actionType === 'accept') {
+                if(!confirm("Accept and Close this task?")) return;
+            }
+
+            try {
+                event.target.innerText = "⏳ Processing..."; event.target.disabled = true;
+                await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) });
+                alert("✅ Action Successful!"); loadMyTasks('incoming');
+            } catch(e) { alert("Server Error."); }
+        }
+        // 🌟🌟 TASKFLOW JAVASCRIPT END 🌟🌟                                       
     </script>
 </body>
 </html>
