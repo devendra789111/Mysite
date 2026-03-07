@@ -17,17 +17,18 @@
         .btn-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 10px; }
         button { padding: 10px 15px; font-size: 14px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; color: white; transition: 0.2s; }
         button:hover { filter: brightness(0.9); }
-        button:disabled { background-color: #ccc !important; cursor: not-allowed; }
         .btn-in { background-color: #4CAF50; } .btn-out { background-color: #f44336; } 
         .btn-train-start { background-color: #9C27B0; } .btn-train-end { background-color: #7B1FA2; }
         .btn-break-start { background-color: #FF9800; } .btn-break-end { background-color: #F57C00; }
         .btn-leave { background-color: #E91E63; } .btn-check-leave { background-color: #0288D1; margin-top: 10px; padding: 12px 20px; }
-        .btn-task { background-color: #00897B; width: 100%; margin-top: 10px; padding: 12px 20px; font-size: 16px; }
+        
+        /* NEW TASKFLOW BUTTON STYLE */
+        .btn-task { background-color: #00897B; }
         
         /* Modals */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); justify-content: center; align-items: center; }
-        .modal-content { background: white; padding: 20px; border-radius: 10px; text-align: left; width: 340px; max-height: 90vh; overflow-y: auto; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-        .modal-content.large-modal { width: 600px; }
+        .modal-content { background: white; padding: 20px; border-radius: 10px; text-align: left; width: 340px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); max-height: 90vh; overflow-y: auto; }
+        .large-modal { width: 600px; }
         video { width: 100%; border-radius: 8px; border: 3px solid #1a237e; margin-bottom: 10px; }
         canvas { display: none; }
         
@@ -46,29 +47,29 @@
         th { background-color: #1a237e; color: white; }
         .badge { display: inline-block; padding: 3px 6px; border-radius: 4px; font-size: 11px; color: white; margin-top: 3px; }
         .badge-break { background-color: #F57C00; } .badge-train { background-color: #7B1FA2; }
-        .badge-task { background-color: #00897B; font-weight: bold; }
         
         .export-btns { margin-top: 20px; display: flex; justify-content: center; gap: 15px; }
         .btn-pdf { background-color: #D32F2F; padding: 10px 20px; } .btn-excel { background-color: #2E7D32; padding: 10px 20px; }
         .log-photo { width: 45px; height: 45px; border-radius: 4px; border: 1px solid #ccc; object-fit: cover; }
 
-        /* Custom Leave/Task List Style */
-        .leave-item, .task-item { padding: 12px; border: 1px solid #eee; border-radius: 8px; margin-bottom: 10px; background: #fafafa; border-left: 5px solid #ccc; font-size: 13px; }
+        /* Custom Leave List Style */
+        .leave-item { padding: 12px; border: 1px solid #eee; border-radius: 8px; margin-bottom: 10px; background: #fafafa; border-left: 5px solid #ccc; }
         .leave-item.approved { border-left-color: #4CAF50; background: #f1f8e9; }
         .leave-item.rejected { border-left-color: #f44336; background: #ffebee; }
         .leave-item.pending { border-left-color: #FF9800; background: #fff8e1; }
-        .task-item.pending { border-left-color: #FF9800; }
-        .task-item.active { border-left-color: #0288D1; background: #e1f5fe; }
-        .task-item.review { border-left-color: #9C27B0; background: #f3e5f5; }
-        .task-actions { display: flex; gap: 5px; margin-top: 10px; }
-        .task-actions button { flex: 1; padding: 8px; font-size: 12px; }
 
-        /* TaskFlow Tabs */
+        /* TaskFlow UI Enhancements */
         .task-tabs { display: flex; border-bottom: 2px solid #ddd; margin-bottom: 15px; }
         .task-tab { flex: 1; padding: 10px; text-align: center; cursor: pointer; font-weight: bold; color: #555; background: #f5f5f5; border: none; outline: none; transition: 0.3s; }
         .task-tab.active { background: #00897B; color: white; }
         .task-pane { display: none; }
         .task-pane.active { display: block; }
+        .task-item { padding: 12px; border: 1px solid #eee; border-radius: 8px; margin-bottom: 10px; background: #fafafa; border-left: 5px solid #ccc; font-size: 13px; }
+        .task-item.pending { border-left-color: #FF9800; }
+        .task-item.active { border-left-color: #0288D1; background: #e1f5fe; }
+        .task-item.review { border-left-color: #9C27B0; background: #f3e5f5; }
+        .task-actions { display: flex; gap: 5px; margin-top: 10px; }
+        .task-actions button { flex: 1; padding: 8px; font-size: 12px; }
     </style>
 </head>
 <body>
@@ -88,7 +89,6 @@
             <input type="text" id="empId" placeholder="एम्प्लॉई ID दर्ज करें" oninput="autoFillName()">
             <input type="text" id="empName" placeholder="कर्मचारी का नाम" readonly><br>
             <button class="btn-check-leave" onclick="checkMyLeaveStatus()">👀 Check My Leave Status</button>
-            <button class="btn-task" onclick="openTaskModal()">📋 Manage TaskFlow</button>
         </div>
 
         <div class="status-box" id="statusBox" style="display:none;">
@@ -103,6 +103,7 @@
             <button class="btn-train-start" onclick="startTraining()">Start Training</button>
             <button class="btn-train-end" onclick="actionBtn('work')">End Training</button>
             <button class="btn-leave" onclick="openLeaveModal()">Mark Leave</button>
+            <button class="btn-task" onclick="openTaskModal()">TaskFlow 📋</button>
         </div>
 
         <div id="exportArea">
@@ -205,7 +206,7 @@
                 <label>Task Password (Keep this secret! Needed to close task):</label>
                 <input type="password" id="newTaskPass" placeholder="Enter secure password" style="width: 100%; text-align: left;">
                 
-                <button style="background-color: #00897B; width: 100%; margin-top: 15px;" onclick="submitNewTask()">Assign Task</button>
+                <button class="btn-task" style="width: 100%; margin-top: 15px; padding:12px; font-size:16px;" onclick="submitNewTask()">Assign Task</button>
             </div>
 
             <div id="tab-reviewTasks" class="task-pane">
@@ -250,7 +251,7 @@
 
     <script>
         // आपका परमानेंट SCRIPT_URL
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw8VuJmfGWdSEHLlzhyIaJnu_vwjdP00CrEjgdNJSpcHeVxcC3JFG6o1a7F3MyZAMW18Q/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw4QGYfqyPKpATDwqaFI9eArrH82GuqWBV7_q3PUbl1QiqcaD77wLt1HzojcouT--18Eg/exec";
         
         let ADMIN_PASS = "1234"; 
         let TRAIN_PASS = "0000";
@@ -260,7 +261,6 @@
         let EMP_LIST = JSON.parse(localStorage.getItem('cachedEmpList')) || {}; 
         let LIVE_USERS = {}; 
         
-        // 🚨 NEW SECURITY LOCK VARIABLES 🚨
         let TODAY_SERVER_LOGS = {}; 
         let isSystemReady = false;  
 
@@ -323,8 +323,6 @@
                 TODAY_SERVER_LOGS = await tRes.json(); 
                 
                 let isUpdated = false;
-                
-                // FIX: एम्प्लॉई चाहे आउट हो चुका हो, फिर भी कमांड चेक करेगा
                 let activeId = Object.keys(attendanceDb)[0]; 
 
                 for(let id in attendanceDb) {
@@ -338,7 +336,6 @@
                     }
                 }
 
-                // 🚨 CHECKING ADMIN COMMANDS 🚨
                 if (activeId) {
                     let cmdRes = await fetch(`${SCRIPT_URL}?action=checkCommands&id=${activeId}&nocache=${Date.now()}`);
                     let commands = await cmdRes.json();
@@ -346,31 +343,25 @@
                     
                     commands.forEach(cmd => {
                         if (cmd.timestamp > lastCmdTime) {
-                            // 1. Stop Training Command
                             if (cmd.forceType === "endTrain" && attendanceDb[activeId].mode === "train") {
                                 attendanceDb[activeId].mode = "work"; 
                                 alert("⚠️ एडमिन द्वारा आपकी ट्रेनिंग समाप्त कर दी गई है। आप 'Working' मोड में आ गए हैं।");
                                 isUpdated = true;
                             }
-                            
-                            // 2. 🚨 NEW: UNDO PUNCH OUT COMMAND 🚨
                             if (cmd.forceType === "undoPunchOut" && attendanceDb[activeId].isPunchedOut) {
-                                attendanceDb[activeId].isPunchedOut = false; // लॉक हटा दिया
-                                attendanceDb[activeId].mode = "work"; // वापस काम पर डाल दिया
-                                attendanceDb[activeId].outTime = "-"; // आउट टाइम मिटा दिया
-                                attendanceDb[activeId].photoOut = null; // आउट फोटो मिटा दी
+                                attendanceDb[activeId].isPunchedOut = false; 
+                                attendanceDb[activeId].mode = "work"; 
+                                attendanceDb[activeId].outTime = "-"; 
+                                attendanceDb[activeId].photoOut = null; 
                                 alert("🟢 एडमिन ने आपका Punch-Out हटा दिया है! आपका टाइमर वापस वहीं से चालू हो गया है।");
                                 isUpdated = true;
                             }
-                            
                             localStorage.setItem(`lastCmd_${activeId}`, cmd.timestamp);
                         }
                     });
                 }
                 
-                // अगर Undo हुआ है, तो तुरंत सर्वर पर वापस फ्रेश डेटा भेजो
                 if(isUpdated) { saveData(); renderTable(); if(activeId && !attendanceDb[activeId].isPunchedOut) sendFullSync(activeId); }
-
                 isSystemReady = true; 
             } catch(e) {}
         }
@@ -385,15 +376,9 @@
         function initPunchIn() {
             let id = document.getElementById("empId").value.trim();
             if(!id || !EMP_LIST[id] || EMP_LIST[id].status !== "Active") return alert("❌ Invalid or Inactive Employee ID!");
-            
-            // 🚨 SECURE LOCK 1: इंटरनेट स्लो होने पर धोखा न दे सके 🚨
             if(!isSystemReady) return alert("⏳ सिस्टम सर्वर से आपका डेटा चेक कर रहा है... कृपया 3-4 सेकंड प्रतीक्षा करें और दोबारा क्लिक करें।");
-
             if(isHolidayOrOff) return alert(`🛑 Today is ${holidayName || 'Weekly Off'}. Punch-in not allowed!`);
-            
             if(attendanceDb[id]) return alert("आप इस डिवाइस पर आज का पंच-इन पहले ही कर चुके हैं!");
-            
-            // 🚨 SECURE LOCK 2: 100% CROSS-DEVICE BLOCKING 🚨
             if(!attendanceDb[id] && TODAY_SERVER_LOGS && TODAY_SERVER_LOGS[id]) {
                 return alert("⚠️ क्रॉस-डिवाइस अलर्ट (फ्रॉड सिक्यूरिटी)!\nआप पहले ही किसी दूसरे फोन/डिवाइस से आज का पंच-इन कर चुके हैं।\nनियम के अनुसार आपको दिन भर उसी डिवाइस का इस्तेमाल करना होगा।");
             }
@@ -517,7 +502,6 @@
         function syncAllActiveUsers() { for(let id in attendanceDb) { if(!attendanceDb[id].isPunchedOut) sendFullSync(id); } }
 
         // --- 4. LEAVES ---
-        // (Existing Leave Code preserved exactly as requested...)
         async function openLeaveModal() { 
             let id = document.getElementById("empId").value.trim();
             if(!id || !EMP_LIST[id] || EMP_LIST[id].status !== 'Active') return alert("Enter Active Employee ID first!");
@@ -905,7 +889,7 @@
 
 
         // =========================================================================
-        // --- 7. NEW TASKFLOW IMPLEMENTATION ---
+        // --- 7. NEW TASKFLOW UI HANDLERS ---
         // =========================================================================
 
         function switchTaskTab(tabId) {
@@ -919,12 +903,10 @@
         async function openTaskModal() {
             let id = document.getElementById("empId").value.trim();
             if(!id || !EMP_LIST[id] || EMP_LIST[id].status !== "Active") return alert("❌ Please enter a valid active Employee ID first!");
-            
             document.getElementById('taskModal').style.display = 'flex';
             switchTaskTab('myTasks'); 
         }
 
-        // Action 1: Assign a new Task (or forward in chain)
         async function submitNewTask() {
             let assignerId = document.getElementById("empId").value.trim();
             let assigneeId = document.getElementById("newTaskAssignee").value.trim();
@@ -939,12 +921,11 @@
                 assignerId: assignerId,
                 assigneeId: assigneeId,
                 description: desc,
-                password: pass, // Captured here, handled entirely server-side in GAS
+                password: pass, 
                 taskId: "TSK_" + Date.now()
             };
 
             alert("⏳ Assigning task...");
-            // Post to GAS backend
             fetch(SCRIPT_URL, { 
                 method: "POST", 
                 headers: { "Content-Type": "text/plain;charset=utf-8" }, 
@@ -958,17 +939,14 @@
             }).catch(() => alert("Error assigning task."));
         }
 
-        // Action 2: Load Tasks (Active + Pending Review)
         async function loadMyTasks() {
             let myId = document.getElementById("empId").value.trim();
             document.getElementById("myTasksList").innerHTML = "<p>Loading...</p>";
             document.getElementById("reviewTasksList").innerHTML = "<p>Loading...</p>";
             
             try {
-                // Requires a new GET handler in your Apps Script: ?action=getTasks&id=QE101
                 let res = await fetch(`${SCRIPT_URL}?action=getTasks&id=${myId}&nocache=${Date.now()}`);
                 let tasks = await res.json(); 
-                // Format expected from backend: [{taskId, chain: "QE101->QE102", desc, status, deadline, currAssignee, originalAssigner, penaltyPts}]
 
                 let myWorkHtml = "";
                 let reviewHtml = "";
@@ -978,7 +956,6 @@
                     let penaltyBadge = t.penaltyPts > 0 ? `<span style="color:red; font-weight:bold; font-size:11px;">⚠️ Penalty: ${t.penaltyPts} pts</span>` : '';
                     let rewardNote = `<span style="color:green; font-weight:bold; font-size:11px;">🏆 +10 Pts if done before deadline</span>`;
 
-                    // If task is currently assigned to ME to DO
                     if(t.currAssignee === myId && (t.status === "Pending Start" || t.status === "In Progress" || t.status === "Rework")) {
                         let actions = "";
                         let statusClass = t.status === "Pending Start" ? "pending" : "active";
@@ -1003,7 +980,6 @@
                             </div>`;
                     }
                     
-                    // If task is returning to ME for REVIEW (I was the previous chain link or original assigner)
                     if(t.currAssignee === myId && t.status === "Review") {
                         let isOriginalAssigner = t.originalAssigner === myId;
                         let actions = "";
@@ -1033,7 +1009,6 @@
             }
         }
 
-        // Action 3: Start Work Flow
         function promptStartWork(taskId) {
             document.getElementById("startWorkTaskId").value = taskId;
             document.getElementById('startWorkModal').style.display = 'flex';
@@ -1057,7 +1032,6 @@
             });
         }
 
-        // Action 4: Forwarding Task Down the chain
         function forwardTaskPrompt(taskId) {
             let fwdTo = prompt("Enter Employee ID to forward this task to (e.g., QE103):");
             if(fwdTo && EMP_LIST[fwdTo]) {
@@ -1068,7 +1042,6 @@
             } else { alert("Invalid Employee ID."); }
         }
 
-        // Action 5: Complete Work (Moves to Review)
         function completeWork(taskId) {
             if(confirm("Mark this task as completed? It will be sent back up the chain for review.")) {
                 let myId = document.getElementById("empId").value.trim();
@@ -1078,7 +1051,6 @@
             }
         }
 
-        // Action 6: Review Flow (Middlemen)
         function forwardReviewUp(taskId) {
             let myId = document.getElementById("empId").value.trim();
             let payload = { action: "forwardReview", taskId: taskId, empId: myId };
@@ -1093,13 +1065,11 @@
             .then(() => { alert("🔄 Task returned for rework."); loadMyTasks(); document.getElementById('closeTaskModal').style.display='none'; });
         }
         
-        // Modal redirect for original assigner rejection
         function returnTaskForRework() {
             let taskId = document.getElementById("closeWorkTaskId").value;
             returnForRework(taskId);
         }
 
-        // Action 7: Close Task (Original Assigner ONLY)
         function promptCloseTask(taskId) {
             document.getElementById("closeWorkTaskId").value = taskId;
             document.getElementById("closeTaskPass").value = "";
