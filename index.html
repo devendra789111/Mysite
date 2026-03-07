@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quality Education Attendance - TEST ENVIRONMENT</title>
+    <title>Quality Education Attendance - TEST</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #eef2f3; margin: 0; padding: 20px; text-align: center; }
-        .header { background: #1a237e; color: white; padding: 10px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .header { background: #2E7D32; color: white; padding: 10px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .header h2 { margin: 5px 0; font-size: 22px; }
         .live-time { font-size: 16px; font-weight: bold; color: #ffeb3b; }
         .container { background: white; padding: 20px; border-radius: 10px; max-width: 1150px; margin: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
@@ -58,7 +58,8 @@
 </head>
 <body>
 
-    <div class="header" style="background: #2E7D32;"> <h2>🏢 Quality Education Attendance Kiosk - TEST</h2>
+    <div class="header">
+        <h2>🏢 Quality Education Attendance Kiosk</h2>
         <div id="liveDateTime" class="live-time">लोड हो रहा है...</div>
     </div>
 
@@ -521,7 +522,7 @@
                         fyMonthCount = 0; 
                     }
                 }
-            } catch (e) { console.log("Join date parsing error:", e); }
+            } catch (e) { console.log("Join date error:", e); }
 
             let availableEL = fyMonthCount - usedEL_FY;
             if(availableEL < 0) availableEL = 0;
@@ -845,7 +846,11 @@
                 let tasks = await res.json();
                 msg.style.display = "none";
 
-                let filteredTasks = tasks.filter(t => type === 'incoming' ? String(t.currentOwner) === myId : String(t.originalAssigner) === myId);
+                // 🚨 Hide 'Closed' Tasks Completely 🚨
+                let filteredTasks = tasks.filter(t => 
+                    (type === 'incoming' ? String(t.currentOwner) === myId : String(t.originalAssigner) === myId) && 
+                    t.status !== 'Closed' 
+                );
 
                 if(filteredTasks.length === 0) {
                     container.innerHTML = `<p style="text-align:center; color:#777; font-weight:bold;">No ${type} tasks found.</p>`;
@@ -866,7 +871,7 @@
                     } else if (t.status === 'In-Progress' && t.expectedTime) {
                         let expDate = new Date(t.expectedTime);
                         if(now > expDate) {
-                            timerWarning = `<span style="color:white; background:red; font-size:12px; font-weight:bold; padding:3px 6px; border-radius:3px;">⚠️ DEADLINE MISSED!</span>`;
+                            timerWarning = `<span style="color:white; background:red; font-size:12px; font-weight:bold; padding:3px 6px; border-radius:3px; animation: blinker 1s linear infinite;">⚠️ DEADLINE MISSED!</span>`;
                         } else {
                             timerWarning = `<span style="color:#E65100; font-size:12px; font-weight:bold; background:#fff3e0; padding:2px 5px; border-radius:3px;">⏱️ Deadline: ${expDate.toLocaleString('en-IN')}</span>`;
                         }
@@ -897,7 +902,7 @@
                                 <button style="background:#2196F3; color:white; border:none; padding:8px 15px; margin-top:8px; border-radius:4px; cursor:pointer; width:100%; font-weight:bold;" onclick="taskAction('${t.taskId}', 'complete')">✅ Task Completed (Send for Review)</button>
                             </div>`;
                     } 
-                    // 🚨 NAYA REJECT (RETURN) BUTTON 🚨
+                    // 🚨 FIXED: REJECT WITHOUT ASKING FOR ID 🚨
                     else if(isIncoming && t.status === 'Review' && t.originalAssigner === myId) {
                         actionHTML = `
                             <div style="margin-top:10px; padding-top:10px; border-top:1px dashed #ccc;">
@@ -905,9 +910,8 @@
                                 <button style="background:#4CAF50; color:white; border:none; padding:8px 15px; margin-top:8px; border-radius:4px; cursor:pointer; width:100%; font-weight:bold;" onclick="taskAction('${t.taskId}', 'accept')">🏆 Accept & Officially Close Task</button>
 
                                 <div style="background:#ffebee; padding:8px; border-radius:5px; margin-top:10px;">
-                                    <b style="font-size:12px; color:#c62828;">❌ Work Incomplete? Return it:</b><br>
-                                    <input type="text" id="rej_${t.taskId}" placeholder="Return to Emp ID (e.g. QE101)" style="width:90%; padding:5px; margin-top:5px; font-size:12px; border:1px solid #ccc;">
-                                    <button style="background:#f44336; color:white; border:none; padding:6px 10px; border-radius:4px; cursor:pointer; font-weight:bold; margin-top:5px; width:100%;" onclick="taskAction('${t.taskId}', 'reject')">Return for Rework</button>
+                                    <b style="font-size:12px; color:#c62828;">❌ Work Incomplete?</b><br>
+                                    <button style="background:#f44336; color:white; border:none; padding:8px 15px; border-radius:4px; cursor:pointer; font-weight:bold; margin-top:5px; width:100%;" onclick="taskAction('${t.taskId}', 'reject')">Return for Rework</button>
                                 </div>
                             </div>`;
                     }
@@ -920,7 +924,7 @@
                                 ${timerWarning}
                             </div>
                             <b style="color:#1a237e;">From:</b> ${sName} | <b style="color:#1a237e;">To:</b> ${rName} <br>
-                            <small style="color:#555;"><b>Chain:</b> ${t.chain}</small>
+                    <small style="color:#555;"><b>Chain:</b> ${t.chain}</small>
                             <div style="background:white; padding:5px; border:1px solid #eee; margin-top:5px; border-radius:4px;"><b>Task:</b> ${t.details}</div>
                             <span style="display:inline-block; margin-top:8px; background:${color}; color:white; padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">Status: ${t.status}</span>
                             ${actionHTML}
@@ -951,12 +955,9 @@
             else if(actionType === 'accept') {
                 if(!confirm("Accept and Close this task?")) return;
             }
-            // 🚨 NAYA REJECT LOGIC 🚨
+            // 🚨 FIXED REJECT LOGIC 🚨
             else if(actionType === 'reject') {
-                let rejTo = document.getElementById(`rej_${taskId}`).value.trim();
-                if(!rejTo || !EMP_LIST[rejTo]) return alert("❌ सही Employee ID डालें जिसे काम वापस भेजना है!");
-                payload.returnTo = rejTo;
-                if(!confirm(`क्या आप इस काम को Incomplete बताकर ${rejTo} को वापस भेजना चाहते हैं?`)) return;
+                if(!confirm(`क्या आप इस काम को Incomplete बताकर वापस भेजना चाहते हैं?\n(पेनाल्टी टाइमर उसी तरह चलता रहेगा)`)) return;
             }
 
             try {
@@ -965,36 +966,6 @@
                 alert("✅ Action Successful!"); loadMyTasks('incoming');
             } catch(e) { alert("Server Error."); }
         }
-        
-        async function taskAction(taskId, actionType) {
-            let myId = document.getElementById("empId").value.trim();
-            let payload = { action: "taskAction", taskId: taskId, actionType: actionType, empId: myId };
-
-            if(actionType === 'start') {
-                let reply = document.getElementById(`reply_${taskId}`).value.trim();
-                let expTime = document.getElementById(`time_${taskId}`).value;
-                if(!reply || !expTime) return alert("❌ Acknowledge करने के लिए Reply और Expected Time दोनों भरना ज़रूरी है!");
-                payload.reply = reply; payload.expectedTime = expTime;
-            } 
-            else if(actionType === 'forward') {
-                let fwdTo = document.getElementById(`fwd_${taskId}`).value.trim();
-                if(!fwdTo || !EMP_LIST[fwdTo]) return alert("❌ सही Employee ID डालें जिसे Forward करना है!");
-                payload.forwardTo = fwdTo;
-            }
-            else if(actionType === 'complete') {
-                if(!confirm("Are you sure this task is 100% completed?")) return;
-            }
-            else if(actionType === 'accept') {
-                if(!confirm("Accept and Close this task?")) return;
-            }
-
-            try {
-                event.target.innerText = "⏳ Processing..."; event.target.disabled = true;
-                await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) });
-                alert("✅ Action Successful!"); loadMyTasks('incoming');
-            } catch(e) { alert("Server Error."); }
-        }
-        // 🌟🌟 TASKFLOW JAVASCRIPT END 🌟🌟                                       
     </script>
 </body>
 </html>
