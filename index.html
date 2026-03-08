@@ -33,7 +33,7 @@
         .btn-leave { background-color: #E91E63; } .btn-check-leave { background-color: #0288D1; margin-top: 10px; padding: 12px 20px; }
         .btn-task { background-color: #00897B; }
         
-        /* 🌟 PROFESSIONAL TOAST NOTIFICATION */
+        /* 🌟 TOAST NOTIFICATION */
         #toastBox { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 8px; padding: 16px; position: fixed; z-index: 9999; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 16px; font-weight: bold; box-shadow: 0px 4px 15px rgba(0,0,0,0.4); opacity: 0; transition: opacity 0.4s, bottom 0.4s; }
         #toastBox.show { visibility: visible; opacity: 1; bottom: 60px; }
         #toastBox.success { background-color: #4CAF50; border-left: 6px solid #1B5E20; }
@@ -59,11 +59,9 @@
         th { background-color: #1a237e; color: white; }
         .badge { display: inline-block; padding: 3px 6px; border-radius: 4px; font-size: 11px; color: white; margin-top: 3px; }
         .badge-break { background-color: #F57C00; } .badge-train { background-color: #7B1FA2; }
-        
         .export-btns { margin-top: 20px; display: flex; justify-content: center; gap: 15px; }
         .btn-pdf { background-color: #D32F2F; padding: 10px 20px; } .btn-excel { background-color: #2E7D32; padding: 10px 20px; }
         .log-photo { width: 45px; height: 45px; border-radius: 4px; border: 1px solid #ccc; object-fit: cover; }
-
         .leave-item { padding: 12px; border: 1px solid #eee; border-radius: 8px; margin-bottom: 10px; background: #fafafa; border-left: 5px solid #ccc; }
         .leave-item.approved { border-left-color: #4CAF50; background: #f1f8e9; }
         .leave-item.rejected { border-left-color: #f44336; background: #ffebee; }
@@ -84,6 +82,14 @@
         .task-actions button { flex: 1; padding: 8px; font-size: 12px; }
         .desc-box { background: #fff; padding: 8px; border: 1px solid #ddd; border-radius: 4px; margin-top: 5px; white-space: pre-wrap; font-family: monospace; font-size: 12px; }
         .reply-box { color: #0288D1; margin-top: 5px; font-weight: bold; }
+        
+        /* 🌟 BEAUTIFUL STATUS BADGES */
+        .st-pill { padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; color: white; display: inline-block; }
+        .st-pend { background-color: #FF9800; }
+        .st-prog { background-color: #2196F3; }
+        .st-rev { background-color: #9C27B0; }
+        .st-rew { background-color: #f44336; }
+        .st-clos { background-color: #4CAF50; }
     </style>
 </head>
 <body>
@@ -141,16 +147,8 @@
             <div class="report-header" id="pdfMonthHeader">Attendance Report</div>
             <div id="tableWrapper">
                 <table id="attendanceTable">
-                    <thead>
-                        <tr>
-                            <th>Date</th><th>ID</th><th>Name</th><th>Status</th><th>In Time</th><th>Out Time</th>
-                            <th>Break Time</th><th>Train Time</th><th>Total Hrs</th>
-                            <th>In Selfie</th><th>Out Selfie</th>
-                        </tr>
-                    </thead>
-                    <tbody id="logTableBody">
-                        <tr><td colspan="11" style="text-align:center;">डेटा लोड हो रहा है...</td></tr>
-                    </tbody>
+                    <thead><tr><th>Date</th><th>ID</th><th>Name</th><th>Status</th><th>In Time</th><th>Out Time</th><th>Break Time</th><th>Train Time</th><th>Total Hrs</th><th>In Selfie</th><th>Out Selfie</th></tr></thead>
+                    <tbody id="logTableBody"><tr><td colspan="11" style="text-align:center;">डेटा लोड हो रहा है...</td></tr></tbody>
                 </table>
             </div>
         </div>
@@ -261,7 +259,7 @@
     </div>
 
     <script>
-        // 🚨 UPDATE WITH YOUR NEW DEPLOYMENT URL 🚨
+        // 🚨 URL CHECK KAREN 🚨
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzQl4SuWQjbyALKYkcwi0Eim03uhwuGUwTMUzcNIWDLZF_LbCJ7Esxmq74pJIuF0_2zyg/exec";
         
         let ADMIN_PASS = "1234"; let TRAIN_PASS = "0000";
@@ -274,7 +272,6 @@
         
         let now = new Date(); let dd = String(now.getDate()).padStart(2, '0'); let mm = String(now.getMonth() + 1).padStart(2, '0'); let yyyy = now.getFullYear();
         let todayDateStr = `${dd}/${mm}/${yyyy}`; 
-        
         let attendanceDb = JSON.parse(localStorage.getItem(`attDB_${todayDateStr}`)) || {};
         let deviceBaseLat = localStorage.getItem(`baseLat_${todayDateStr}`); let deviceBaseLng = localStorage.getItem(`baseLng_${todayDateStr}`);
         let isDeviceWithin50m = false; let isHolidayOrOff = (now.getDay() === WEEKLY_OFF_DAY) || PUBLIC_HOLIDAYS[todayDateStr];
@@ -282,15 +279,17 @@
         window.onload = async () => {
             updateDateTime(); setInterval(updateDateTime, 1000); checkTodayHoliday(); renderTable(); 
             if(Object.values(attendanceDb).some(emp => !emp.isPunchedOut) && deviceBaseLat && deviceBaseLng) { isDeviceWithin50m = true; document.getElementById("statusBox").style.display = "block"; startDeviceGeoTracking(); }
-            startMasterTimer(); fetchSystemData(); setInterval(fetchSystemData, 45000); setInterval(syncAllActiveUsers, 60000); 
+            
+            // 🚀 FAST TIMERS (10 SECONDS) 🚀
+            startMasterTimer(); fetchSystemData(); 
+            setInterval(fetchSystemData, 10000); 
+            setInterval(syncAllActiveUsers, 10000); 
+            
             document.getElementById("leaveDateInput").setAttribute('min', now.toISOString().split('T')[0]); document.getElementById("leaveDateInput").value = now.toISOString().split('T')[0];
         };
 
-        // 🌟 PROFESSIONAL TOAST UI FUNCTION
         function showToast(msg, type="success") {
-            let tb = document.getElementById("toastBox");
-            tb.innerText = msg;
-            tb.className = "toast show " + type;
+            let tb = document.getElementById("toastBox"); tb.innerText = msg; tb.className = "toast show " + type;
             setTimeout(() => { tb.className = tb.className.replace("show", ""); }, 4000);
         }
 
@@ -307,28 +306,51 @@
                 let eRes = await fetch(`${SCRIPT_URL}?action=getEmployees&nocache=${Date.now()}`); let fetchedList = await eRes.json();
                 if(Object.keys(fetchedList).length > 0) { EMP_LIST = fetchedList; localStorage.setItem('cachedEmpList', JSON.stringify(EMP_LIST)); autoFillName(); }
                 let tRes = await fetch(`${SCRIPT_URL}?action=getTodayLogs&date=${todayDateStr}&nocache=${Date.now()}`); TODAY_SERVER_LOGS = await tRes.json(); 
+                
                 let isUpdated = false; let activeId = Object.keys(attendanceDb)[0]; 
+
                 for(let id in attendanceDb) {
                     if(TODAY_SERVER_LOGS[id]) {
                         if(TODAY_SERVER_LOGS[id].exceptionSecs) attendanceDb[id].exceptionSecs = TODAY_SERVER_LOGS[id].exceptionSecs;
-                        if(TODAY_SERVER_LOGS[id].outByAdmin && !attendanceDb[id].isPunchedOut) { attendanceDb[id].isPunchedOut = true; attendanceDb[id].mode = "out"; attendanceDb[id].outTime = TODAY_SERVER_LOGS[id].outTime; attendanceDb[id].outByAdmin = true; }
-                        isUpdated = true;
+                        
+                        // 🌟 "FALSE" TEXT BUG FIXED HERE 🌟
+                        let flag = TODAY_SERVER_LOGS[id].outByAdmin;
+                        let isForceOut = (flag === true || flag === "TRUE" || flag === "true");
+                        
+                        if(isForceOut && !attendanceDb[id].isPunchedOut) { 
+                            attendanceDb[id].isPunchedOut = true; 
+                            attendanceDb[id].mode = "out"; 
+                            attendanceDb[id].outTime = TODAY_SERVER_LOGS[id].outTime; 
+                            attendanceDb[id].outByAdmin = true; 
+                            isUpdated = true;
+                        }
                     }
                 }
+                
                 if (activeId) {
                     let cmdRes = await fetch(`${SCRIPT_URL}?action=checkCommands&id=${activeId}&nocache=${Date.now()}`); let commands = await cmdRes.json();
                     let lastCmdTime = localStorage.getItem(`lastCmd_${activeId}`) || 0;
                     commands.forEach(cmd => {
                         if (cmd.timestamp > lastCmdTime) {
-                            if (cmd.forceType === "endTrain" && attendanceDb[activeId].mode === "train") { attendanceDb[activeId].mode = "work"; alert("⚠️ एडमिन द्वारा आपकी ट्रेनिंग समाप्त कर दी गई है।"); isUpdated = true; }
-                            if (cmd.forceType === "undoPunchOut" && attendanceDb[activeId].isPunchedOut) { attendanceDb[activeId].isPunchedOut = false; attendanceDb[activeId].mode = "work"; attendanceDb[activeId].outTime = "-"; attendanceDb[activeId].photoOut = null; alert("🟢 एडमिन ने आपका Punch-Out हटा दिया है!"); isUpdated = true; }
+                            if (cmd.forceType === "endTrain" && attendanceDb[activeId].mode === "train") { attendanceDb[activeId].mode = "work"; showToast("⚠️ एडमिन द्वारा आपकी ट्रेनिंग समाप्त कर दी गई है।", "error"); isUpdated = true; }
+                            
+                            // 🌟 UNDO LOGIC FIXED 🌟
+                            if (cmd.forceType === "undoPunchOut" && attendanceDb[activeId].isPunchedOut) { 
+                                attendanceDb[activeId].isPunchedOut = false; 
+                                attendanceDb[activeId].mode = "work"; 
+                                attendanceDb[activeId].outTime = "-"; 
+                                attendanceDb[activeId].photoOut = null; 
+                                attendanceDb[activeId].outByAdmin = false; 
+                                showToast("🟢 एडमिन ने आपका Punch-Out हटा दिया है!", "success"); 
+                                isUpdated = true; 
+                            }
                             localStorage.setItem(`lastCmd_${activeId}`, cmd.timestamp);
                         }
                     });
                 }
                 if(isUpdated) { saveData(); renderTable(); if(activeId && !attendanceDb[activeId].isPunchedOut) sendFullSync(activeId); }
                 isSystemReady = true; 
-            } catch(e) {}
+            } catch(e) { console.log("Background Check Running..."); }
         }
                   
         function autoFillName() { 
@@ -341,15 +363,13 @@
             } else { document.getElementById("empName").value = ""; ptsBox.style.display = "none"; }
         }
 
-        // --- CORE ATTENDANCE ---
         function initPunchIn() {
             let id = document.getElementById("empId").value.trim().toUpperCase();
-            if(!id || !EMP_LIST[id] || EMP_LIST[id].status !== "Active") return alert("❌ Invalid or Inactive Employee ID!");
-            if(!isSystemReady) return alert("⏳ सिस्टम लोड हो रहा है... 2 सेकंड रुकें।");
-            if(isHolidayOrOff) return alert(`🛑 Today is ${holidayName || 'Weekly Off'}.`);
-            if(attendanceDb[id]) return alert("आप इस डिवाइस पर आज का पंच-इन पहले ही कर चुके हैं!");
+            if(!id || !EMP_LIST[id] || EMP_LIST[id].status !== "Active") return showToast("❌ Invalid or Inactive Employee ID!", "error");
+            if(!isSystemReady) return showToast("⏳ सिस्टम लोड हो रहा है... 2 सेकंड रुकें।", "error");
+            if(isHolidayOrOff) return showToast(`🛑 Today is ${holidayName || 'Weekly Off'}.`, "error");
+            if(attendanceDb[id]) return showToast("आप इस डिवाइस पर आज का पंच-इन पहले ही कर चुके हैं!", "error");
             if(!attendanceDb[id] && TODAY_SERVER_LOGS && TODAY_SERVER_LOGS[id]) return alert("⚠️ क्रॉस-डिवाइस अलर्ट!\nआप पहले ही किसी दूसरे डिवाइस से पंच-इन कर चुके हैं।");
-            
             document.getElementById('modalTitle').innerText = "कैमरा और लोकेशन लोड हो रही है..."; document.getElementById('selfieModal').style.display = 'flex';
             pendingAction = "in"; pendingId = id; window.tempLocation = null; openCamera(); 
             if (navigator.geolocation) {
@@ -359,7 +379,7 @@
 
         function startTraining() {
             let id = document.getElementById("empId").value.trim().toUpperCase(); if(!attendanceDb[id] || attendanceDb[id].isPunchedOut) return alert("पहले पंच-इन करें!");
-            let pass = prompt("ट्रेनिंग शुरू करने के लिए पासवर्ड डालें:"); if(pass === TRAIN_PASS) { attendanceDb[id].mode = "train"; saveData(); renderTable(); sendFullSync(id); alert("✅ Training Mode Started!"); } else if(pass !== null) alert("❌ Incorrect Password!");
+            let pass = prompt("ट्रेनिंग शुरू करने के लिए पासवर्ड डालें:"); if(pass === TRAIN_PASS) { attendanceDb[id].mode = "train"; saveData(); renderTable(); sendFullSync(id); showToast("✅ Training Mode Started!"); } else if(pass !== null) showToast("❌ Incorrect Password!", "error");
         }
 
         function actionBtn(mode) { let id = document.getElementById("empId").value.trim().toUpperCase(); if(!attendanceDb[id] || attendanceDb[id].isPunchedOut) return alert("Action not allowed!"); attendanceDb[id].mode = mode; saveData(); renderTable(); sendFullSync(id); }
@@ -373,13 +393,13 @@
         async function openCamera() { try { stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } }); document.getElementById("video").srcObject = stream; } catch (err) { alert("कैमरा की अनुमति नहीं मिली!"); document.getElementById('selfieModal').style.display = 'none'; } }
 
         function captureAndProceed() {
-            if(pendingAction === "in" && !window.tempLocation) return alert("कृपया GPS लोकेशन का इंतज़ार करें...");
+            if(pendingAction === "in" && !window.tempLocation) return showToast("कृपया GPS लोकेशन का इंतज़ार करें...", "error");
             let canvas = document.getElementById('canvas'); canvas.width = 120; canvas.height = 120; canvas.getContext('2d').drawImage(document.getElementById('video'), 0, 0, 120, 120);
             let photo = canvas.toDataURL('image/jpeg', 0.6); if(stream) stream.getTracks().forEach(t => t.stop()); document.getElementById('selfieModal').style.display = 'none';
             let exactTime = new Date().toLocaleTimeString('hi-IN');
             if(pendingAction === "in") {
                 deviceBaseLat = window.tempLocation.lat; deviceBaseLng = window.tempLocation.lng; localStorage.setItem(`baseLat_${todayDateStr}`, deviceBaseLat); localStorage.setItem(`baseLng_${todayDateStr}`, deviceBaseLng); 
-                attendanceDb[pendingId] = { name: EMP_LIST[pendingId].name, id: pendingId, statusText: "Present", inTime: exactTime, outTime: "-", workSecs: 0, breakSecs: 0, trainSecs: 0, mode: "work", isPunchedOut: false, photoIn: photo, photoOut: null, timestamp: Date.now() };
+                attendanceDb[pendingId] = { name: EMP_LIST[pendingId].name, id: pendingId, statusText: "Present", inTime: exactTime, outTime: "-", workSecs: 0, breakSecs: 0, trainSecs: 0, mode: "work", isPunchedOut: false, photoIn: photo, photoOut: null, timestamp: Date.now(), outByAdmin: false };
                 document.getElementById("statusBox").style.display = "block"; isDeviceWithin50m = true; startDeviceGeoTracking(); 
             } else { attendanceDb[pendingId].isPunchedOut = true; attendanceDb[pendingId].mode = "out"; attendanceDb[pendingId].outTime = exactTime; attendanceDb[pendingId].photoOut = photo; }
             saveData(); renderTable(); sendFullSync(pendingId);
@@ -430,7 +450,6 @@
             try { let res = await fetch(`${SCRIPT_URL}?action=checkMyLeave&id=${id}&nocache=${Date.now()}`); let data = await res.json(); let body = data.map(l => `<div style="border:1px solid #ddd; padding:10px; margin:5px 0; border-radius:5px; background:${l.status==='Approved'?'#e8f5e9':(l.status==='Rejected'?'#ffebee':'#fff8e1')}">📅 ${l.leaveDate} - <span style="font-weight:bold;">${l.type}</span> <br>Status: <b>${l.status}</b></div>`).join(""); document.getElementById('leaveStatusBody').innerHTML = body || "<p style='text-align:center;'>No pending requests.</p>"; document.getElementById('leaveStatusModal').style.display = 'flex'; } catch(e) { alert("Server Error!"); } document.querySelector('.btn-check-leave').innerText = "👀 Check My Leave Status";
         }
 
-        // --- RENDER TABLE & PDF ---
         function formatTime(s) { if(!s || isNaN(s)) return "00:00:00"; return `${String(Math.floor(s/3600)).padStart(2,'0')}:${String(Math.floor((s%3600)/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; }
         function renderTable() {
             let tbody = document.getElementById("logTableBody"); tbody.innerHTML = ""; let data = Object.values(attendanceDb).sort((a,b) => b.timestamp - a.timestamp);
@@ -453,7 +472,7 @@
             let targetDate = new Date(); if (choice === "2") targetDate.setMonth(targetDate.getMonth() - 1);
             let tMonthIdx = targetDate.getMonth(); let tYearVal = targetDate.getFullYear(); let tSuffix = `${String(tMonthIdx + 1).padStart(2, '0')}/${tYearVal}`;
             let monthName = targetDate.toLocaleString('en-IN', { month: 'long', year: 'numeric' }); let empName = EMP_LIST[id] ? EMP_LIST[id].name : "Unknown";
-            showToast("⏳ Generating accurate PDF report... Please wait.", "success"); syncAllActiveUsers(); 
+            showToast("⏳ Generating PDF... Please wait.", "success"); syncAllActiveUsers(); 
 
             setTimeout(async () => {
                 try {
@@ -494,7 +513,16 @@
         function updateDateTime() { document.getElementById('liveDateTime').innerText = new Date().toLocaleString('hi-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute:'2-digit', second:'2-digit' }); }
         function checkTodayHoliday() { if(isHolidayOrOff) { document.getElementById('systemStatusBox').style.display="block"; document.getElementById('systemStatusText').innerText = `🛑 System Notice: Today is ${holidayName || 'Weekly Off'}.`; } }
 
-        // 🌟 PROFESSIONAL TASKFLOW UI CONTROLS 🌟
+        // 🌟 TASKFLOW UI 🌟
+        function getStatusPill(st) {
+            if(st === "Pending Start") return `<span class="st-pill st-pend">⏳ Pending Start</span>`;
+            if(st === "In Progress") return `<span class="st-pill st-prog">🚀 In Progress</span>`;
+            if(st === "Review") return `<span class="st-pill st-rev">👀 Awaiting Review</span>`;
+            if(st === "Rework") return `<span class="st-pill st-rew">🔄 Needs Rework</span>`;
+            if(st === "Closed") return `<span class="st-pill st-clos">✅ Closed</span>`;
+            return `<span class="st-pill" style="background:#555;">${st}</span>`;
+        }
+
         function switchTaskTab(tabId) {
             document.querySelectorAll('.task-tab').forEach(t => t.classList.remove('active')); document.querySelectorAll('.task-pane').forEach(p => p.classList.remove('active'));
             event.target.classList.add('active'); document.getElementById(`tab-${tabId}`).classList.add('active');
@@ -503,7 +531,7 @@
 
         function openTaskModal() {
             let id = document.getElementById("empId").value.trim().toUpperCase();
-            if(!id || !EMP_LIST[id] || EMP_LIST[id].status !== "Active") return alert("❌ Please enter a valid active Employee ID first!");
+            if(!id || !EMP_LIST[id] || EMP_LIST[id].status !== "Active") return showToast("❌ Please enter a valid active Employee ID first!", "error");
             document.getElementById('taskModal').style.display = 'flex'; switchTaskTab('myTasks'); 
         }
 
@@ -516,7 +544,9 @@
             if(!EMP_LIST[assigneeId] || EMP_LIST[assigneeId].status !== "Active") return showToast(`❌ Assignee ID (${assigneeId}) गलत है!`, "error");
 
             let btn = event.target; let ogTxt = btn.innerText; btn.innerText = "⏳ Sending..."; btn.disabled = true;
-            let payload = { action: "assignTask", assignerId: assignerId, assigneeId: assigneeId, description: desc, password: pass, taskId: "TSK_" + Date.now() };
+            let shortId = "TSK_" + Math.floor(Math.random() * 90000 + 10000); 
+            
+            let payload = { action: "assignTask", assignerId: assignerId, assigneeId: assigneeId, description: desc, password: pass, taskId: shortId };
             safeFetch(payload, "🚀 Task Assigned Successfully!", () => {
                 document.getElementById("newTaskAssignee").value = ""; document.getElementById("newTaskDesc").value = ""; document.getElementById("newTaskPass").value = ""; 
                 btn.innerText = ogTxt; btn.disabled = false; switchTaskTab('trackTasks');
@@ -532,24 +562,22 @@
 
                 tasks.forEach(t => {
                     let chainBadge = `<div style="font-size:11px; color:#666; margin-bottom:5px;">Chain: ${t.chain}</div>`;
-                    let penaltyBadge = t.penaltyPts > 0 ? `<span style="color:red; font-weight:bold; font-size:11px;">⚠️ Penalty: ${t.penaltyPts} pts</span>` : '';
+                    let penaltyBadge = t.penaltyPts > 0 ? `<span style="color:red; font-weight:bold; font-size:11px;">⚠️ Penalty on this task: ${t.penaltyPts} pts</span>` : '';
                     let formatDesc = `<div class="desc-box"><strong>Task:</strong> ${t.desc} ${t.replies ? '<div class="reply-box">Replies: ' + t.replies.replace(/\n/g, '<br>') + '</div>' : ''}</div>`;
+                    let beautifulStatus = getStatusPill(t.status);
 
-                    // My Work
                     if(t.currAssignee === myId && ["Pending Start", "In Progress", "Rework"].includes(t.status)) {
                         let acts = ""; let stClass = t.status === "Pending Start" ? "pending" : "active";
                         if(t.status === "Pending Start" || t.status === "Rework") acts = `<button class="btn-in" onclick="promptStartWork('${t.taskId}')">🚀 Start Work</button> <button class="btn-train-start" onclick="forwardTaskPrompt('${t.taskId}')">Forward Task</button>`;
                         else acts = `<button class="btn-in" onclick="completeWork('${t.taskId}')">✅ Mark Completed</button> <button class="btn-train-start" onclick="forwardTaskPrompt('${t.taskId}')">Forward Task</button>`;
-                        myHtml += `<div class="task-item ${stClass}">${chainBadge}<strong>ID:</strong> ${t.taskId} <span style="float:right; font-weight:bold; color:#0288D1;">${t.status}</span><br>${formatDesc}<strong>Deadline:</strong> ${t.deadline ? new Date(t.deadline).toLocaleString('hi-IN') : 'Not Set'}<br>${penaltyBadge}<div class="task-actions">${acts}</div></div>`;
+                        myHtml += `<div class="task-item ${stClass}">${chainBadge}<strong>ID:</strong> ${t.taskId} <span style="float:right;">${beautifulStatus}</span><br>${formatDesc}<strong>Deadline:</strong> ${t.deadline ? new Date(t.deadline).toLocaleString('hi-IN') : 'Not Set'}<br>${penaltyBadge}<div class="task-actions">${acts}</div></div>`;
                     }
-                    // To Review
                     if(t.currAssignee === myId && t.status === "Review") {
                         let acts = (t.originalAssigner === myId) ? `<button class="btn-in" onclick="promptCloseTask('${t.taskId}')">🔓 Enter Password to Close</button>` : `<button class="btn-in" onclick="forwardReviewUp('${t.taskId}')">⬆️ Approve & Send Up</button> <button class="btn-out" onclick="returnForRework('${t.taskId}')">🔄 Return for Rework</button>`;
-                        revHtml += `<div class="task-item review">${chainBadge}<strong>ID:</strong> ${t.taskId} <span style="float:right; font-weight:bold; color:#9C27B0;">Needs Review</span><br>${formatDesc}<div class="task-actions">${acts}</div></div>`;
+                        revHtml += `<div class="task-item review">${chainBadge}<strong>ID:</strong> ${t.taskId} <span style="float:right;">${beautifulStatus}</span><br>${formatDesc}<div class="task-actions">${acts}</div></div>`;
                     }
-                    // Track Sent
                     if(t.chain.includes(myId) && t.currAssignee !== myId && t.status !== "Closed") {
-                        trackHtml += `<div class="task-item track">${chainBadge}<strong>ID:</strong> ${t.taskId}<br><strong>Current Owner:</strong> <span style="color:#d32f2f; font-weight:bold;">${t.currAssignee} (${EMP_LIST[t.currAssignee]?.name || 'Unknown'})</span><br><strong>Status:</strong> ${t.status}<br>${formatDesc}<strong>Deadline:</strong> ${t.deadline ? new Date(t.deadline).toLocaleString('hi-IN') : 'Not Set'}</div>`;
+                        trackHtml += `<div class="task-item track">${chainBadge}<strong>ID:</strong> ${t.taskId}<br><strong>Current Owner:</strong> <span style="color:#d32f2f; font-weight:bold;">${t.currAssignee} (${EMP_LIST[t.currAssignee]?.name || 'Unknown'})</span><br><strong>Status:</strong> ${beautifulStatus}<br>${formatDesc}<strong>Deadline:</strong> ${t.deadline ? new Date(t.deadline).toLocaleString('hi-IN') : 'Not Set'}</div>`;
                     }
                 });
                 document.getElementById("myTasksList").innerHTML = myHtml || "<p style='text-align:center;'>No tasks right now.</p>";
@@ -558,7 +586,6 @@
             } catch(e) { }
         }
 
-        // Action Executers
         function promptStartWork(taskId) { document.getElementById("startWorkTaskId").value = taskId; document.getElementById('startWorkModal').style.display = 'flex'; }
         function confirmStartWork() {
             let taskId = document.getElementById("startWorkTaskId").value; let reply = document.getElementById("startWorkReply").value; let deadline = document.getElementById("startWorkDeadline").value; let myId = document.getElementById("empId").value.trim().toUpperCase();
