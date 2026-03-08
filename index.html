@@ -114,18 +114,9 @@
         </div>
 
         <div id="empPointsBox" class="points-box">
-            <div class="pt-item">
-                <div class="pt-title">Reward Points 🏆</div>
-                <div class="pt-value val-green" id="dispReward">0</div>
-            </div>
-            <div class="pt-item">
-                <div class="pt-title">Penalty Points ⚠️</div>
-                <div class="pt-value val-red" id="dispPenalty">0</div>
-            </div>
-            <div class="pt-item">
-                <div class="pt-title">Net Score ⚖️</div>
-                <div class="pt-value val-blue" id="dispNet">0</div>
-            </div>
+            <div class="pt-item"><div class="pt-title">Reward Points 🏆</div><div class="pt-value val-green" id="dispReward">0</div></div>
+            <div class="pt-item"><div class="pt-title">Penalty Points ⚠️</div><div class="pt-value val-red" id="dispPenalty">0</div></div>
+            <div class="pt-item"><div class="pt-title">Net Score ⚖️</div><div class="pt-value val-blue" id="dispNet">0</div></div>
         </div>
 
         <div class="status-box" id="statusBox" style="display:none;">
@@ -159,107 +150,15 @@
         </div>
     </div>
 
-    <div id="selfieModal" class="modal">
-        <div class="modal-content" style="text-align: center;">
-            <h3 id="modalTitle" style="margin-top:0; color:#1a237e;">📍 लोकेशन कन्फर्म, सेल्फी लें</h3>
-            <video id="video" autoplay playsinline></video>
-            <canvas id="canvas"></canvas>
-            <button class="btn-in" style="width:100%;" onclick="captureAndProceed()">सेल्फी कैप्चर करें</button>
-            <button style="width:100%; margin-top:10px; background:#aaa;" onclick="document.getElementById('selfieModal').style.display='none'; if(stream) stream.getTracks().forEach(t=>t.stop());">रद्द करें</button>
-        </div>
-    </div>
-
-    <div id="leaveModal" class="modal">
-        <div class="modal-content">
-            <h3 style="margin-top:0; color:#E91E63; text-align: center;">📅 छुट्टी (Leave) दर्ज करें</h3>
-            <div class="leave-form">
-                <label>छुट्टी की तारीख (Leave Date):</label>
-                <input type="date" id="leaveDateInput" required>
-                <label>छुट्टी का प्रकार चुनें:</label>
-                <select id="leaveType" onchange="checkLeaveLimits()">
-                    <option value="">-- सेलेक्ट करें --</option>
-                    <option value="EL">Earned Leave (EL) - 1/महीना</option>
-                    <option value="CL">Casual Leave (CL) - 6/साल</option>
-                    <option value="SL">Sick Leave (SL) - 6/साल</option>
-                    <option value="LWP">Leave Without Pay (LWP) - अनलिमिटेड</option>
-                </select>
-                <label>कारण (Reason):</label>
-                <input type="text" id="leaveReason" placeholder="कारण लिखें..." required>
-                <div id="medicalCertBox" style="display: none; background: #ffebee; padding: 10px; border-radius: 5px; border: 1px solid #ef5350; margin-top: 5px;">
-                    <label style="color:#c62828; font-size: 12px; font-weight:bold;">लगातार 2 दिन से ज्यादा SL के लिए मेडिकल सर्टिफिकेट अनिवार्य है:</label>
-                    <input type="file" id="medicalCert" accept="image/*, .pdf">
-                </div>
-                <p style="color:red; font-size:12px; font-weight:bold; display:none; text-align:center;" id="leaveAlert"></p>
-                <button class="btn-leave" style="width:100%; margin-top:10px;" id="submitLeaveBtn" onclick="submitLeave()">सबमिट करें</button>
-                <button style="width:100%; margin-top:10px; background:#aaa; padding:10px; border:none; border-radius:5px; color:white; font-weight:bold; cursor:pointer;" onclick="document.getElementById('leaveModal').style.display='none';">रद्द करें</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="leaveStatusModal" class="modal">
-        <div class="modal-content">
-            <h3 style="color:#0288D1; text-align:center; margin-top:0; border-bottom: 2px solid #eee; padding-bottom: 10px;">📋 My Leave Status</h3>
-            <div id="leaveStatusBody" style="max-height: 300px; overflow-y: auto; margin-bottom:15px; font-size: 14px;"></div>
-            <button style="width:100%; padding:10px; background:#333; border:none; border-radius:5px; color:white; font-weight:bold; cursor:pointer;" onclick="document.getElementById('leaveStatusModal').style.display='none';">Close</button>
-        </div>
-    </div>
-
-    <div id="taskModal" class="modal">
-        <div class="modal-content large-modal">
-            <h3 style="color:#00897B; text-align:center; margin-top:0;">📋 TaskFlow Dashboard</h3>
-            <div class="task-tabs">
-                <button class="task-tab active" onclick="switchTaskTab('myTasks')">My Work</button>
-                <button class="task-tab" onclick="switchTaskTab('reviewTasks')">To Review</button>
-                <button class="task-tab" onclick="switchTaskTab('trackTasks')">Track Sent 🔍</button>
-                <button class="task-tab" onclick="switchTaskTab('assignTask')">Assign Task</button>
-            </div>
-            
-            <div id="tab-myTasks" class="task-pane active"><div id="myTasksList" style="max-height: 300px; overflow-y: auto;"></div></div>
-            <div id="tab-reviewTasks" class="task-pane"><div id="reviewTasksList" style="max-height: 300px; overflow-y: auto;"></div></div>
-            <div id="tab-trackTasks" class="task-pane"><div id="trackTasksList" style="max-height: 300px; overflow-y: auto;"></div></div>
-            
-            <div id="tab-assignTask" class="task-pane leave-form">
-                <label>Assign To (Employee ID):</label>
-                <input type="text" id="newTaskAssignee" placeholder="e.g., QE102" style="width: 100%; text-align: left;">
-                <label>Task Description:</label>
-                <textarea id="newTaskDesc" rows="3" placeholder="Describe the task details..."></textarea>
-                <label>Task Password (Secret to close task):</label>
-                <input type="password" id="newTaskPass" placeholder="Enter secure password" style="width: 100%; text-align: left;">
-                <button class="btn-task" style="width: 100%; margin-top: 15px; padding:12px; font-size:16px;" onclick="submitNewTask()">🚀 Send Task</button>
-            </div>
-            <button style="width:100%; padding:10px; background:#333; border:none; border-radius:5px; color:white; font-weight:bold; cursor:pointer; margin-top: 10px;" onclick="document.getElementById('taskModal').style.display='none';">Close Dashboard</button>
-        </div>
-    </div>
-
-    <div id="startWorkModal" class="modal" style="z-index: 1001;">
-        <div class="modal-content">
-            <h3 style="color:#0288D1; margin-top:0;">🚀 Accept & Start Task</h3>
-            <div class="leave-form">
-                <label>Write a short acknowledgement reply:</label>
-                <textarea id="startWorkReply" rows="2" placeholder="Got it. I will start immediately."></textarea>
-                <label>Expected Completion Time:</label>
-                <input type="datetime-local" id="startWorkDeadline">
-                <input type="hidden" id="startWorkTaskId">
-                <button class="btn-in" style="width: 100%; margin-top: 15px;" onclick="confirmStartWork()">Confirm & Start Timer</button>
-                <button style="width: 100%; margin-top: 10px; background:#aaa; border:none; padding:10px; border-radius:5px; color:white; font-weight:bold; cursor:pointer;" onclick="document.getElementById('startWorkModal').style.display='none';">Cancel</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="closeTaskModal" class="modal" style="z-index: 1001;">
-        <div class="modal-content" style="text-align: center;">
-            <h3 style="color:#9C27B0; margin-top:0;">🔒 Finalize Task</h3>
-            <p style="font-size: 13px; color: #555;">Enter the original Task Password to accept completion.</p>
-            <input type="password" id="closeTaskPass" placeholder="Enter Password" style="width: 90%; text-align: center; margin-bottom: 15px;">
-            <input type="hidden" id="closeWorkTaskId">
-            <button class="btn-in" style="width: 100%; margin-bottom: 10px;" onclick="confirmCloseTask()">Accept & Close Task</button>
-            <button class="btn-out" style="width: 100%; margin-bottom: 10px;" onclick="returnTaskForRework()">Return for Rework</button>
-            <button style="width: 100%; background:#aaa; border:none; padding:10px; border-radius:5px; color:white; font-weight:bold; cursor:pointer;" onclick="document.getElementById('closeTaskModal').style.display='none';">Cancel</button>
-        </div>
-    </div>
+    <div id="selfieModal" class="modal"><div class="modal-content" style="text-align: center;"><h3 id="modalTitle" style="margin-top:0; color:#1a237e;">📍 लोकेशन कन्फर्म, सेल्फी लें</h3><video id="video" autoplay playsinline></video><canvas id="canvas"></canvas><button class="btn-in" style="width:100%;" onclick="captureAndProceed()">सेल्फी कैप्चर करें</button><button style="width:100%; margin-top:10px; background:#aaa;" onclick="document.getElementById('selfieModal').style.display='none'; if(stream) stream.getTracks().forEach(t=>t.stop());">रद्द करें</button></div></div>
+    <div id="leaveModal" class="modal"><div class="modal-content"><h3 style="margin-top:0; color:#E91E63; text-align: center;">📅 छुट्टी (Leave) दर्ज करें</h3><div class="leave-form"><label>छुट्टी की तारीख (Leave Date):</label><input type="date" id="leaveDateInput" required><label>छुट्टी का प्रकार चुनें:</label><select id="leaveType" onchange="checkLeaveLimits()"><option value="">-- सेलेक्ट करें --</option><option value="EL">Earned Leave (EL) - 1/महीना</option><option value="CL">Casual Leave (CL) - 6/साल</option><option value="SL">Sick Leave (SL) - 6/साल</option><option value="LWP">Leave Without Pay (LWP) - अनलिमिटेड</option></select><label>कारण (Reason):</label><input type="text" id="leaveReason" placeholder="कारण लिखें..." required><div id="medicalCertBox" style="display: none; background: #ffebee; padding: 10px; border-radius: 5px; border: 1px solid #ef5350; margin-top: 5px;"><label style="color:#c62828; font-size: 12px; font-weight:bold;">लगातार 2 दिन से ज्यादा SL के लिए मेडिकल सर्टिफिकेट अनिवार्य है:</label><input type="file" id="medicalCert" accept="image/*, .pdf"></div><p style="color:red; font-size:12px; font-weight:bold; display:none; text-align:center;" id="leaveAlert"></p><button class="btn-leave" style="width:100%; margin-top:10px;" id="submitLeaveBtn" onclick="submitLeave()">सबमिट करें</button><button style="width:100%; margin-top:10px; background:#aaa; padding:10px; border:none; border-radius:5px; color:white; font-weight:bold; cursor:pointer;" onclick="document.getElementById('leaveModal').style.display='none';">रद्द करें</button></div></div></div>
+    <div id="leaveStatusModal" class="modal"><div class="modal-content"><h3 style="color:#0288D1; text-align:center; margin-top:0; border-bottom: 2px solid #eee; padding-bottom: 10px;">📋 My Leave Status</h3><div id="leaveStatusBody" style="max-height: 300px; overflow-y: auto; margin-bottom:15px; font-size: 14px;"></div><button style="width:100%; padding:10px; background:#333; border:none; border-radius:5px; color:white; font-weight:bold; cursor:pointer;" onclick="document.getElementById('leaveStatusModal').style.display='none';">Close</button></div></div>
+    <div id="taskModal" class="modal"><div class="modal-content large-modal"><h3 style="color:#00897B; text-align:center; margin-top:0;">📋 TaskFlow Dashboard</h3><div class="task-tabs"><button class="task-tab active" onclick="switchTaskTab('myTasks')">My Work</button><button class="task-tab" onclick="switchTaskTab('reviewTasks')">To Review</button><button class="task-tab" onclick="switchTaskTab('trackTasks')">Track Sent 🔍</button><button class="task-tab" onclick="switchTaskTab('assignTask')">Assign Task</button></div><div id="tab-myTasks" class="task-pane active"><div id="myTasksList" style="max-height: 300px; overflow-y: auto;"></div></div><div id="tab-reviewTasks" class="task-pane"><div id="reviewTasksList" style="max-height: 300px; overflow-y: auto;"></div></div><div id="tab-trackTasks" class="task-pane"><div id="trackTasksList" style="max-height: 300px; overflow-y: auto;"></div></div><div id="tab-assignTask" class="task-pane leave-form"><label>Assign To (Employee ID):</label><input type="text" id="newTaskAssignee" placeholder="e.g., QE102" style="width: 100%; text-align: left;"><label>Task Description:</label><textarea id="newTaskDesc" rows="3" placeholder="Describe the task details..."></textarea><label>Task Password (Secret to close task):</label><input type="password" id="newTaskPass" placeholder="Enter secure password" style="width: 100%; text-align: left;"><button class="btn-task" style="width: 100%; margin-top: 15px; padding:12px; font-size:16px;" onclick="submitNewTask()">🚀 Send Task</button></div><button style="width:100%; padding:10px; background:#333; border:none; border-radius:5px; color:white; font-weight:bold; cursor:pointer; margin-top: 10px;" onclick="document.getElementById('taskModal').style.display='none';">Close Dashboard</button></div></div>
+    <div id="startWorkModal" class="modal" style="z-index: 1001;"><div class="modal-content"><h3 style="color:#0288D1; margin-top:0;">🚀 Accept & Start Task</h3><div class="leave-form"><label>Write a short acknowledgement reply:</label><textarea id="startWorkReply" rows="2" placeholder="Got it. I will start immediately."></textarea><label>Expected Completion Time:</label><input type="datetime-local" id="startWorkDeadline"><input type="hidden" id="startWorkTaskId"><button class="btn-in" style="width: 100%; margin-top: 15px;" onclick="confirmStartWork()">Confirm & Start Timer</button><button style="width: 100%; margin-top: 10px; background:#aaa; border:none; padding:10px; border-radius:5px; color:white; font-weight:bold; cursor:pointer;" onclick="document.getElementById('startWorkModal').style.display='none';">Cancel</button></div></div></div>
+    <div id="closeTaskModal" class="modal" style="z-index: 1001;"><div class="modal-content" style="text-align: center;"><h3 style="color:#9C27B0; margin-top:0;">🔒 Finalize Task</h3><p style="font-size: 13px; color: #555;">Enter the original Task Password to accept completion.</p><input type="password" id="closeTaskPass" placeholder="Enter Password" style="width: 90%; text-align: center; margin-bottom: 15px;"><input type="hidden" id="closeWorkTaskId"><button class="btn-in" style="width: 100%; margin-bottom: 10px;" onclick="confirmCloseTask()">Accept & Close Task</button><button class="btn-out" style="width: 100%; margin-bottom: 10px;" onclick="returnTaskForRework()">Return for Rework</button><button style="width: 100%; background:#aaa; border:none; padding:10px; border-radius:5px; color:white; font-weight:bold; cursor:pointer;" onclick="document.getElementById('closeTaskModal').style.display='none';">Cancel</button></div></div>
 
     <script>
-        // 🚨 URL CHECK KAREN 🚨
+        // 🚨 UPDATE WITH YOUR NEW DEPLOYMENT URL 🚨
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzQl4SuWQjbyALKYkcwi0Eim03uhwuGUwTMUzcNIWDLZF_LbCJ7Esxmq74pJIuF0_2zyg/exec";
         
         let ADMIN_PASS = "1234"; let TRAIN_PASS = "0000";
@@ -280,9 +179,8 @@
             updateDateTime(); setInterval(updateDateTime, 1000); checkTodayHoliday(); renderTable(); 
             if(Object.values(attendanceDb).some(emp => !emp.isPunchedOut) && deviceBaseLat && deviceBaseLng) { isDeviceWithin50m = true; document.getElementById("statusBox").style.display = "block"; startDeviceGeoTracking(); }
             
-            // 🚀 FAST TIMERS (10 SECONDS) 🚀
             startMasterTimer(); fetchSystemData(); 
-            setInterval(fetchSystemData, 10000); 
+            setInterval(fetchSystemData, 10000); // 🚀 Lightning fast 10-sec updates
             setInterval(syncAllActiveUsers, 10000); 
             
             document.getElementById("leaveDateInput").setAttribute('min', now.toISOString().split('T')[0]); document.getElementById("leaveDateInput").value = now.toISOString().split('T')[0];
@@ -299,6 +197,7 @@
             if(callback) callback();
         }
 
+        // 🌟 FIX 1: COMMAND SYNC & UNDO/END TRAIN BUGS RESOLVED 🌟
         async function fetchSystemData() {
             try {
                 let pRes = await fetch(`${SCRIPT_URL}?action=getPasswords&nocache=${Date.now()}`); let pData = await pRes.json();
@@ -307,50 +206,39 @@
                 if(Object.keys(fetchedList).length > 0) { EMP_LIST = fetchedList; localStorage.setItem('cachedEmpList', JSON.stringify(EMP_LIST)); autoFillName(); }
                 let tRes = await fetch(`${SCRIPT_URL}?action=getTodayLogs&date=${todayDateStr}&nocache=${Date.now()}`); TODAY_SERVER_LOGS = await tRes.json(); 
                 
-                let isUpdated = false; let activeId = Object.keys(attendanceDb)[0]; 
+                let isUpdated = false; 
 
                 for(let id in attendanceDb) {
                     if(TODAY_SERVER_LOGS[id]) {
                         if(TODAY_SERVER_LOGS[id].exceptionSecs) attendanceDb[id].exceptionSecs = TODAY_SERVER_LOGS[id].exceptionSecs;
                         
-                        // 🌟 "FALSE" TEXT BUG FIXED HERE 🌟
                         let flag = TODAY_SERVER_LOGS[id].outByAdmin;
                         let isForceOut = (flag === true || flag === "TRUE" || flag === "true");
-                        
                         if(isForceOut && !attendanceDb[id].isPunchedOut) { 
-                            attendanceDb[id].isPunchedOut = true; 
-                            attendanceDb[id].mode = "out"; 
-                            attendanceDb[id].outTime = TODAY_SERVER_LOGS[id].outTime; 
-                            attendanceDb[id].outByAdmin = true; 
-                            isUpdated = true;
+                            attendanceDb[id].isPunchedOut = true; attendanceDb[id].mode = "out"; 
+                            attendanceDb[id].outTime = TODAY_SERVER_LOGS[id].outTime; attendanceDb[id].outByAdmin = true; isUpdated = true;
                         }
                     }
-                }
-                
-                if (activeId) {
-                    let cmdRes = await fetch(`${SCRIPT_URL}?action=checkCommands&id=${activeId}&nocache=${Date.now()}`); let commands = await cmdRes.json();
-                    let lastCmdTime = localStorage.getItem(`lastCmd_${activeId}`) || 0;
+
+                    // Checks commands for all local users
+                    let cmdRes = await fetch(`${SCRIPT_URL}?action=checkCommands&id=${id}&nocache=${Date.now()}`); let commands = await cmdRes.json();
+                    let lastCmdTime = parseInt(localStorage.getItem(`lastCmd_${id}`)) || 0;
+                    
                     commands.forEach(cmd => {
                         if (cmd.timestamp > lastCmdTime) {
-                            if (cmd.forceType === "endTrain" && attendanceDb[activeId].mode === "train") { attendanceDb[activeId].mode = "work"; showToast("⚠️ एडमिन द्वारा आपकी ट्रेनिंग समाप्त कर दी गई है।", "error"); isUpdated = true; }
-                            
-                            // 🌟 UNDO LOGIC FIXED 🌟
-                            if (cmd.forceType === "undoPunchOut" && attendanceDb[activeId].isPunchedOut) { 
-                                attendanceDb[activeId].isPunchedOut = false; 
-                                attendanceDb[activeId].mode = "work"; 
-                                attendanceDb[activeId].outTime = "-"; 
-                                attendanceDb[activeId].photoOut = null; 
-                                attendanceDb[activeId].outByAdmin = false; 
-                                showToast("🟢 एडमिन ने आपका Punch-Out हटा दिया है!", "success"); 
-                                isUpdated = true; 
+                            if (cmd.forceType === "endTrain" && attendanceDb[id].mode === "train") { attendanceDb[id].mode = "work"; showToast("⚠️ एडमिन द्वारा आपकी ट्रेनिंग समाप्त कर दी गई है।", "error"); isUpdated = true; }
+                            if (cmd.forceType === "undoPunchOut" && attendanceDb[id].isPunchedOut) { 
+                                attendanceDb[id].isPunchedOut = false; attendanceDb[id].mode = "work"; attendanceDb[id].outTime = "-"; 
+                                attendanceDb[id].photoOut = null; attendanceDb[id].outByAdmin = false; 
+                                showToast("🟢 एडमिन ने आपका Punch-Out हटा दिया है!", "success"); isUpdated = true; 
                             }
-                            localStorage.setItem(`lastCmd_${activeId}`, cmd.timestamp);
+                            localStorage.setItem(`lastCmd_${id}`, cmd.timestamp);
                         }
                     });
+                    if(isUpdated) { saveData(); renderTable(); if(!attendanceDb[id].isPunchedOut) sendFullSync(id); }
                 }
-                if(isUpdated) { saveData(); renderTable(); if(activeId && !attendanceDb[activeId].isPunchedOut) sendFullSync(activeId); }
                 isSystemReady = true; 
-            } catch(e) { console.log("Background Check Running..."); }
+            } catch(e) { }
         }
                   
         function autoFillName() { 
@@ -411,7 +299,6 @@
         function sendFullSync(id) { fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "syncPunch", date: todayDateStr, id: id, name: attendanceDb[id].name, status: attendanceDb[id].mode, fullData: JSON.stringify(attendanceDb[id]) }) }); }
         function syncAllActiveUsers() { for(let id in attendanceDb) { if(!attendanceDb[id].isPunchedOut) sendFullSync(id); } }
 
-        // --- LEAVES ---
         async function openLeaveModal() { 
             let id = document.getElementById("empId").value.trim().toUpperCase(); if(!id || !EMP_LIST[id] || EMP_LIST[id].status !== 'Active') return alert("Enter Active Employee ID first!");
             document.getElementById('leaveModal').style.display = 'flex'; document.getElementById('submitLeaveBtn').innerText = "Checking Limits..."; document.getElementById('submitLeaveBtn').disabled = true;
@@ -450,12 +337,17 @@
             try { let res = await fetch(`${SCRIPT_URL}?action=checkMyLeave&id=${id}&nocache=${Date.now()}`); let data = await res.json(); let body = data.map(l => `<div style="border:1px solid #ddd; padding:10px; margin:5px 0; border-radius:5px; background:${l.status==='Approved'?'#e8f5e9':(l.status==='Rejected'?'#ffebee':'#fff8e1')}">📅 ${l.leaveDate} - <span style="font-weight:bold;">${l.type}</span> <br>Status: <b>${l.status}</b></div>`).join(""); document.getElementById('leaveStatusBody').innerHTML = body || "<p style='text-align:center;'>No pending requests.</p>"; document.getElementById('leaveStatusModal').style.display = 'flex'; } catch(e) { alert("Server Error!"); } document.querySelector('.btn-check-leave').innerText = "👀 Check My Leave Status";
         }
 
+        // 🌟 FIX 2: TIMER STRING CONCATENATION BUG RESOLVED 🌟
         function formatTime(s) { if(!s || isNaN(s)) return "00:00:00"; return `${String(Math.floor(s/3600)).padStart(2,'0')}:${String(Math.floor((s%3600)/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; }
+        
         function renderTable() {
             let tbody = document.getElementById("logTableBody"); tbody.innerHTML = ""; let data = Object.values(attendanceDb).sort((a,b) => b.timestamp - a.timestamp);
             if(data.length === 0) return tbody.innerHTML = `<tr><td colspan="11">कोई डेटा उपलब्ध नहीं है</td></tr>`;
             data.forEach(emp => {
-                let exc = emp.exceptionSecs || 0; let tw = emp.workSecs + emp.trainSecs + exc;
+                // FIXED HERE: Added parseInt() to prevent string concatenation
+                let exc = parseInt(emp.exceptionSecs) || 0; 
+                let tw = parseInt(emp.workSecs || 0) + parseInt(emp.trainSecs || 0) + exc;
+                
                 let status = (emp.mode === "leave") ? `<span style="color:red;font-weight:bold;">${emp.statusText}</span>` : (emp.isPunchedOut && tw < 28800 && tw > 0 ? "<span style='color:red;font-weight:bold;'>Half Day</span>" : "<span style='color:green;font-weight:bold;'>Present</span>");
                 if(emp.mode === 'break') status = `Present<br><span class="badge badge-break">☕ On Break</span>`; if(emp.mode === 'train') status = `Present<br><span class="badge badge-train">💼 On Official Duty</span>`;
                 let bColor = (emp.breakSecs > 3600) ? "red" : "black"; let wColor = tw >= 28800 ? "green" : "red";
@@ -485,7 +377,7 @@
                         if(loopDateObj > todayDateOnly) continue;
                         let empRecord = empData.find(r => r.recordDate === loopDateStr);
                         if(empRecord) {
-                            printedRowsCount++; let exc = empRecord.exceptionSecs || 0; let tw = (empRecord.workSecs||0) + (empRecord.trainSecs||0) + exc; let wColor = tw >= 28800 ? "green" : "red";
+                            printedRowsCount++; let exc = parseInt(empRecord.exceptionSecs) || 0; let tw = parseInt(empRecord.workSecs||0) + parseInt(empRecord.trainSecs||0) + exc; let wColor = tw >= 28800 ? "green" : "red";
                             let statusText = empRecord.statusText || "Present"; let isLeaveOrOff = ["leave", "off", "holiday", "el", "cl", "sl", "lwp"].some(v => statusText.toLowerCase().includes(v));
                             if (!isLeaveOrOff && empRecord.mode !== "leave") { if (empRecord.isPunchedOut && tw < 28800 && tw > 0) statusText = "<span style='color:red;font-weight:bold;'>Half Day</span>"; else statusText = "<span style='color:green;font-weight:bold;'>Present</span>"; } else { statusText = `<span style='color:red;font-weight:bold;'>${statusText}</span>`; }
                             let excDisplay = exc > 0 ? `<br><small style="color:#0288D1; font-weight:bold;">(+${formatTime(exc)} Exc)</small>` : ``; let tDisplay = `<span style="color:${wColor};font-weight:bold;">${formatTime(tw)}</span>${excDisplay}`;
@@ -513,7 +405,7 @@
         function updateDateTime() { document.getElementById('liveDateTime').innerText = new Date().toLocaleString('hi-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute:'2-digit', second:'2-digit' }); }
         function checkTodayHoliday() { if(isHolidayOrOff) { document.getElementById('systemStatusBox').style.display="block"; document.getElementById('systemStatusText').innerText = `🛑 System Notice: Today is ${holidayName || 'Weekly Off'}.`; } }
 
-        // 🌟 TASKFLOW UI 🌟
+        // --- TASKFLOW ---
         function getStatusPill(st) {
             if(st === "Pending Start") return `<span class="st-pill st-pend">⏳ Pending Start</span>`;
             if(st === "In Progress") return `<span class="st-pill st-prog">🚀 In Progress</span>`;
