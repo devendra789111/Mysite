@@ -436,16 +436,40 @@
                     let formatDesc = `<div class="desc-box"><strong>Task:</strong> ${t.desc} ${t.replies ? '<div class="reply-box">Replies: ' + t.replies.replace(/\n/g, '<br>') + '</div>' : ''}</div>`;
                     let beautifulStatus = getStatusPill(t.status);
 
+                    let chainArr = t.chain.split(" -> ");
+                    let myIdx = chainArr.lastIndexOf(myId);
+
+                    // 1. MY WORK (Pending, Progress, Rework)
                     if(t.currAssignee === myId && ["Pending Start", "In Progress", "Rework"].includes(t.status)) {
                         let acts = ""; let stClass = t.status === "Pending Start" ? "pending" : "active";
-                        if(t.status === "Pending Start" || t.status === "Rework") acts = `<button class="btn-in" onclick="promptStartWork('${t.taskId}')">🚀 Start Work</button> <button class="btn-train-start" onclick="forwardTaskPrompt('${t.taskId}')">Forward Task</button>`;
-                        else acts = `<button class="btn-in" onclick="completeWork('${t.taskId}')">✅ Mark Completed</button> <button class="btn-train-start" onclick="forwardTaskPrompt('${t.taskId}')">Forward Task</button>`;
+                        
+                        if(t.status === "Pending Start") {
+                            acts = `<button class="btn-in" onclick="promptStartWork('${t.taskId}')">🚀 Start Work</button> <button class="btn-train-start" onclick="forwardTaskPrompt('${t.taskId}')">Forward Task</button>`;
+                        } 
+                        else if (t.status === "Rework") {
+                            // 🌟 FIX: RETURN DOWN LOGIC 🌟
+                            acts = `<button class="btn-in" onclick="promptStartWork('${t.taskId}')">🚀 Start Work (Fix It)</button>`;
+                            if (myIdx < chainArr.length - 1) {
+                                let nextEmp = chainArr[myIdx + 1];
+                                acts += ` <button class="btn-out" onclick="returnForRework('${t.taskId}')">⬇️ Pass Down to ${nextEmp}</button>`;
+                            } else {
+                                acts += ` <button class="btn-train-start" onclick="forwardTaskPrompt('${t.taskId}')">Forward Task</button>`;
+                            }
+                        } 
+                        else if (t.status === "In Progress") {
+                            acts = `<button class="btn-in" onclick="completeWork('${t.taskId}')">✅ Mark Completed</button> <button class="btn-train-start" onclick="forwardTaskPrompt('${t.taskId}')">Forward Task</button>`;
+                        }
+
                         myHtml += `<div class="task-item ${stClass}">${chainBadge}<strong>ID:</strong> ${t.taskId} <span style="float:right;">${beautifulStatus}</span><br>${formatDesc}<strong>Deadline:</strong> ${t.deadline ? new Date(t.deadline).toLocaleString('hi-IN') : 'Not Set'}<br>${penaltyBadge}<div class="task-actions">${acts}</div></div>`;
                     }
+                    
+                    // 2. TO REVIEW
                     if(t.currAssignee === myId && t.status === "Review") {
                         let acts = (t.originalAssigner === myId) ? `<button class="btn-in" onclick="promptCloseTask('${t.taskId}')">🔓 Enter Password to Close</button>` : `<button class="btn-in" onclick="forwardReviewUp('${t.taskId}')">⬆️ Approve & Send Up</button> <button class="btn-out" onclick="returnForRework('${t.taskId}')">🔄 Return for Rework</button>`;
                         revHtml += `<div class="task-item review">${chainBadge}<strong>ID:</strong> ${t.taskId} <span style="float:right;">${beautifulStatus}</span><br>${formatDesc}<div class="task-actions">${acts}</div></div>`;
                     }
+
+                    // 3. TRACK SENT
                     if(t.chain.includes(myId) && t.currAssignee !== myId && t.status !== "Closed") {
                         trackHtml += `<div class="task-item track">${chainBadge}<strong>ID:</strong> ${t.taskId}<br><strong>Current Owner:</strong> <span style="color:#d32f2f; font-weight:bold;">${t.currAssignee} (${EMP_LIST[t.currAssignee]?.name || 'Unknown'})</span><br><strong>Status:</strong> ${beautifulStatus}<br>${formatDesc}<strong>Deadline:</strong> ${t.deadline ? new Date(t.deadline).toLocaleString('hi-IN') : 'Not Set'}</div>`;
                     }
