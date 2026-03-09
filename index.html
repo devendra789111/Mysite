@@ -7,13 +7,17 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #eef2f3; margin: 0; padding: 20px; text-align: center; }
-        .header { background: #1a237e; color: white; padding: 10px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        
+        /* 🌟 HEADER & LOGOUT BUTTON 🌟 */
+        .header { background: #1a237e; color: white; padding: 15px 10px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); position: relative; }
         .header h2 { margin: 5px 0; font-size: 22px; }
         .live-time { font-size: 16px; font-weight: bold; color: #ffeb3b; }
+        .logout-btn { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: #f44336; color: white; border: none; padding: 8px 15px; border-radius: 5px; font-weight: bold; cursor: pointer; display: none; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: 0.3s; }
+        .logout-btn:hover { background: #d32f2f; box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
+
         .container { background: white; padding: 20px; border-radius: 10px; max-width: 1150px; margin: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        
         .input-group { margin-bottom: 10px; background: #f5f5f5; padding: 15px; border-radius: 8px; border: 2px solid #ddd; }
-        input[type="text"], input[type="password"] { padding: 12px; width: 30%; margin: 5px; border: 2px solid #1a237e; border-radius: 5px; font-size: 16px; font-weight: bold; text-align: center; text-transform: uppercase; }
+        input[type="text"], input[type="password"] { padding: 12px; width: 30%; margin: 5px; border: 2px solid #1a237e; border-radius: 5px; font-size: 16px; font-weight: bold; text-align: center; text-transform: uppercase; transition: 0.3s; }
         #empName { background-color: #e9ecef; cursor: not-allowed; }
         
         .points-box { display: none; justify-content: center; gap: 30px; background: #fff3e0; padding: 12px; border-radius: 8px; border: 2px solid #FF9800; margin-bottom: 20px; box-shadow: inset 0 2px 5px rgba(0,0,0,0.05); }
@@ -37,6 +41,19 @@
         #toastBox.success { background-color: #4CAF50; border-left: 6px solid #1B5E20; }
         #toastBox.error { background-color: #f44336; border-left: 6px solid #b71c1c; }
 
+        /* 🌟 BEAUTIFUL FULL-SCREEN PASSWORD MODAL 🌟 */
+        #passwordModal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100vw; height: 100vh; background: linear-gradient(135deg, rgba(26,35,126,0.95) 0%, rgba(2,136,209,0.95) 100%); justify-content: center; align-items: center; backdrop-filter: blur(8px); }
+        .pass-card { background: white; padding: 40px 30px; border-radius: 16px; text-align: center; width: 320px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); animation: popIn 0.3s ease-out; }
+        .lock-icon { font-size: 45px; margin-bottom: 5px; }
+        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        .pass-input { width: 100%; padding: 12px; margin: 15px 0; border: 2px solid #ccc; border-radius: 8px; font-size: 22px; text-align: center; letter-spacing: 5px; box-sizing: border-box; outline: none; transition: 0.3s; font-family: monospace;}
+        .pass-input:focus { border-color: #0288D1; box-shadow: 0 0 10px rgba(2, 136, 209, 0.4); }
+        .btn-verify { background: #00897B; width: 100%; padding: 12px; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-verify:hover { background: #00695C; }
+        .btn-cancel-pass { background: #e0e0e0; color: #333; width: 100%; padding: 10px; border: none; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; margin-top: 12px; transition: 0.3s; }
+        .btn-cancel-pass:hover { background: #bdbdbd; }
+
+        /* Standard Modals */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); justify-content: center; align-items: center; }
         .modal-content { background: white; padding: 20px; border-radius: 10px; text-align: left; width: 340px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); max-height: 90vh; overflow-y: auto; }
         .large-modal { width: 650px; }
@@ -49,7 +66,6 @@
         .status-box { margin: 15px auto; padding: 10px; background: #e3f2fd; border: 2px solid #90caf9; border-radius: 6px; font-size: 16px; font-weight: bold; color: #0d47a1; max-width: 500px; text-align: center; }
         
         #exportArea { margin-top: 20px; background: white; padding: 10px; }
-        .report-header { display: none; text-align: center; font-size: 20px; margin-bottom: 15px; color: #1a237e; font-weight: bold; text-transform: uppercase; }
         #tableWrapper { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
         th, td { border: 1px solid #ddd; padding: 6px; text-align: center; vertical-align: middle; }
@@ -86,10 +102,11 @@
 <body>
 
     <div id="toastBox">Notification</div>
-
+    
     <div class="header">
         <h2>🏢 Quality Education Attendance Kiosk</h2>
         <div id="liveDateTime" class="live-time">लोड हो रहा है...</div>
+        <button id="logoutBtn" class="logout-btn" onclick="logoutEmp()">Logout 🚪</button>
     </div>
 
     <div class="container">
@@ -97,28 +114,30 @@
         
         <div class="input-group">
             <p style="margin: 0 0 10px 0; font-size: 14px; color: #555;">अपनी एम्प्लॉई ID दर्ज करें:</p>
-            <input type="text" id="empId" class="inp-id" placeholder="एम्प्लॉई ID (e.g. QE101)" oninput="autoFillName()">
-            <input type="text" id="empName" placeholder="कर्मचारी का नाम" readonly><br>
-            <button class="btn-check-leave" onclick="authAndRun(checkMyLeaveStatus)">👀 Check My Leave Status</button>
+            <input type="text" id="empId" placeholder="एम्प्लॉई ID (e.g. QE101)" oninput="autoFillName()">
+            <input type="text" id="empName" placeholder="कर्मचारी का नाम" readonly>
         </div>
 
-        <div id="empPointsBox" class="points-box">
-            <div class="pt-item"><div class="pt-title">Reward Points 🏆</div><div class="pt-value val-green" id="dispReward">0</div></div>
-            <div class="pt-item"><div class="pt-title">Penalty Points ⚠️</div><div class="pt-value val-red" id="dispPenalty">0</div></div>
-            <div class="pt-item"><div class="pt-title">Net Score ⚖️</div><div class="pt-value val-blue" id="dispNet">0</div></div>
-        </div>
+        <div id="mainActionDashboard" style="display:none;">
+            <div id="empPointsBox" class="points-box">
+                <div class="pt-item"><div class="pt-title">Reward Points 🏆</div><div class="pt-value val-green" id="dispReward">0</div></div>
+                <div class="pt-item"><div class="pt-title">Penalty Points ⚠️</div><div class="pt-value val-red" id="dispPenalty">0</div></div>
+                <div class="pt-item"><div class="pt-title">Net Score ⚖️</div><div class="pt-value val-blue" id="dispNet">0</div></div>
+            </div>
 
-        <div class="status-box" id="statusBox" style="display:none;">ज़ोन स्टेटस: <span id="geoText" style="color:#555;">लोकेशन जांची जा रही है...</span></div>
+            <div class="status-box" id="statusBox" style="display:none;">ज़ोन स्टेटस: <span id="geoText" style="color:#555;">लोकेशन जांची जा रही है...</span></div>
 
-        <div class="btn-grid">
-            <button class="btn-in" onclick="authAndRun(initPunchIn)">Punch In</button>
-            <button class="btn-out" onclick="authAndRun(initPunchOut)">Punch Out</button>
-            <button class="btn-break-start" onclick="authAndRun(() => actionBtn('break'))">Start Break ☕</button>
-            <button class="btn-break-end" onclick="authAndRun(() => actionBtn('work'))">End Break</button>
-            <button class="btn-train-start" onclick="authAndRun(startTraining)">Start Training</button>
-            <button class="btn-train-end" onclick="authAndRun(() => actionBtn('work'))">End Training</button>
-            <button class="btn-leave" onclick="authAndRun(openLeaveModal)">Mark Leave</button>
-            <button class="btn-task" onclick="authAndRun(openTaskModal)">TaskFlow 📋</button>
+            <div class="btn-grid">
+                <button class="btn-in" onclick="initPunchIn()">Punch In</button>
+                <button class="btn-out" onclick="initPunchOut()">Punch Out</button>
+                <button class="btn-break-start" onclick="actionBtn('break')">Start Break ☕</button>
+                <button class="btn-break-end" onclick="actionBtn('work')">End Break</button>
+                <button class="btn-train-start" onclick="startTraining()">Start Training</button>
+                <button class="btn-train-end" onclick="actionBtn('work')">End Training</button>
+                <button class="btn-leave" onclick="openLeaveModal()">Mark Leave</button>
+                <button class="btn-check-leave" onclick="checkMyLeaveStatus()">👀 Check Leaves</button>
+                <button class="btn-task" onclick="openTaskModal()">TaskFlow 📋</button>
+            </div>
         </div>
 
         <div id="exportArea">
@@ -135,13 +154,17 @@
         </div>
     </div>
 
-    <div id="passwordModal" class="modal" style="z-index: 2000;">
-        <div class="modal-content" style="text-align: center; width: 300px; padding: 25px;">
-            <h3 style="color:#1a237e; margin-top:0;">🔒 सुरक्षा जाँच</h3>
-            <p style="font-size: 13px; color: #555; margin-bottom: 15px;">जारी रखने के लिए अपना पासवर्ड डालें:</p>
-            <input type="password" id="empPassInput" placeholder="Enter Password" style="width: 90%; text-align: center; margin-bottom: 20px; letter-spacing: 2px;" onkeypress="if(event.key === 'Enter') submitAuth();">
-            <button class="btn-in" style="width: 100%; margin-bottom: 10px; padding: 12px; font-size: 15px;" onclick="submitAuth()">Verify & Continue</button>
-            <button style="width: 100%; background:#aaa; border:none; padding:10px; border-radius:5px; color:white; font-weight:bold; cursor:pointer;" onclick="document.getElementById('passwordModal').style.display='none';">Cancel</button>
+    <div id="passwordModal">
+        <div class="pass-card">
+            <div class="lock-icon">🔒</div>
+            <h3 style="color:#1a237e; margin-top:0;">सुरक्षा जाँच</h3>
+            <p>Welcome, <span id="authEmpName" style="color:#0288D1; font-weight:bold;">Employee</span></p>
+            <p style="font-size: 12px; color: #666;">आगे बढ़ने के लिए अपना पासवर्ड दर्ज़ करें</p>
+            
+            <input type="password" id="empPassInput" class="pass-input" placeholder="••••" onkeypress="if(event.key === 'Enter') submitAuth();">
+            
+            <button class="btn-verify" onclick="submitAuth()">Verify & Login</button>
+            <button class="btn-cancel-pass" onclick="cancelAuth()">रद्द करें (Cancel)</button>
         </div>
     </div>
 
@@ -149,11 +172,12 @@
     <div id="leaveModal" class="modal"><div class="modal-content"><h3 style="margin-top:0; color:#E91E63; text-align: center;">📅 छुट्टी (Leave) दर्ज करें</h3><div class="leave-form"><label>छुट्टी की तारीख (Leave Date):</label><input type="date" id="leaveDateInput" required><label>छुट्टी का प्रकार चुनें:</label><select id="leaveType" onchange="checkLeaveLimits()"><option value="">-- सेलेक्ट करें --</option><option value="EL">Earned Leave (EL) - 1/महीना</option><option value="CL">Casual Leave (CL) - 6/साल</option><option value="SL">Sick Leave (SL) - 6/साल</option><option value="LWP">Leave Without Pay (LWP) - अनलिमिटेड</option></select><label>कारण (Reason):</label><input type="text" id="leaveReason" placeholder="कारण लिखें..." required><div id="medicalCertBox" style="display: none; background: #ffebee; padding: 10px; border-radius: 5px; border: 1px solid #ef5350; margin-top: 5px;"><label style="color:#c62828; font-size: 12px; font-weight:bold;">लगातार 2 दिन से ज्यादा SL के लिए मेडिकल सर्टिफिकेट अनिवार्य है:</label><input type="file" id="medicalCert" accept="image/*, .pdf"></div><p style="color:red; font-size:12px; font-weight:bold; display:none; text-align:center;" id="leaveAlert"></p><button class="btn-leave" style="width:100%; margin-top:10px;" id="submitLeaveBtn" onclick="submitLeave()">सबमिट करें</button><button style="width:100%; margin-top:10px; background:#aaa; padding:10px; border:none; border-radius:5px; color:white; font-weight:bold; cursor:pointer;" onclick="document.getElementById('leaveModal').style.display='none';">रद्द करें</button></div></div></div>
     <div id="leaveStatusModal" class="modal"><div class="modal-content"><h3 style="color:#0288D1; text-align:center; margin-top:0; border-bottom: 2px solid #eee; padding-bottom: 10px;">📋 My Leave Status</h3><div id="leaveStatusBody" style="max-height: 300px; overflow-y: auto; margin-bottom:15px; font-size: 14px;"></div><button style="width:100%; padding:10px; background:#333; border:none; border-radius:5px; color:white; font-weight:bold; cursor:pointer;" onclick="document.getElementById('leaveStatusModal').style.display='none';">Close</button></div></div>
     
-    <div id="taskModal" class="modal"><div class="modal-content large-modal"><h3 style="color:#00897B; text-align:center; margin-top:0;">📋 TaskFlow Dashboard</h3><div class="task-tabs"><button class="task-tab active" onclick="switchTaskTab('myTasks')">My Work</button><button class="task-tab" onclick="switchTaskTab('reviewTasks')">To Review</button><button class="task-tab" onclick="switchTaskTab('trackTasks')">Track Sent 🔍</button><button class="task-tab" onclick="switchTaskTab('assignTask')">Assign Task</button></div><div id="tab-myTasks" class="task-pane active"><div id="myTasksList" style="max-height: 300px; overflow-y: auto;"></div></div><div id="tab-reviewTasks" class="task-pane"><div id="reviewTasksList" style="max-height: 300px; overflow-y: auto;"></div></div><div id="tab-trackTasks" class="task-pane"><div id="trackTasksList" style="max-height: 300px; overflow-y: auto;"></div></div><div id="tab-assignTask" class="task-pane leave-form"><label>Assign To (Employee ID):</label><input type="text" id="newTaskAssignee" placeholder="e.g., QE102" class="inp-id" style="width: 100%; text-align: left;"><label>Task Description:</label><textarea id="newTaskDesc" rows="3" placeholder="Describe the task details..."></textarea><label>Task Password (Secret to close task):</label><input type="password" id="newTaskPass" placeholder="Enter secure password" style="width: 100%; text-align: left;"><button class="btn-task" style="width: 100%; margin-top: 15px; padding:12px; font-size:16px;" onclick="submitNewTask()">🚀 Send Task</button></div><button style="width:100%; padding:10px; background:#333; border:none; border-radius:5px; color:white; font-weight:bold; cursor:pointer; margin-top: 10px;" onclick="document.getElementById('taskModal').style.display='none';">Close Dashboard</button></div></div>
+    <div id="taskModal" class="modal"><div class="modal-content large-modal"><h3 style="color:#00897B; text-align:center; margin-top:0;">📋 TaskFlow Dashboard</h3><div class="task-tabs"><button class="task-tab active" onclick="switchTaskTab('myTasks')">My Work</button><button class="task-tab" onclick="switchTaskTab('reviewTasks')">To Review</button><button class="task-tab" onclick="switchTaskTab('trackTasks')">Track Sent 🔍</button><button class="task-tab" onclick="switchTaskTab('assignTask')">Assign Task</button></div><div id="tab-myTasks" class="task-pane active"><div id="myTasksList" style="max-height: 300px; overflow-y: auto;"></div></div><div id="tab-reviewTasks" class="task-pane"><div id="reviewTasksList" style="max-height: 300px; overflow-y: auto;"></div></div><div id="tab-trackTasks" class="task-pane"><div id="trackTasksList" style="max-height: 300px; overflow-y: auto;"></div></div><div id="tab-assignTask" class="task-pane leave-form"><label>Assign To (Employee ID):</label><input type="text" id="newTaskAssignee" placeholder="e.g., QE102" style="width: 100%; text-align: left; text-transform: uppercase;"><label>Task Description:</label><textarea id="newTaskDesc" rows="3" placeholder="Describe the task details..."></textarea><label>Task Password (Secret to close task):</label><input type="password" id="newTaskPass" placeholder="Enter secure password" style="width: 100%; text-align: left;"><button class="btn-task" style="width: 100%; margin-top: 15px; padding:12px; font-size:16px;" onclick="submitNewTask()">🚀 Send Task</button></div><button style="width:100%; padding:10px; background:#333; border:none; border-radius:5px; color:white; font-weight:bold; cursor:pointer; margin-top: 10px;" onclick="document.getElementById('taskModal').style.display='none';">Close Dashboard</button></div></div>
     <div id="startWorkModal" class="modal" style="z-index: 1001;"><div class="modal-content"><h3 style="color:#0288D1; margin-top:0;">🚀 Accept & Start Task</h3><div class="leave-form"><label>Write a short acknowledgement reply:</label><textarea id="startWorkReply" rows="2" placeholder="Got it. I will start immediately."></textarea><label>Expected Completion Time:</label><input type="datetime-local" id="startWorkDeadline"><input type="hidden" id="startWorkTaskId"><button class="btn-in" style="width: 100%; margin-top: 15px;" onclick="confirmStartWork()">Confirm & Start Timer</button><button style="width: 100%; margin-top: 10px; background:#aaa; border:none; padding:10px; border-radius:5px; color:white; font-weight:bold; cursor:pointer;" onclick="document.getElementById('startWorkModal').style.display='none';">Cancel</button></div></div></div>
     <div id="closeTaskModal" class="modal" style="z-index: 1001;"><div class="modal-content" style="text-align: center;"><h3 style="color:#9C27B0; margin-top:0;">🔒 Finalize Task</h3><p style="font-size: 13px; color: #555;">Enter the original Task Password to accept completion.</p><input type="password" id="closeTaskPass" placeholder="Enter Password" style="width: 90%; text-align: center; margin-bottom: 15px;"><input type="hidden" id="closeWorkTaskId"><button class="btn-in" style="width: 100%; margin-bottom: 10px;" onclick="confirmCloseTask()">Accept & Close Task</button><button class="btn-out" style="width: 100%; margin-bottom: 10px;" onclick="returnTaskForRework()">Return for Rework</button><button style="width: 100%; background:#aaa; border:none; padding:10px; border-radius:5px; color:white; font-weight:bold; cursor:pointer;" onclick="document.getElementById('closeTaskModal').style.display='none';">Cancel</button></div></div>
 
     <script>
+        // 🚨 UPDATE WITH YOUR URL 🚨
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzQl4SuWQjbyALKYkcwi0Eim03uhwuGUwTMUzcNIWDLZF_LbCJ7Esxmq74pJIuF0_2zyg/exec";
         
         let ADMIN_PASS = "1234"; let TRAIN_PASS = "0000";
@@ -171,6 +195,8 @@
         let isWeeklyOff = (now.getDay() === WEEKLY_OFF_DAY);
         let holidayName = PUBLIC_HOLIDAYS[todayDateStr];
         let isHolidayOrOff = isWeeklyOff || holidayName;
+
+        let currentLoggedInId = null; // 🌟 SESSION TRACKER
 
         window.onload = async () => {
             updateDateTime(); setInterval(updateDateTime, 1000); checkTodayHoliday(); renderTable(); 
@@ -201,18 +227,31 @@
             if(callback) callback();
         }
 
-        // 🌟 PROFESSIONAL PASSWORD POPUP LOGIC 🌟
-        let currentAuthCallback = null;
+        // 🌟 SESSION LOGIN LOGIC 🌟
+        function autoFillName() { 
+            let el = document.getElementById("empId"); el.value = el.value.trim().toUpperCase(); let id = el.value; 
 
-        function authAndRun(callbackFunction) {
-            let id = document.getElementById("empId").value.trim().toUpperCase();
-            if(!id || !EMP_LIST[id] || EMP_LIST[id].status !== "Active") {
-                return showToast("❌ Invalid or Inactive Employee ID!", "error");
+            if(EMP_LIST && EMP_LIST[id]) {
+                let eName = EMP_LIST[id].name;
+                document.getElementById("empName").value = (EMP_LIST[id].status !== "Active") ? "ACCOUNT DEACTIVATED" : eName;
+                
+                // Trigger Password Pop-up ONLY if they are active and not already logged in
+                if(EMP_LIST[id].status === "Active" && currentLoggedInId !== id) {
+                    document.getElementById('authEmpName').innerText = eName;
+                    document.getElementById('empPassInput').value = "";
+                    document.getElementById('passwordModal').style.display = 'flex';
+                    setTimeout(() => document.getElementById('empPassInput').focus(), 100);
+                }
+            } else { 
+                document.getElementById("empName").value = ""; 
             }
-            currentAuthCallback = callbackFunction;
-            document.getElementById('empPassInput').value = "";
-            document.getElementById('passwordModal').style.display = 'flex';
-            setTimeout(() => document.getElementById('empPassInput').focus(), 100);
+        }
+
+        function cancelAuth() {
+            document.getElementById('passwordModal').style.display = 'none';
+            document.getElementById('empId').value = "";
+            document.getElementById('empName').value = "";
+            currentLoggedInId = null;
         }
 
         function submitAuth() {
@@ -222,14 +261,37 @@
 
             if(pass !== String(realPass)) {
                 showToast("❌ गलत पासवर्ड! कृपया सही पासवर्ड डालें।", "error");
+                document.getElementById("empPassInput").value = "";
+                document.getElementById("empPassInput").focus();
                 return;
             }
             
+            // ✅ LOGIN SUCCESS
+            currentLoggedInId = id;
             document.getElementById('passwordModal').style.display = 'none';
-            if(currentAuthCallback) {
-                currentAuthCallback(); // Execute the requested button action!
-                currentAuthCallback = null;
-            }
+            document.getElementById('logoutBtn').style.display = 'block';
+            document.getElementById('empId').readOnly = true; 
+            document.getElementById('empId').style.background = "#e9ecef"; 
+            
+            let rew = parseInt(EMP_LIST[id].reward) || 0; let pen = parseInt(EMP_LIST[id].penalty) || 0;
+            document.getElementById("dispReward").innerText = rew; document.getElementById("dispPenalty").innerText = pen; document.getElementById("dispNet").innerText = rew - pen;
+            document.getElementById("empPointsBox").style.display = "flex";
+            document.getElementById("mainActionDashboard").style.display = "block";
+            
+            showToast("✅ Login Successful! Welcome " + EMP_LIST[id].name, "success");
+        }
+
+        function logoutEmp() {
+            currentLoggedInId = null;
+            document.getElementById('empId').readOnly = false;
+            document.getElementById('empId').style.background = "white"; 
+            document.getElementById('empId').value = "";
+            document.getElementById('empName').value = "";
+            
+            document.getElementById('logoutBtn').style.display = 'none';
+            document.getElementById('empPointsBox').style.display = 'none';
+            document.getElementById('mainActionDashboard').style.display = 'none';
+            showToast("🚪 Logged Out Successfully", "success");
         }
 
         async function fetchSystemData() {
@@ -237,7 +299,7 @@
                 let pRes = await fetch(`${SCRIPT_URL}?action=getPasswords&nocache=${Date.now()}`); let pData = await pRes.json();
                 if(pData.adminPass) ADMIN_PASS = String(pData.adminPass).trim(); if(pData.trainPass) TRAIN_PASS = String(pData.trainPass).trim();
                 let eRes = await fetch(`${SCRIPT_URL}?action=getEmployees&nocache=${Date.now()}`); let fetchedList = await eRes.json();
-                if(Object.keys(fetchedList).length > 0) { EMP_LIST = fetchedList; localStorage.setItem('cachedEmpList', JSON.stringify(EMP_LIST)); autoFillName(); }
+                if(Object.keys(fetchedList).length > 0) { EMP_LIST = fetchedList; localStorage.setItem('cachedEmpList', JSON.stringify(EMP_LIST)); }
                 
                 let tRes = await fetch(`${SCRIPT_URL}?action=getTodayLogs&date=${todayDateStr}&nocache=${Date.now()}`); TODAY_SERVER_LOGS = await tRes.json(); 
                 let activeId = Object.keys(attendanceDb)[0]; 
@@ -260,16 +322,6 @@
                 }
                 isSystemReady = true; 
             } catch(e) { }
-        }
-                  
-        function autoFillName() { 
-            let el = document.getElementById("empId"); el.value = el.value.trim().toUpperCase(); let id = el.value; let ptsBox = document.getElementById("empPointsBox");
-            if(EMP_LIST && EMP_LIST[id]) {
-                document.getElementById("empName").value = (EMP_LIST[id].status !== "Active") ? "ACCOUNT DEACTIVATED" : EMP_LIST[id].name;
-                let rew = parseInt(EMP_LIST[id].reward) || 0; let pen = parseInt(EMP_LIST[id].penalty) || 0;
-                document.getElementById("dispReward").innerText = rew; document.getElementById("dispPenalty").innerText = pen; document.getElementById("dispNet").innerText = rew - pen;
-                ptsBox.style.display = "flex";
-            } else { document.getElementById("empName").value = ""; ptsBox.style.display = "none"; }
         }
 
         // --- ATTENDANCE ---
