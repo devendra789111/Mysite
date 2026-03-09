@@ -13,8 +13,7 @@
         .container { background: white; padding: 20px; border-radius: 10px; max-width: 1150px; margin: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         
         .input-group { margin-bottom: 10px; background: #f5f5f5; padding: 15px; border-radius: 8px; border: 2px solid #ddd; }
-        input[type="text"], input[type="password"] { padding: 12px; width: 30%; margin: 5px; border: 2px solid #1a237e; border-radius: 5px; font-size: 16px; font-weight: bold; text-align: center; }
-        .inp-id { text-transform: uppercase; }
+        input[type="text"], input[type="password"] { padding: 12px; width: 30%; margin: 5px; border: 2px solid #1a237e; border-radius: 5px; font-size: 16px; font-weight: bold; text-align: center; text-transform: uppercase; }
         #empName { background-color: #e9ecef; cursor: not-allowed; }
         
         .points-box { display: none; justify-content: center; gap: 30px; background: #fff3e0; padding: 12px; border-radius: 8px; border: 2px solid #FF9800; margin-bottom: 20px; box-shadow: inset 0 2px 5px rgba(0,0,0,0.05); }
@@ -87,17 +86,20 @@
 <body>
 
     <div id="toastBox">Notification</div>
-    <div class="header"><h2>🏢 Quality Education Attendance Kiosk</h2><div id="liveDateTime" class="live-time">लोड हो रहा है...</div></div>
+
+    <div class="header">
+        <h2>🏢 Quality Education Attendance Kiosk</h2>
+        <div id="liveDateTime" class="live-time">लोड हो रहा है...</div>
+    </div>
 
     <div class="container">
         <div class="status-box" id="systemStatusBox" style="display:none; margin-bottom: 20px;"><span id="systemStatusText"></span></div>
         
         <div class="input-group">
-            <p style="margin: 0 0 10px 0; font-size: 14px; color: #555;">अपनी एम्प्लॉई ID और पासवर्ड दर्ज करें:</p>
+            <p style="margin: 0 0 10px 0; font-size: 14px; color: #555;">अपनी एम्प्लॉई ID दर्ज करें:</p>
             <input type="text" id="empId" class="inp-id" placeholder="एम्प्लॉई ID (e.g. QE101)" oninput="autoFillName()">
-            <input type="password" id="empPass" placeholder="पासवर्ड (Default: 1234)">
             <input type="text" id="empName" placeholder="कर्मचारी का नाम" readonly><br>
-            <button class="btn-check-leave" onclick="checkMyLeaveStatus()">👀 Check My Leave Status</button>
+            <button class="btn-check-leave" onclick="authAndRun(checkMyLeaveStatus)">👀 Check My Leave Status</button>
         </div>
 
         <div id="empPointsBox" class="points-box">
@@ -109,14 +111,14 @@
         <div class="status-box" id="statusBox" style="display:none;">ज़ोन स्टेटस: <span id="geoText" style="color:#555;">लोकेशन जांची जा रही है...</span></div>
 
         <div class="btn-grid">
-            <button class="btn-in" onclick="initPunchIn()">Punch In</button>
-            <button class="btn-out" onclick="initPunchOut()">Punch Out</button>
-            <button class="btn-break-start" onclick="actionBtn('break')">Start Break ☕</button>
-            <button class="btn-break-end" onclick="actionBtn('work')">End Break</button>
-            <button class="btn-train-start" onclick="startTraining()">Start Training</button>
-            <button class="btn-train-end" onclick="actionBtn('work')">End Training</button>
-            <button class="btn-leave" onclick="openLeaveModal()">Mark Leave</button>
-            <button class="btn-task" onclick="openTaskModal()">TaskFlow 📋</button>
+            <button class="btn-in" onclick="authAndRun(initPunchIn)">Punch In</button>
+            <button class="btn-out" onclick="authAndRun(initPunchOut)">Punch Out</button>
+            <button class="btn-break-start" onclick="authAndRun(() => actionBtn('break'))">Start Break ☕</button>
+            <button class="btn-break-end" onclick="authAndRun(() => actionBtn('work'))">End Break</button>
+            <button class="btn-train-start" onclick="authAndRun(startTraining)">Start Training</button>
+            <button class="btn-train-end" onclick="authAndRun(() => actionBtn('work'))">End Training</button>
+            <button class="btn-leave" onclick="authAndRun(openLeaveModal)">Mark Leave</button>
+            <button class="btn-task" onclick="authAndRun(openTaskModal)">TaskFlow 📋</button>
         </div>
 
         <div id="exportArea">
@@ -130,6 +132,16 @@
         <div class="export-btns">
             <button class="btn-pdf" onclick="downloadPDF()">Download PDF</button>
             <button class="btn-excel" onclick="downloadExcel()">Download Excel</button>
+        </div>
+    </div>
+
+    <div id="passwordModal" class="modal" style="z-index: 2000;">
+        <div class="modal-content" style="text-align: center; width: 300px; padding: 25px;">
+            <h3 style="color:#1a237e; margin-top:0;">🔒 सुरक्षा जाँच</h3>
+            <p style="font-size: 13px; color: #555; margin-bottom: 15px;">जारी रखने के लिए अपना पासवर्ड डालें:</p>
+            <input type="password" id="empPassInput" placeholder="Enter Password" style="width: 90%; text-align: center; margin-bottom: 20px; letter-spacing: 2px;" onkeypress="if(event.key === 'Enter') submitAuth();">
+            <button class="btn-in" style="width: 100%; margin-bottom: 10px; padding: 12px; font-size: 15px;" onclick="submitAuth()">Verify & Continue</button>
+            <button style="width: 100%; background:#aaa; border:none; padding:10px; border-radius:5px; color:white; font-weight:bold; cursor:pointer;" onclick="document.getElementById('passwordModal').style.display='none';">Cancel</button>
         </div>
     </div>
 
@@ -170,7 +182,6 @@
             document.getElementById("leaveDateInput").setAttribute('min', now.toISOString().split('T')[0]); document.getElementById("leaveDateInput").value = now.toISOString().split('T')[0];
         };
 
-        // 🌟 FIX: ACCURATE WEEKLY OFF BANNER
         function checkTodayHoliday() { 
             if(isHolidayOrOff) { 
                 document.getElementById('systemStatusBox').style.display="block"; 
@@ -188,6 +199,37 @@
             try { await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) }); } catch (e) {}
             if(successMsg) showToast(successMsg, "success");
             if(callback) callback();
+        }
+
+        // 🌟 PROFESSIONAL PASSWORD POPUP LOGIC 🌟
+        let currentAuthCallback = null;
+
+        function authAndRun(callbackFunction) {
+            let id = document.getElementById("empId").value.trim().toUpperCase();
+            if(!id || !EMP_LIST[id] || EMP_LIST[id].status !== "Active") {
+                return showToast("❌ Invalid or Inactive Employee ID!", "error");
+            }
+            currentAuthCallback = callbackFunction;
+            document.getElementById('empPassInput').value = "";
+            document.getElementById('passwordModal').style.display = 'flex';
+            setTimeout(() => document.getElementById('empPassInput').focus(), 100);
+        }
+
+        function submitAuth() {
+            let id = document.getElementById("empId").value.trim().toUpperCase();
+            let pass = document.getElementById("empPassInput").value.trim();
+            let realPass = EMP_LIST[id].password || "1234";
+
+            if(pass !== String(realPass)) {
+                showToast("❌ गलत पासवर्ड! कृपया सही पासवर्ड डालें।", "error");
+                return;
+            }
+            
+            document.getElementById('passwordModal').style.display = 'none';
+            if(currentAuthCallback) {
+                currentAuthCallback(); // Execute the requested button action!
+                currentAuthCallback = null;
+            }
         }
 
         async function fetchSystemData() {
@@ -208,23 +250,12 @@
                     
                     commands.forEach(cmd => {
                         if (cmd.timestamp > lastCmdTime) {
-                            if (cmd.forceType === "endTrain" && attendanceDb[id].mode === "train") { 
-                                attendanceDb[id].mode = "work"; showToast("⚠️ एडमिन द्वारा आपकी ट्रेनिंग समाप्त कर दी गई है।", "error"); isUpdated = true; 
-                            }
-                            if (cmd.forceType === "forcePunchOut" && !attendanceDb[id].isPunchedOut) { 
-                                attendanceDb[id].isPunchedOut = true; attendanceDb[id].mode = "out"; 
-                                attendanceDb[id].outTime = new Date().toLocaleTimeString('hi-IN'); attendanceDb[id].outByAdmin = true; 
-                                showToast("🔴 एडमिन ने आपको Punch-Out कर दिया है!", "error"); isUpdated = true; 
-                            }
-                            if (cmd.forceType === "undoPunchOut" && attendanceDb[id].isPunchedOut) { 
-                                attendanceDb[id].isPunchedOut = false; attendanceDb[id].mode = "work"; attendanceDb[id].outTime = "-"; 
-                                attendanceDb[id].photoOut = null; attendanceDb[id].outByAdmin = false; 
-                                showToast("🟢 एडमिन ने आपका Punch-Out हटा दिया है!", "success"); isUpdated = true; 
-                            }
+                            if (cmd.forceType === "endTrain" && attendanceDb[id].mode === "train") { attendanceDb[id].mode = "work"; showToast("⚠️ एडमिन द्वारा आपकी ट्रेनिंग समाप्त कर दी गई है।", "error"); isUpdated = true; }
+                            if (cmd.forceType === "forcePunchOut" && !attendanceDb[id].isPunchedOut) { attendanceDb[id].isPunchedOut = true; attendanceDb[id].mode = "out"; attendanceDb[id].outTime = new Date().toLocaleTimeString('hi-IN'); attendanceDb[id].outByAdmin = true; showToast("🔴 एडमिन ने आपको Punch-Out कर दिया है!", "error"); isUpdated = true; }
+                            if (cmd.forceType === "undoPunchOut" && attendanceDb[id].isPunchedOut) { attendanceDb[id].isPunchedOut = false; attendanceDb[id].mode = "work"; attendanceDb[id].outTime = "-"; attendanceDb[id].photoOut = null; attendanceDb[id].outByAdmin = false; showToast("🟢 एडमिन ने आपका Punch-Out हटा दिया है!", "success"); isUpdated = true; }
                             localStorage.setItem(`lastCmd_${id}`, cmd.timestamp);
                         }
                     });
-                    
                     if(isUpdated) { saveData(); renderTable(); sendFullSync(id); }
                 }
                 isSystemReady = true; 
@@ -241,28 +272,15 @@
             } else { document.getElementById("empName").value = ""; ptsBox.style.display = "none"; }
         }
 
-        // 🌟 NEW: PASSWORD VALIDATOR FOR ALL ACTIONS 🌟
-        function verifyEmp() {
-            let id = document.getElementById("empId").value.trim().toUpperCase();
-            let pass = document.getElementById("empPass").value.trim();
-            if(!id || !EMP_LIST[id] || EMP_LIST[id].status !== "Active") { showToast("❌ Invalid or Inactive Employee ID!", "error"); return false; }
-            let realPass = EMP_LIST[id].password || "1234";
-            if(pass !== String(realPass)) { showToast("❌ गलत पासवर्ड! कृपया सही पासवर्ड डालें।", "error"); return false; }
-            return id;
-        }
-
         // --- ATTENDANCE ---
         function initPunchIn() {
-            let id = verifyEmp(); if(!id) return;
+            let id = document.getElementById("empId").value.trim().toUpperCase();
             if(!isSystemReady) return showToast("⏳ सिस्टम लोड हो रहा है... 2 सेकंड रुकें।", "error");
             if(isHolidayOrOff) return showToast(`🛑 Today is ${holidayName || 'Weekly Off (Monday)'}.`, "error");
             if(attendanceDb[id]) return showToast("आप इस डिवाइस पर आज का पंच-इन पहले ही कर चुके हैं!", "error");
             
-            // 🌟 FIX: STRICT CROSS DEVICE CHECK 🌟
             let serverLog = TODAY_SERVER_LOGS[id];
-            if(!attendanceDb[id] && serverLog && serverLog.inTime && serverLog.inTime !== "-") {
-                return showToast("⚠️ क्रॉस-डिवाइस अलर्ट!\nआप पहले ही किसी दूसरे डिवाइस से पंच-इन कर चुके हैं।", "error");
-            }
+            if(!attendanceDb[id] && serverLog && serverLog.inTime && serverLog.inTime !== "-") { return showToast("⚠️ क्रॉस-डिवाइस अलर्ट!\nआप पहले ही किसी दूसरे डिवाइस से पंच-इन कर चुके हैं।", "error"); }
             
             document.getElementById('modalTitle').innerText = "कैमरा और लोकेशन लोड हो रही है..."; document.getElementById('selfieModal').style.display = 'flex';
             pendingAction = "in"; pendingId = id; window.tempLocation = null; openCamera(); 
@@ -272,15 +290,14 @@
         }
 
         function startTraining() {
-            let id = verifyEmp(); if(!id) return;
-            if(!attendanceDb[id] || attendanceDb[id].isPunchedOut) return alert("पहले पंच-इन करें!");
+            let id = document.getElementById("empId").value.trim().toUpperCase(); if(!attendanceDb[id] || attendanceDb[id].isPunchedOut) return alert("पहले पंच-इन करें!");
             let pass = prompt("ट्रेनिंग शुरू करने के लिए पासवर्ड डालें:"); if(pass === TRAIN_PASS) { attendanceDb[id].mode = "train"; saveData(); renderTable(); sendFullSync(id); showToast("✅ Training Mode Started!"); } else if(pass !== null) showToast("❌ Incorrect Password!", "error");
         }
 
-        function actionBtn(mode) { let id = verifyEmp(); if(!id) return; if(!attendanceDb[id] || attendanceDb[id].isPunchedOut) return alert("Action not allowed!"); attendanceDb[id].mode = mode; saveData(); renderTable(); sendFullSync(id); }
+        function actionBtn(mode) { let id = document.getElementById("empId").value.trim().toUpperCase(); if(!attendanceDb[id] || attendanceDb[id].isPunchedOut) return alert("Action not allowed!"); attendanceDb[id].mode = mode; saveData(); renderTable(); sendFullSync(id); }
 
         function initPunchOut() {
-            let id = verifyEmp(); if(!id) return;
+            let id = document.getElementById("empId").value.trim().toUpperCase();
             if(!attendanceDb[id]) return alert("इस डिवाइस से पंच-इन नहीं किया गया है!");
             if(attendanceDb[id].isPunchedOut) return alert("शिफ्ट पहले ही समाप्त हो चुकी है!"); if(!isDeviceWithin50m) return alert("आप ऑफिस ज़ोन (50m) से बाहर हैं!");
             pendingAction = "out"; pendingId = id; window.tempLocation = "ok"; document.getElementById('modalTitle').innerText = "📍 पंच-आउट: सेल्फी लें"; document.getElementById('selfieModal').style.display = 'flex'; openCamera();
@@ -308,7 +325,7 @@
         function syncAllActiveUsers() { for(let id in attendanceDb) { if(!attendanceDb[id].isPunchedOut) sendFullSync(id); } }
 
         async function openLeaveModal() { 
-            let id = verifyEmp(); if(!id) return;
+            let id = document.getElementById("empId").value.trim().toUpperCase();
             document.getElementById('leaveModal').style.display = 'flex'; document.getElementById('submitLeaveBtn').innerText = "Checking Limits..."; document.getElementById('submitLeaveBtn').disabled = true;
             try { let res = await fetch(`${SCRIPT_URL}?action=checkMyLeave&id=${id}&nocache=${Date.now()}`); myActiveLeaves = await res.json(); } catch(e) { myActiveLeaves = []; }
             document.getElementById('submitLeaveBtn').innerText = "Submit Request"; document.getElementById('submitLeaveBtn').disabled = false; checkLeaveLimits();
@@ -328,8 +345,7 @@
         }
                                                                 
         function submitLeave() {
-            let id = verifyEmp(); if(!id) return; 
-            let type = document.getElementById('leaveType').value; let reason = document.getElementById('leaveReason').value; let lDateRaw = document.getElementById('leaveDateInput').value;
+            let id = document.getElementById("empId").value.trim().toUpperCase(); let type = document.getElementById('leaveType').value; let reason = document.getElementById('leaveReason').value; let lDateRaw = document.getElementById('leaveDateInput').value;
             if(!type || !reason || !lDateRaw) return alert("Please fill all details!");
             let hasMedical = "No"; if(document.getElementById('medicalCertBox').style.display === "block") { if(!document.getElementById('medicalCert').files[0]) return alert("Medical Certificate is required!"); hasMedical = "Yes"; }
             let dParts = lDateRaw.split("-"); let fDate = `${dParts[2]}/${dParts[1]}/${dParts[0]}`;
@@ -342,26 +358,19 @@
         }
                                                                              
         async function checkMyLeaveStatus() {
-            let id = verifyEmp(); if(!id) return; document.querySelector('.btn-check-leave').innerText = "⏳ Checking...";
+            let id = document.getElementById("empId").value.trim().toUpperCase(); document.querySelector('.btn-check-leave').innerText = "⏳ Checking...";
             try { let res = await fetch(`${SCRIPT_URL}?action=checkMyLeave&id=${id}&nocache=${Date.now()}`); let data = await res.json(); let body = data.map(l => `<div style="border:1px solid #ddd; padding:10px; margin:5px 0; border-radius:5px; background:${l.status==='Approved'?'#e8f5e9':(l.status==='Rejected'?'#ffebee':'#fff8e1')}">📅 ${l.leaveDate} - <span style="font-weight:bold;">${l.type}</span> <br>Status: <b>${l.status}</b></div>`).join(""); document.getElementById('leaveStatusBody').innerHTML = body || "<p style='text-align:center;'>No pending requests.</p>"; document.getElementById('leaveStatusModal').style.display = 'flex'; } catch(e) { alert("Server Error!"); } document.querySelector('.btn-check-leave').innerText = "👀 Check My Leave Status";
         }
 
         function formatTime(s) { if(!s || isNaN(s)) return "00:00:00"; return `${String(Math.floor(s/3600)).padStart(2,'0')}:${String(Math.floor((s%3600)/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; }
-        
         function renderTable() {
             let tbody = document.getElementById("logTableBody"); tbody.innerHTML = ""; let data = Object.values(attendanceDb).sort((a,b) => b.timestamp - a.timestamp);
             if(data.length === 0) return tbody.innerHTML = `<tr><td colspan="11">कोई डेटा उपलब्ध नहीं है</td></tr>`;
             data.forEach(emp => {
-                let exc = parseInt(emp.exceptionSecs) || 0; 
-                let tw = parseInt(emp.workSecs || 0) + parseInt(emp.trainSecs || 0) + exc;
-                
+                let exc = parseInt(emp.exceptionSecs) || 0; let tw = parseInt(emp.workSecs || 0) + parseInt(emp.trainSecs || 0) + exc;
                 let adminTag = emp.outByAdmin ? `<br><span style="color:#E91E63;font-size:11px;font-weight:bold;">(Admin Punched Out)</span>` : "";
-                let status = (emp.mode === "leave") ? `<span style="color:red;font-weight:bold;">${emp.statusText}</span>` : (emp.isPunchedOut && tw < 28800 && tw > 0 ? "<span style='color:red;font-weight:bold;'>Half Day</span>" : "<span style='color:green;font-weight:bold;'>Present</span>");
-                status += adminTag;
-                
-                if(emp.mode === 'break') status = `Present<br><span class="badge badge-break">☕ On Break</span>`; 
-                if(emp.mode === 'train') status = `Present<br><span class="badge badge-train">💼 On Official Duty</span>`;
-                
+                let status = (emp.mode === "leave") ? `<span style="color:red;font-weight:bold;">${emp.statusText}</span>` : (emp.isPunchedOut && tw < 28800 && tw > 0 ? "<span style='color:red;font-weight:bold;'>Half Day</span>" : "<span style='color:green;font-weight:bold;'>Present</span>"); status += adminTag;
+                if(emp.mode === 'break') status = `Present<br><span class="badge badge-break">☕ On Break</span>`; if(emp.mode === 'train') status = `Present<br><span class="badge badge-train">💼 On Official Duty</span>`;
                 let bColor = (emp.breakSecs > 3600) ? "red" : "black"; let wColor = tw >= 28800 ? "green" : "red";
                 let tDisplay = `<span style="color:${wColor};font-weight:bold;">${formatTime(tw)}</span>`; if(exc > 0) tDisplay += `<br><small style="color:#0288D1;">(+${formatTime(exc)} Exc)</small>`;
                 let pIn = emp.photoIn ? `<img src="${emp.photoIn}" class="log-photo">` : '-'; let pOut = emp.photoOut ? `<img src="${emp.photoOut}" class="log-photo">` : '-';
@@ -370,7 +379,7 @@
         }
 
         async function downloadPDF() {
-            let id = verifyEmp(); if(!id) return;
+            let id = document.getElementById("empId").value.trim().toUpperCase(); 
             let pass = prompt("PDF डाउनलोड करने के लिए एडमिन पासवर्ड डालें:"); if (pass !== ADMIN_PASS) return alert("❌ Access Denied! (Wrong Password)");
             let choice = prompt("Select Month for Report:\n1 = Current Month\n2 = Last Month", "1"); if (choice !== "1" && choice !== "2") return;
             let targetDate = new Date(); if (choice === "2") targetDate.setMonth(targetDate.getMonth() - 1);
@@ -432,14 +441,10 @@
             if(tabId !== 'assignTask') loadMyTasks();
         }
 
-        function openTaskModal() {
-            let id = verifyEmp(); if(!id) return;
-            document.getElementById('taskModal').style.display = 'flex'; switchTaskTab('myTasks'); 
-        }
+        function openTaskModal() { document.getElementById('taskModal').style.display = 'flex'; switchTaskTab('myTasks'); }
 
         function submitNewTask() {
-            let assignerId = verifyEmp(); if(!assignerId) return;
-            let assigneeId = document.getElementById("newTaskAssignee").value.trim().toUpperCase(); let desc = document.getElementById("newTaskDesc").value.trim(); let pass = document.getElementById("newTaskPass").value.trim();
+            let assignerId = document.getElementById("empId").value.trim().toUpperCase(); let assigneeId = document.getElementById("newTaskAssignee").value.trim().toUpperCase(); let desc = document.getElementById("newTaskDesc").value.trim(); let pass = document.getElementById("newTaskPass").value.trim();
             if(!assigneeId || !desc || !pass) return showToast("❌ कृपया सभी बॉक्स भरें!", "error");
             if(!EMP_LIST[assigneeId] || EMP_LIST[assigneeId].status !== "Active") return showToast(`❌ Assignee ID (${assigneeId}) गलत है!`, "error");
 
@@ -464,43 +469,24 @@
                     let penaltyBadge = t.penaltyPts > 0 ? `<span style="color:red; font-weight:bold; font-size:11px;">⚠️ Penalty on this task: ${t.penaltyPts} pts</span>` : '';
                     let formatDesc = `<div class="desc-box"><strong>Task:</strong> ${t.desc} ${t.replies ? '<div class="reply-box">Replies: ' + t.replies.replace(/\n/g, '<br>') + '</div>' : ''}</div>`;
                     let beautifulStatus = getStatusPill(t.status);
+                    let chainArr = t.chain.split(" -> "); let myIdx = chainArr.lastIndexOf(myId);
 
-                    let chainArr = t.chain.split(" -> ");
-                    let myIdx = chainArr.lastIndexOf(myId);
-
-                    // 1. My Work
                     if(t.currAssignee === myId && ["Pending Start", "In Progress", "Rework"].includes(t.status)) {
                         let acts = ""; let stClass = t.status === "Pending Start" ? "pending" : "active";
-                        
                         if(t.status === "Pending Start") { acts = `<button class="btn-in" onclick="promptStartWork('${t.taskId}')">🚀 Start Work</button> <button class="btn-train-start" onclick="forwardTaskPrompt('${t.taskId}')">Forward Task</button>`; }
-                        else if (t.status === "Rework") {
-                            acts = `<button class="btn-in" onclick="promptStartWork('${t.taskId}')">🚀 Start Work (Fix It)</button>`;
-                            if (myIdx < chainArr.length - 1) {
-                                let nextEmp = chainArr[myIdx + 1];
-                                acts += ` <button class="btn-out" onclick="returnForRework('${t.taskId}')">⬇️ Pass Down to ${nextEmp}</button>`;
-                            } else {
-                                acts += ` <button class="btn-train-start" onclick="forwardTaskPrompt('${t.taskId}')">Forward Task</button>`;
-                            }
-                        }
+                        else if (t.status === "Rework") { acts = `<button class="btn-in" onclick="promptStartWork('${t.taskId}')">🚀 Start Work (Fix It)</button>`; if (myIdx < chainArr.length - 1) { let nextEmp = chainArr[myIdx + 1]; acts += ` <button class="btn-out" onclick="returnForRework('${t.taskId}')">⬇️ Pass Down to ${nextEmp}</button>`; } else { acts += ` <button class="btn-train-start" onclick="forwardTaskPrompt('${t.taskId}')">Forward Task</button>`; } }
                         else if (t.status === "In Progress") { acts = `<button class="btn-in" onclick="completeWork('${t.taskId}')">✅ Mark Completed</button> <button class="btn-train-start" onclick="forwardTaskPrompt('${t.taskId}')">Forward Task</button>`; }
-
                         myHtml += `<div class="task-item ${stClass}">${chainBadge}<strong>ID:</strong> ${t.taskId} <span style="float:right;">${beautifulStatus}</span><br>${formatDesc}<strong>Deadline:</strong> ${t.deadline ? new Date(t.deadline).toLocaleString('hi-IN') : 'Not Set'}<br>${penaltyBadge}<div class="task-actions">${acts}</div></div>`;
                     }
-                    
-                    // 2. To Review
                     if(t.currAssignee === myId && t.status === "Review") {
                         let acts = (t.originalAssigner === myId) ? `<button class="btn-in" onclick="promptCloseTask('${t.taskId}')">🔓 Enter Password to Close</button>` : `<button class="btn-in" onclick="forwardReviewUp('${t.taskId}')">⬆️ Approve & Send Up</button> <button class="btn-out" onclick="returnForRework('${t.taskId}')">🔄 Return for Rework</button>`;
                         revHtml += `<div class="task-item review">${chainBadge}<strong>ID:</strong> ${t.taskId} <span style="float:right;">${beautifulStatus}</span><br>${formatDesc}<div class="task-actions">${acts}</div></div>`;
                     }
-
-                    // 3. Track Sent
                     if(t.chain.includes(myId) && t.currAssignee !== myId && t.status !== "Closed") {
                         trackHtml += `<div class="task-item track">${chainBadge}<strong>ID:</strong> ${t.taskId}<br><strong>Current Owner:</strong> <span style="color:#d32f2f; font-weight:bold;">${t.currAssignee} (${EMP_LIST[t.currAssignee]?.name || 'Unknown'})</span><br><strong>Status:</strong> ${beautifulStatus}<br>${formatDesc}<strong>Deadline:</strong> ${t.deadline ? new Date(t.deadline).toLocaleString('hi-IN') : 'Not Set'}</div>`;
                     }
                 });
-                document.getElementById("myTasksList").innerHTML = myHtml || "<p style='text-align:center;'>No tasks right now.</p>";
-                document.getElementById("reviewTasksList").innerHTML = revHtml || "<p style='text-align:center;'>No tasks pending review.</p>";
-                document.getElementById("trackTasksList").innerHTML = trackHtml || "<p style='text-align:center;'>No active sent tasks.</p>";
+                document.getElementById("myTasksList").innerHTML = myHtml || "<p style='text-align:center;'>No tasks right now.</p>"; document.getElementById("reviewTasksList").innerHTML = revHtml || "<p style='text-align:center;'>No tasks pending review.</p>"; document.getElementById("trackTasksList").innerHTML = trackHtml || "<p style='text-align:center;'>No active sent tasks.</p>";
             } catch(e) { }
         }
 
@@ -514,7 +500,7 @@
         
         function promptCloseTask(taskId) { document.getElementById("closeWorkTaskId").value = taskId; document.getElementById("closeTaskPass").value = ""; document.getElementById('closeTaskModal').style.display = 'flex'; }
         function confirmCloseTask() {
-            let taskId = document.getElementById("closeWorkTaskId").value; let pass = document.getElementById("closeTaskPass").value;
+            let taskId = document.getElementById("closeWorkTaskId").value; let pass = document.getElementById("closeTaskPass").value; let myId = document.getElementById("empId").value.trim().toUpperCase();
             if(!pass) return showToast("Password required!", "error");
             fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "verifyAndCloseTask", taskId: taskId, password: pass }) }).then(res => res.json()).then(data => {
                 if(data.success) { showToast("🎉 Task Closed. Rewards given!", "success"); document.getElementById('closeTaskModal').style.display = 'none'; loadMyTasks(); fetchSystemData(); } else showToast("❌ Incorrect Password!", "error");
