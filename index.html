@@ -8,11 +8,14 @@
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #eef2f3; margin: 0; padding: 20px; text-align: center; }
         
-        /* 🌟 HEADER & LOGOUT BUTTON 🌟 */
-        .header { background: #1a237e; color: white; padding: 15px 10px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); position: relative; }
-        .header h2 { margin: 5px 0; font-size: 22px; }
-        .live-time { font-size: 16px; font-weight: bold; color: #ffeb3b; }
-        .logout-btn { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: #f44336; color: white; border: none; padding: 8px 15px; border-radius: 5px; font-weight: bold; cursor: pointer; display: none; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: 0.3s; }
+        /* 🌟 MOBILE OVERLAP FIX: FLEXBOX HEADER 🌟 */
+        .header { background: #1a237e; color: white; padding: 15px 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header-left { text-align: left; }
+        .header h2 { margin: 0; font-size: 20px; line-height: 1.2; }
+        .live-time { font-size: 14px; font-weight: bold; color: #ffeb3b; margin-top: 5px; }
+        
+        /* 🌟 LOGOUT BUTTON 🌟 */
+        .logout-btn { background: #f44336; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; display: none; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: 0.3s; white-space: nowrap; height: fit-content; }
         .logout-btn:hover { background: #d32f2f; box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
 
         .container { background: white; padding: 20px; border-radius: 10px; max-width: 1150px; margin: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
@@ -20,8 +23,8 @@
         input[type="text"], input[type="password"] { padding: 12px; width: 30%; margin: 5px; border: 2px solid #1a237e; border-radius: 5px; font-size: 16px; font-weight: bold; text-align: center; text-transform: uppercase; transition: 0.3s; }
         #empName { background-color: #e9ecef; cursor: not-allowed; }
         
-        .points-box { display: none; justify-content: center; gap: 30px; background: #fff3e0; padding: 12px; border-radius: 8px; border: 2px solid #FF9800; margin-bottom: 20px; box-shadow: inset 0 2px 5px rgba(0,0,0,0.05); }
-        .pt-item { text-align: center; background: white; padding: 10px 20px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); flex: 1; max-width: 200px; }
+        .points-box { display: none; justify-content: center; gap: 30px; background: #fff3e0; padding: 12px; border-radius: 8px; border: 2px solid #FF9800; margin-bottom: 20px; box-shadow: inset 0 2px 5px rgba(0,0,0,0.05); flex-wrap: wrap; }
+        .pt-item { text-align: center; background: white; padding: 10px 20px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); flex: 1; min-width: 120px; }
         .pt-title { font-size: 12px; color: #555; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
         .pt-value { font-size: 24px; font-weight: 900; margin-top: 5px; }
         .val-green { color: #2E7D32; } .val-red { color: #D32F2F; } .val-blue { color: #1a237e; }
@@ -53,7 +56,6 @@
         .btn-cancel-pass { background: #e0e0e0; color: #333; width: 100%; padding: 10px; border: none; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; margin-top: 12px; transition: 0.3s; }
         .btn-cancel-pass:hover { background: #bdbdbd; }
 
-        /* Standard Modals */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); justify-content: center; align-items: center; }
         .modal-content { background: white; padding: 20px; border-radius: 10px; text-align: left; width: 340px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); max-height: 90vh; overflow-y: auto; }
         .large-modal { width: 650px; }
@@ -66,6 +68,7 @@
         .status-box { margin: 15px auto; padding: 10px; background: #e3f2fd; border: 2px solid #90caf9; border-radius: 6px; font-size: 16px; font-weight: bold; color: #0d47a1; max-width: 500px; text-align: center; }
         
         #exportArea { margin-top: 20px; background: white; padding: 10px; }
+        .report-header { display: none; text-align: center; font-size: 20px; margin-bottom: 15px; color: #1a237e; font-weight: bold; text-transform: uppercase; }
         #tableWrapper { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
         th, td { border: 1px solid #ddd; padding: 6px; text-align: center; vertical-align: middle; }
@@ -80,7 +83,6 @@
         .leave-item.rejected { border-left-color: #f44336; background: #ffebee; }
         .leave-item.pending { border-left-color: #FF9800; background: #fff8e1; }
 
-        /* TaskFlow UI */
         .task-tabs { display: flex; border-bottom: 2px solid #ddd; margin-bottom: 15px; }
         .task-tab { flex: 1; padding: 8px; text-align: center; cursor: pointer; font-weight: bold; color: #555; background: #f5f5f5; border: none; outline: none; transition: 0.3s; font-size: 13px;}
         .task-tab.active { background: #00897B; color: white; }
@@ -104,8 +106,10 @@
     <div id="toastBox">Notification</div>
     
     <div class="header">
-        <h2>🏢 Quality Education Attendance Kiosk</h2>
-        <div id="liveDateTime" class="live-time">लोड हो रहा है...</div>
+        <div class="header-left">
+            <h2>🏢 Quality Education Attendance</h2>
+            <div id="liveDateTime" class="live-time">लोड हो रहा है...</div>
+        </div>
         <button id="logoutBtn" class="logout-btn" onclick="logoutEmp()">Logout 🚪</button>
     </div>
 
@@ -177,7 +181,7 @@
     <div id="closeTaskModal" class="modal" style="z-index: 1001;"><div class="modal-content" style="text-align: center;"><h3 style="color:#9C27B0; margin-top:0;">🔒 Finalize Task</h3><p style="font-size: 13px; color: #555;">Enter the original Task Password to accept completion.</p><input type="password" id="closeTaskPass" placeholder="Enter Password" style="width: 90%; text-align: center; margin-bottom: 15px;"><input type="hidden" id="closeWorkTaskId"><button class="btn-in" style="width: 100%; margin-bottom: 10px;" onclick="confirmCloseTask()">Accept & Close Task</button><button class="btn-out" style="width: 100%; margin-bottom: 10px;" onclick="returnTaskForRework()">Return for Rework</button><button style="width: 100%; background:#aaa; border:none; padding:10px; border-radius:5px; color:white; font-weight:bold; cursor:pointer;" onclick="document.getElementById('closeTaskModal').style.display='none';">Cancel</button></div></div>
 
     <script>
-        // 🚨 UPDATE WITH YOUR URL 🚨
+        // 🚨 UPDATE WITH YOUR NEW DEPLOYMENT URL 🚨
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzQl4SuWQjbyALKYkcwi0Eim03uhwuGUwTMUzcNIWDLZF_LbCJ7Esxmq74pJIuF0_2zyg/exec";
         
         let ADMIN_PASS = "1234"; let TRAIN_PASS = "0000";
@@ -191,20 +195,14 @@
         let attendanceDb = JSON.parse(localStorage.getItem(`attDB_${todayDateStr}`)) || {};
         let deviceBaseLat = localStorage.getItem(`baseLat_${todayDateStr}`); let deviceBaseLng = localStorage.getItem(`baseLng_${todayDateStr}`);
         let isDeviceWithin50m = false; 
-        
-        let isWeeklyOff = (now.getDay() === WEEKLY_OFF_DAY);
-        let holidayName = PUBLIC_HOLIDAYS[todayDateStr];
-        let isHolidayOrOff = isWeeklyOff || holidayName;
+        let isWeeklyOff = (now.getDay() === WEEKLY_OFF_DAY); let holidayName = PUBLIC_HOLIDAYS[todayDateStr]; let isHolidayOrOff = isWeeklyOff || holidayName;
 
-        let currentLoggedInId = null; // 🌟 SESSION TRACKER
+        let currentLoggedInId = null; 
 
         window.onload = async () => {
             updateDateTime(); setInterval(updateDateTime, 1000); checkTodayHoliday(); renderTable(); 
             if(Object.values(attendanceDb).some(emp => !emp.isPunchedOut) && deviceBaseLat && deviceBaseLng) { isDeviceWithin50m = true; document.getElementById("statusBox").style.display = "block"; startDeviceGeoTracking(); }
-            
-            startMasterTimer(); fetchSystemData(); 
-            setInterval(fetchSystemData, 10000); 
-            setInterval(syncAllActiveUsers, 10000); 
+            startMasterTimer(); fetchSystemData(); setInterval(fetchSystemData, 10000); setInterval(syncAllActiveUsers, 10000); 
             document.getElementById("leaveDateInput").setAttribute('min', now.toISOString().split('T')[0]); document.getElementById("leaveDateInput").value = now.toISOString().split('T')[0];
         };
 
@@ -227,24 +225,20 @@
             if(callback) callback();
         }
 
-        // 🌟 SESSION LOGIN LOGIC 🌟
+        // 🌟 DEVICE SESSION LOGIN SYSTEM 🌟
         function autoFillName() { 
             let el = document.getElementById("empId"); el.value = el.value.trim().toUpperCase(); let id = el.value; 
-
             if(EMP_LIST && EMP_LIST[id]) {
                 let eName = EMP_LIST[id].name;
                 document.getElementById("empName").value = (EMP_LIST[id].status !== "Active") ? "ACCOUNT DEACTIVATED" : eName;
                 
-                // Trigger Password Pop-up ONLY if they are active and not already logged in
                 if(EMP_LIST[id].status === "Active" && currentLoggedInId !== id) {
                     document.getElementById('authEmpName').innerText = eName;
                     document.getElementById('empPassInput').value = "";
                     document.getElementById('passwordModal').style.display = 'flex';
                     setTimeout(() => document.getElementById('empPassInput').focus(), 100);
                 }
-            } else { 
-                document.getElementById("empName").value = ""; 
-            }
+            } else { document.getElementById("empName").value = ""; }
         }
 
         function cancelAuth() {
@@ -261,12 +255,24 @@
 
             if(pass !== String(realPass)) {
                 showToast("❌ गलत पासवर्ड! कृपया सही पासवर्ड डालें।", "error");
-                document.getElementById("empPassInput").value = "";
-                document.getElementById("empPassInput").focus();
-                return;
+                document.getElementById("empPassInput").value = ""; document.getElementById("empPassInput").focus(); return;
+            }
+
+            // 🌟 STRICT CROSS-DEVICE CHECK
+            let serverToken = EMP_LIST[id].sessionToken || "";
+            let localToken = localStorage.getItem(`session_${id}`) || "";
+
+            if (serverToken !== "" && serverToken !== localToken) {
+                showToast("❌ यह ID दूसरी डिवाइस पर लॉगिन है! पहले वहां से Logout करें।", "error");
+                cancelAuth(); return;
+            }
+
+            if (!localToken || serverToken === "") {
+                localToken = "TOK_" + Date.now();
+                localStorage.setItem(`session_${id}`, localToken);
+                safeFetch({ action: "empLoginSession", empId: id, token: localToken });
             }
             
-            // ✅ LOGIN SUCCESS
             currentLoggedInId = id;
             document.getElementById('passwordModal').style.display = 'none';
             document.getElementById('logoutBtn').style.display = 'block';
@@ -275,22 +281,18 @@
             
             let rew = parseInt(EMP_LIST[id].reward) || 0; let pen = parseInt(EMP_LIST[id].penalty) || 0;
             document.getElementById("dispReward").innerText = rew; document.getElementById("dispPenalty").innerText = pen; document.getElementById("dispNet").innerText = rew - pen;
-            document.getElementById("empPointsBox").style.display = "flex";
             document.getElementById("mainActionDashboard").style.display = "block";
-            
             showToast("✅ Login Successful! Welcome " + EMP_LIST[id].name, "success");
         }
 
         function logoutEmp() {
+            let id = currentLoggedInId;
+            if(id) { safeFetch({ action: "empLogoutSession", empId: id }); localStorage.removeItem(`session_${id}`); }
             currentLoggedInId = null;
             document.getElementById('empId').readOnly = false;
             document.getElementById('empId').style.background = "white"; 
-            document.getElementById('empId').value = "";
-            document.getElementById('empName').value = "";
-            
-            document.getElementById('logoutBtn').style.display = 'none';
-            document.getElementById('empPointsBox').style.display = 'none';
-            document.getElementById('mainActionDashboard').style.display = 'none';
+            document.getElementById('empId').value = ""; document.getElementById('empName').value = "";
+            document.getElementById('logoutBtn').style.display = 'none'; document.getElementById('mainActionDashboard').style.display = 'none';
             showToast("🚪 Logged Out Successfully", "success");
         }
 
@@ -300,16 +302,13 @@
                 if(pData.adminPass) ADMIN_PASS = String(pData.adminPass).trim(); if(pData.trainPass) TRAIN_PASS = String(pData.trainPass).trim();
                 let eRes = await fetch(`${SCRIPT_URL}?action=getEmployees&nocache=${Date.now()}`); let fetchedList = await eRes.json();
                 if(Object.keys(fetchedList).length > 0) { EMP_LIST = fetchedList; localStorage.setItem('cachedEmpList', JSON.stringify(EMP_LIST)); }
-                
                 let tRes = await fetch(`${SCRIPT_URL}?action=getTodayLogs&date=${todayDateStr}&nocache=${Date.now()}`); TODAY_SERVER_LOGS = await tRes.json(); 
+                
                 let activeId = Object.keys(attendanceDb)[0]; 
-
                 for(let id in attendanceDb) {
                     let isUpdated = false;
-                    let cmdRes = await fetch(`${SCRIPT_URL}?action=checkCommands&id=${id}&nocache=${Date.now()}`); 
-                    let commands = await cmdRes.json();
+                    let cmdRes = await fetch(`${SCRIPT_URL}?action=checkCommands&id=${id}&nocache=${Date.now()}`); let commands = await cmdRes.json();
                     let lastCmdTime = parseInt(localStorage.getItem(`lastCmd_${id}`)) || 0;
-                    
                     commands.forEach(cmd => {
                         if (cmd.timestamp > lastCmdTime) {
                             if (cmd.forceType === "endTrain" && attendanceDb[id].mode === "train") { attendanceDb[id].mode = "work"; showToast("⚠️ एडमिन द्वारा आपकी ट्रेनिंग समाप्त कर दी गई है।", "error"); isUpdated = true; }
@@ -331,14 +330,9 @@
             if(isHolidayOrOff) return showToast(`🛑 Today is ${holidayName || 'Weekly Off (Monday)'}.`, "error");
             if(attendanceDb[id]) return showToast("आप इस डिवाइस पर आज का पंच-इन पहले ही कर चुके हैं!", "error");
             
-            let serverLog = TODAY_SERVER_LOGS[id];
-            if(!attendanceDb[id] && serverLog && serverLog.inTime && serverLog.inTime !== "-") { return showToast("⚠️ क्रॉस-डिवाइस अलर्ट!\nआप पहले ही किसी दूसरे डिवाइस से पंच-इन कर चुके हैं।", "error"); }
-            
             document.getElementById('modalTitle').innerText = "कैमरा और लोकेशन लोड हो रही है..."; document.getElementById('selfieModal').style.display = 'flex';
             pendingAction = "in"; pendingId = id; window.tempLocation = null; openCamera(); 
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition((pos) => { window.tempLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude }; document.getElementById('modalTitle').innerText = "📍 लोकेशन कन्फर्म, सेल्फी लें"; }, () => { alert("GPS लोकेशन नहीं मिल रही है!"); document.getElementById('selfieModal').style.display = 'none'; if(stream) stream.getTracks().forEach(t=>t.stop()); }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 });
-            } else { alert("आपका फोन लोकेशन सपोर्ट नहीं करता!"); }
+            if (navigator.geolocation) { navigator.geolocation.getCurrentPosition((pos) => { window.tempLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude }; document.getElementById('modalTitle').innerText = "📍 लोकेशन कन्फर्म, सेल्फी लें"; }, () => { alert("GPS लोकेशन नहीं मिल रही है!"); document.getElementById('selfieModal').style.display = 'none'; if(stream) stream.getTracks().forEach(t=>t.stop()); }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }); } else { alert("आपका फोन लोकेशन सपोर्ट नहीं करता!"); }
         }
 
         function startTraining() {
