@@ -397,11 +397,27 @@
         }
 
         function startTraining() {
-            let id = currentLoggedInId; if(!id) return;
-            if(!attendanceDb[id] || attendanceDb[id].isPunchedOut) return showToast("पहले पंच-इन करें!", "error");
-            let pass = prompt("ट्रेनिंग शुरू करने के लिए पासवर्ड डालें:"); if(pass === null) return;
-            if(String(pass).trim() === String(TRAIN_PASS).trim()) { attendanceDb[id].mode = "train"; saveData(); renderTable(); sendFullSync(id); showToast("✅ Training Mode Started!", "success"); } else showToast("❌ Incorrect Password!", "error");
+    let id = currentLoggedInId; 
+    if(!id) return;
+    if(!attendanceDb[id] || attendanceDb[id].isPunchedOut) return showToast("पहले पंच-इन करें!", "error");
+    
+    let pass = prompt("ट्रेनिंग शुरू करने के लिए पासवर्ड डालें:"); 
+    if(pass === null) return;
+    
+    if(String(pass).trim() === String(TRAIN_PASS).trim()) {
+        // सुनिश्चित करें कि trainSecs डिफाइंड है
+        if (attendanceDb[id].trainSecs === undefined) {
+            attendanceDb[id].trainSecs = 0;
         }
+        attendanceDb[id].mode = "train"; 
+        saveData(); 
+        renderTable(); 
+        sendFullSync(id); 
+        showToast("✅ Training Mode Started!", "success"); 
+    } else {
+        showToast("❌ Incorrect Password!", "error");
+    }
+}
 
         function actionBtn(mode) { let id = currentLoggedInId; if(!id) return; if(!attendanceDb[id] || attendanceDb[id].isPunchedOut) return showToast("Action not allowed!", "error"); attendanceDb[id].mode = mode; saveData(); renderTable(); sendFullSync(id); }
 
