@@ -23,6 +23,7 @@
         input[type="text"], input[type="password"] { padding: 12px; width: 30%; margin: 5px; border: 2px solid #1a237e; border-radius: 5px; font-size: 16px; font-weight: bold; text-align: center; text-transform: uppercase; transition: 0.3s; }
         #empName { background-color: #e9ecef; cursor: not-allowed; }
 
+        /* 🌟 PROFILE SIDEBAR 🌟 */
         .sidebar { height: 100%; width: 0; position: fixed; z-index: 10005; top: 0; left: 0; background: linear-gradient(180deg, #1a237e 0%, #0d47a1 100%); overflow-x: hidden; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 5px 0 20px rgba(0,0,0,0.5); padding-top: 60px; color: white; text-align: center; }
         .sidebar .close-btn { position: absolute; top: 10px; right: 20px; font-size: 36px; cursor: pointer; color: white; text-decoration: none; transition: 0.3s; }
         .sidebar .close-btn:hover { color: #ffeb3b; }
@@ -56,6 +57,7 @@
         #toastBox.success { background-color: #4CAF50; border-left: 6px solid #1B5E20; }
         #toastBox.error { background-color: #f44336; border-left: 6px solid #b71c1c; }
 
+        /* 🌟 FULL-SCREEN PASSWORD MODAL 🌟 */
         #passwordModal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100vw; height: 100vh; background: linear-gradient(135deg, rgba(26,35,126,0.95) 0%, rgba(2,136,209,0.95) 100%); justify-content: center; align-items: center; backdrop-filter: blur(8px); }
         .pass-card { background: white; padding: 40px 30px; border-radius: 16px; text-align: center; width: 320px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); animation: popIn 0.3s ease-out; }
         .lock-icon { font-size: 45px; margin-bottom: 5px; }
@@ -119,10 +121,14 @@
     <div id="mySidebar" class="sidebar">
         <a href="javascript:void(0)" class="close-btn" onclick="closeNav()">&times;</a>
         <div class="profile-pic" id="sb-initial">?</div>
-        <h3 style="margin:5px 0 15px 0; font-size: 22px;" id="sb-name">Name</h3>
+        <h3 style="margin:5px 0 5px 0; font-size: 22px;" id="sb-name">Name</h3>
+        
+        <div class="emp-detail-text" id="sb-designation" style="color: #ffeb3b; font-size: 15px; border: 1px solid #ffeb3b; background: rgba(255,235,59,0.1); margin-bottom: 15px;">🎖️ ---</div><br>
+        
         <div class="emp-detail-text" id="sb-id">ID: ---</div><br>
         <div class="emp-detail-text" id="sb-mobile">📞 ---</div><br>
         <div class="emp-detail-text" id="sb-join">📅 ---</div>
+        
         <div class="sb-stats-container">
             <div class="sidebar-stat"><h4>Reward Points 🏆</h4><div class="val val-r" id="sb-reward">0</div></div>
             <div class="sidebar-stat"><h4>Penalty Points ⚠️</h4><div class="val val-p" id="sb-penalty">0</div></div>
@@ -218,10 +224,7 @@
         let attendanceDb = JSON.parse(localStorage.getItem(`attDB_${todayDateStr}`)) || {};
         let deviceBaseLat = localStorage.getItem(`baseLat_${todayDateStr}`); let deviceBaseLng = localStorage.getItem(`baseLng_${todayDateStr}`);
         
-        // 🌟 SMART GPS ZONE VARIABLES 🌟
-        let currentDist = 0;
-        let isGpsError = false;
-        let isTimerActive = false;
+        let currentDist = 0; let isGpsError = false; let isTimerActive = false;
         
         let isWeeklyOff = (now.getDay() === WEEKLY_OFF_DAY); let holidayName = PUBLIC_HOLIDAYS[todayDateStr]; let isHolidayOrOff = isWeeklyOff || holidayName;
         let currentLoggedInId = null; 
@@ -245,11 +248,16 @@
         function openNav() { document.getElementById("mySidebar").style.width = "300px"; }
         function closeNav() { document.getElementById("mySidebar").style.width = "0"; }
 
+        // 🌟 DESIGNATION DISPLAY LOGIC IN SIDEBAR 🌟
         function updateProfileSidebar(id) {
             if(!EMP_LIST[id]) return;
             let emp = EMP_LIST[id];
             document.getElementById("sb-initial").innerText = emp.name.charAt(0).toUpperCase();
             document.getElementById("sb-name").innerText = emp.name;
+            
+            // Set Designation
+            document.getElementById("sb-designation").innerText = "🎖️ " + (emp.designation || "Staff");
+            
             document.getElementById("sb-id").innerText = "ID: " + id;
             document.getElementById("sb-mobile").innerText = "📞 " + (emp.mobile || "Not Added");
             let jDate = new Date(emp.joinDate);
@@ -344,7 +352,6 @@
             if(!silent) showToast("🚪 Logged Out Successfully", "success");
         }
 
-        // 🌟 NEW: SILENT BACKGROUND BADGE UPDATER (INCLUDES REVIEWS) 🌟
         async function updateTaskBadge() {
             if(!currentLoggedInId) return;
             try {
@@ -394,7 +401,7 @@
             } catch(e) { }
         }
                   
-        // --- 🌟 SMART LOCATION & TIMER PERSISTENCE LOGIC 🌟 ---
+        // --- SMART LOCATION & TIMER PERSISTENCE LOGIC ---
         function calculateDistance(lat1, lon1, lat2, lon2) { const R = 6371e3; const dLat = (lat2-lat1)*Math.PI/180; const dLon = (lon2-lon1)*Math.PI/180; const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2); return R*2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); }
 
         function startDeviceGeoTracking() { 
@@ -439,7 +446,7 @@
                             if (!savedTs) { savedTs = Date.now(); localStorage.setItem(tsKey, savedTs); }
                             let elapsedMs = Date.now() - parseInt(savedTs);
                             
-                            if (elapsedMs < 300000) { // 5 mins grace
+                            if (elapsedMs < 300000) { 
                                 isTimerActive = true;
                                 let secondsLeft = Math.ceil((300000 - elapsedMs) / 1000);
                                 let mins = Math.floor(secondsLeft / 60); let secs = secondsLeft % 60;
@@ -477,7 +484,6 @@
             if(isHolidayOrOff) return showToast(`🛑 Today is ${holidayName || 'Weekly Off (Monday)'}.`, "error");
             if(attendanceDb[id]) return showToast("आप इस डिवाइस पर आज का पंच-इन पहले ही कर चुके हैं!", "error");
             
-            // 🌟 STRICT 50m PUNCH IN CHECK 🌟
             if(isGpsError || currentDist > 50) {
                 return alert("⚠️ Punch-In केवल 50 मीटर के 'Working Zone' के अंदर ही अलाउड है!\nकृपया ज़ोन में आएं।");
             }
@@ -504,7 +510,6 @@
             if(!attendanceDb[id]) return alert("इस डिवाइस से पंच-इन नहीं किया गया है!");
             if(attendanceDb[id].isPunchedOut) return alert("शिफ्ट पहले ही समाप्त हो चुकी है!"); 
             
-            // 🌟 STRICT 50m PUNCH OUT CHECK 🌟
             if(isGpsError || currentDist > 50) {
                 return alert("⚠️ Punch-Out केवल 50 मीटर के 'Working Zone' के अंदर ही अलाउड है!\nकृपया ज़ोन में वापस आएं।");
             }
