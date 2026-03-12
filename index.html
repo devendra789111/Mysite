@@ -46,6 +46,20 @@
         .btn-leave { background-color: #E91E63; } .btn-check-leave { background-color: #0288D1; margin-top: 10px; padding: 12px 20px; }
         .btn-task { background-color: #00897B; }
         
+        /* 🌟 MODERN TASK NOTIFICATION BADGE 🌟 */
+        .task-btn-container { position: relative; display: inline-block; }
+        .task-badge {
+            position: absolute; top: -8px; right: -8px; background: #E91E63; color: white;
+            border-radius: 50%; padding: 4px 8px; font-size: 13px; font-weight: bold;
+            box-shadow: 0 2px 8px rgba(233, 30, 99, 0.6); display: none; z-index: 10;
+            animation: pulseBadge 1.5s infinite ease-in-out;
+        }
+        @keyframes pulseBadge { 
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(233, 30, 99, 0.7); } 
+            70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(233, 30, 99, 0); } 
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(233, 30, 99, 0); } 
+        }
+
         #toastBox { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 8px; padding: 16px; position: fixed; z-index: 10009; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 16px; font-weight: bold; box-shadow: 0px 4px 15px rgba(0,0,0,0.4); opacity: 0; transition: opacity 0.4s, bottom 0.4s; }
         #toastBox.show { visibility: visible; opacity: 1; bottom: 60px; }
         #toastBox.success { background-color: #4CAF50; border-left: 6px solid #1B5E20; }
@@ -89,7 +103,6 @@
         .leave-item.rejected { border-left-color: #f44336; background: #ffebee; }
         .leave-item.pending { border-left-color: #FF9800; background: #fff8e1; }
 
-        /* TaskFlow UI */
         .task-tabs { display: flex; border-bottom: 2px solid #ddd; margin-bottom: 15px; }
         .task-tab { flex: 1; padding: 8px; text-align: center; cursor: pointer; font-weight: bold; color: #555; background: #f5f5f5; border: none; outline: none; transition: 0.3s; font-size: 13px;}
         .task-tab.active { background: #00897B; color: white; }
@@ -158,7 +171,10 @@
                 <button class="btn-train-end" onclick="actionBtn('work')">End Training</button>
                 <button class="btn-leave" onclick="openLeaveModal()">Mark Leave</button>
                 <button class="btn-check-leave" onclick="checkMyLeaveStatus()">👀 Check Leaves</button>
-                <button class="btn-task" onclick="openTaskModal()">TaskFlow 📋</button>
+                <div class="task-btn-container">
+                    <button class="btn-task" onclick="openTaskModal()">TaskFlow 📋</button>
+                    <span id="taskBadge" class="task-badge">0</span>
+                </div>
             </div>
         </div>
 
@@ -197,7 +213,7 @@
     <div id="closeTaskModal" class="modal" style="z-index: 1001;"><div class="modal-content" style="text-align: center;"><h3 style="color:#9C27B0; margin-top:0;">🔒 Finalize Task</h3><p style="font-size: 13px; color: #555;">Enter the original Task Password to accept completion.</p><input type="password" id="closeTaskPass" placeholder="Enter Password" style="width: 90%; text-align: center; margin-bottom: 15px;"><input type="hidden" id="closeWorkTaskId"><button class="btn-in" style="width: 100%; margin-bottom: 10px;" onclick="confirmCloseTask()">Accept & Close Task</button><button class="btn-out" style="width: 100%; margin-bottom: 10px;" onclick="returnTaskForRework()">Return for Rework</button><button style="width: 100%; background:#aaa; border:none; padding:10px; border-radius:5px; color:white; font-weight:bold; cursor:pointer;" onclick="document.getElementById('closeTaskModal').style.display='none';">Cancel</button></div></div>
 
     <script>
-        // 🚨 UPDATE WITH YOUR URL 🚨
+        // 🚨 UPDATE WITH YOUR SCRIPT URL 🚨
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzQl4SuWQjbyALKYkcwi0Eim03uhwuGUwTMUzcNIWDLZF_LbCJ7Esxmq74pJIuF0_2zyg/exec";
         
         let ADMIN_PASS = "1234"; let TRAIN_PASS = "0000";
@@ -211,10 +227,9 @@
         let attendanceDb = JSON.parse(localStorage.getItem(`attDB_${todayDateStr}`)) || {};
         let deviceBaseLat = localStorage.getItem(`baseLat_${todayDateStr}`); let deviceBaseLng = localStorage.getItem(`baseLng_${todayDateStr}`);
         
-        // 🌟 1. SMART GPS ZONE VARIABLES 🌟
+        // 🌟 SMART GPS ZONE VARIABLES 🌟
         let currentDist = 0;
         let isGpsError = false;
-        let outOfZoneTimestamp = null;
         let isTimerActive = false;
         
         let isWeeklyOff = (now.getDay() === WEEKLY_OFF_DAY); let holidayName = PUBLIC_HOLIDAYS[todayDateStr]; let isHolidayOrOff = isWeeklyOff || holidayName;
@@ -231,7 +246,7 @@
             EMP_LIST = JSON.parse(localStorage.getItem('cachedEmpList')) || {};
             restoreSession(); 
             
-            startMasterTimer(); fetchSystemData(); 
+            startMasterTimer(); fetchSystemData(true); 
             setInterval(fetchSystemData, 10000); setInterval(syncAllActiveUsers, 10000); 
             document.getElementById("leaveDateInput").setAttribute('min', now.toISOString().split('T')[0]); document.getElementById("leaveDateInput").value = now.toISOString().split('T')[0];
         };
@@ -288,6 +303,7 @@
                 let localToken = localStorage.getItem(`session_${savedId}`) || "";
                 if (serverToken === "" || serverToken === localToken) {
                     currentLoggedInId = savedId; applyLoggedInUI(savedId);
+                    updateTaskBadge(); // Update badge instantly on restore
                 } else { logoutEmp(true); }
             }
         }
@@ -324,6 +340,7 @@
             
             currentLoggedInId = id; localStorage.setItem('activeSessionId', id); 
             document.getElementById('passwordModal').style.display = 'none'; applyLoggedInUI(id);
+            updateTaskBadge(); // Update badge instantly on login
             showToast("✅ Login Successful! Welcome " + EMP_LIST[id].name, "success");
         }
 
@@ -336,7 +353,24 @@
             if(!silent) showToast("🚪 Logged Out Successfully", "success");
         }
 
-        async function fetchSystemData() {
+        // 🌟 NEW: SILENT BACKGROUND BADGE UPDATER 🌟
+        async function updateTaskBadge() {
+            if(!currentLoggedInId) return;
+            try {
+                let res = await fetch(`${SCRIPT_URL}?action=getTasks&id=${currentLoggedInId}&nocache=${Date.now()}`);
+                let tasks = await res.json();
+                let actionableCount = 0;
+                tasks.forEach(t => {
+                    if(t.currAssignee === currentLoggedInId && (t.status === "Pending Start" || t.status === "Rework")) actionableCount++;
+                    if(t.currAssignee === currentLoggedInId && t.status === "Review" && t.originalAssigner === currentLoggedInId) actionableCount++;
+                });
+                let badge = document.getElementById("taskBadge");
+                if(actionableCount > 0) { badge.innerText = actionableCount; badge.style.display = "block"; } 
+                else { badge.style.display = "none"; }
+            } catch(e){}
+        }
+
+        async function fetchSystemData(isInitialLoad = false) {
             try {
                 let pRes = await fetch(`${SCRIPT_URL}?action=getPasswords&nocache=${Date.now()}`); let pData = await pRes.json();
                 if(pData.adminPass) ADMIN_PASS = String(pData.adminPass).trim(); if(pData.trainPass) TRAIN_PASS = String(pData.trainPass).trim();
@@ -345,6 +379,7 @@
                     EMP_LIST = fetchedList; localStorage.setItem('cachedEmpList', JSON.stringify(EMP_LIST)); 
                     if(currentLoggedInId) {
                         updateProfileSidebar(currentLoggedInId);
+                        updateTaskBadge(); // Keeps the badge live
                         let sToken = EMP_LIST[currentLoggedInId].sessionToken || ""; let lToken = localStorage.getItem(`session_${currentLoggedInId}`) || "";
                         if (sToken !== "" && sToken !== lToken) { logoutEmp(true); showToast("⚠️ आपकी ID किसी अन्य डिवाइस पर लॉगिन की गई है!", "error"); }
                     } else if (document.getElementById("empId").value.length > 3) { autoFillName(); }
@@ -369,7 +404,7 @@
             } catch(e) { }
         }
                   
-        // --- 🌟 2. SMART LOCATION & ZONING LOGIC 🌟 ---
+        // --- 🌟 SMART LOCATION & TIMER PERSISTENCE LOGIC 🌟 ---
         function calculateDistance(lat1, lon1, lat2, lon2) { const R = 6371e3; const dLat = (lat2-lat1)*Math.PI/180; const dLon = (lon2-lon1)*Math.PI/180; const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2); return R*2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); }
 
         function startDeviceGeoTracking() { 
@@ -394,30 +429,38 @@
                     let gt = document.getElementById("geoText"); 
                     let sBox = document.getElementById("statusBox"); 
                     
-                    // 🌟 CORE ZONE & GRACE PERIOD LOGIC 🌟
-                    if (sBox && sBox.style.display !== "none") {
+                    // 🌟 LOCALSTORAGE BACKED GRACE PERIOD 🌟
+                    if (sBox && sBox.style.display !== "none" && currentLoggedInId) {
+                        let tsKey = `gpsErrorTs_${currentLoggedInId}_${todayDateStr}`;
+
                         if (!isGpsError && currentDist <= 50) {
-                            isTimerActive = true; outOfZoneTimestamp = null;
+                            isTimerActive = true; localStorage.removeItem(tsKey);
                             sBox.style.background = "#e8f5e9"; sBox.style.borderColor = "#4CAF50"; 
                             gt.innerHTML = `<span style="color:green; font-weight:bold;">✅ वर्किंग ज़ोन (${Math.round(currentDist)}m)</span>`;
                         } else if (!isGpsError && currentDist > 50 && currentDist <= 100) {
-                            isTimerActive = true; outOfZoneTimestamp = null;
+                            isTimerActive = true; localStorage.removeItem(tsKey);
                             sBox.style.background = "#fff3e0"; sBox.style.borderColor = "#FF9800"; 
                             gt.innerHTML = `<span style="color:#FF9800; font-weight:bold;">⚠️ वॉर्निंग: ज़ोन से बाहर जा रहे हैं (${Math.round(currentDist)}m)</span>`;
                         } else if (!isGpsError && currentDist > 100 && currentDist <= 150) {
-                            isTimerActive = true; outOfZoneTimestamp = null;
+                            isTimerActive = true; localStorage.removeItem(tsKey);
                             sBox.style.background = "#ffebee"; sBox.style.borderColor = "#f44336"; 
                             gt.innerHTML = `<span style="color:#f44336; font-weight:bold;">🚸 बफर ज़ोन: कृपया वापस लौटें (${Math.round(currentDist)}m)</span>`;
                         } else {
-                            if (!outOfZoneTimestamp) outOfZoneTimestamp = Date.now();
-                            let elapsedMs = Date.now() - outOfZoneTimestamp;
+                            // Zone 4 (>150m) OR GPS is OFF
+                            let savedTs = localStorage.getItem(tsKey);
+                            if (!savedTs) {
+                                savedTs = Date.now();
+                                localStorage.setItem(tsKey, savedTs);
+                            }
+                            let elapsedMs = Date.now() - parseInt(savedTs);
                             
-                            if (elapsedMs < 300000) { // 5 minutes grace period
+                            if (elapsedMs < 300000) { // 5 minutes grace period (300,000 ms)
                                 isTimerActive = true;
                                 let secondsLeft = Math.ceil((300000 - elapsedMs) / 1000);
-                                let reason = isGpsError ? "GPS बंद/खराब" : `लोकेशन जंप (${Math.round(currentDist)}m)`;
+                                let mins = Math.floor(secondsLeft / 60); let secs = secondsLeft % 60;
+                                let reason = isGpsError ? "GPS बंद/सिग्नल नहीं" : `लोकेशन जंप (${Math.round(currentDist)}m)`;
                                 sBox.style.background = "#eceff1"; sBox.style.borderColor = "#607d8b"; 
-                                gt.innerHTML = `<span style="color:#555; font-weight:bold;">📡 ${reason} - ${secondsLeft}s शेष</span>`;
+                                gt.innerHTML = `<span style="color:#555; font-weight:bold;">📡 ${reason} - ${mins}m ${secs}s शेष</span>`;
                             } else {
                                 isTimerActive = false;
                                 let reason = isGpsError ? "GPS सिग्नल नहीं!" : `150m से बाहर (${Math.round(currentDist)}m)`;
@@ -469,7 +512,11 @@
             let id = currentLoggedInId; if(!id) return;
             if(!attendanceDb[id]) return alert("इस डिवाइस से पंच-इन नहीं किया गया है!");
             if(attendanceDb[id].isPunchedOut) return alert("शिफ्ट पहले ही समाप्त हो चुकी है!"); 
-            if(currentDist > 150) return alert("आप ऑफिस ज़ोन (150m) से बाहर हैं! पंच-आउट के लिए वापस आएं।");
+            
+            // 🌟 STRICT 50m PUNCH OUT CHECK 🌟
+            if(isGpsError || currentDist > 50) {
+                return alert("⚠️ Punch-Out केवल 50 मीटर के 'Working Zone' के अंदर ही अलाउड है!\nकृपया ज़ोन में वापस आएं।");
+            }
             
             pendingAction = "out"; pendingId = id; window.tempLocation = "ok"; document.getElementById('modalTitle').innerText = "📍 पंच-आउट: सेल्फी लें"; document.getElementById('selfieModal').style.display = 'flex'; openCamera();
         }
@@ -485,8 +532,9 @@
                 deviceBaseLat = window.tempLocation.lat; deviceBaseLng = window.tempLocation.lng; localStorage.setItem(`baseLat_${todayDateStr}`, deviceBaseLat); localStorage.setItem(`baseLng_${todayDateStr}`, deviceBaseLng); 
                 attendanceDb[pendingId] = { name: EMP_LIST[pendingId].name, id: pendingId, statusText: "Present", inTime: exactTime, outTime: "-", workSecs: 0, breakSecs: 0, trainSecs: 0, mode: "work", isPunchedOut: false, photoIn: photo, photoOut: null, timestamp: Date.now(), outByAdmin: false };
                 
-                // Active timer variables
-                isTimerActive = true; currentDist = 0; isGpsError = false; outOfZoneTimestamp = null;
+                isTimerActive = true; currentDist = 0; isGpsError = false;
+                let tsKey = `gpsErrorTs_${currentLoggedInId}_${todayDateStr}`; localStorage.removeItem(tsKey);
+
                 document.getElementById("statusBox").style.display = "block"; startDeviceGeoTracking(); 
             } else { attendanceDb[pendingId].isPunchedOut = true; attendanceDb[pendingId].mode = "out"; attendanceDb[pendingId].outTime = exactTime; attendanceDb[pendingId].photoOut = photo; }
             saveData(); renderTable(); sendFullSync(pendingId);
@@ -596,7 +644,7 @@
         function saveData() { localStorage.setItem(`attDB_${todayDateStr}`, JSON.stringify(attendanceDb)); }
         function updateDateTime() { document.getElementById('liveDateTime').innerText = new Date().toLocaleString('hi-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute:'2-digit', second:'2-digit' }); }
 
-        // --- TASKFLOW UI ---
+        // --- TASKFLOW UI & LOGIC ---
         function getStatusPill(st) {
             if(st === "Pending Start") return `<span class="st-pill st-pend">⏳ Pending Start</span>`;
             if(st === "In Progress") return `<span class="st-pill st-prog">🚀 In Progress</span>`;
@@ -635,6 +683,8 @@
             try {
                 let res = await fetch(`${SCRIPT_URL}?action=getTasks&id=${myId}&nocache=${Date.now()}`); let tasks = await res.json(); 
                 let myHtml = "", revHtml = "", trackHtml = "";
+                
+                let actionableCount = 0; // For Notification Badge
 
                 tasks.forEach(t => {
                     let chainBadge = `<div style="font-size:11px; color:#666; margin-bottom:5px;">Chain: ${t.chain}</div>`;
@@ -645,20 +695,39 @@
 
                     if(t.currAssignee === myId && ["Pending Start", "In Progress", "Rework"].includes(t.status)) {
                         let acts = ""; let stClass = t.status === "Pending Start" ? "pending" : "active";
-                        if(t.status === "Pending Start") { acts = `<button class="btn-in" onclick="promptStartWork('${t.taskId}')">🚀 Start Work</button> <button class="btn-train-start" onclick="forwardTaskPrompt('${t.taskId}')">Forward Task</button>`; }
-                        else if (t.status === "Rework") { acts = `<button class="btn-in" onclick="promptStartWork('${t.taskId}')">🚀 Start Work (Fix It)</button>`; if (myIdx < chainArr.length - 1) { let nextEmp = chainArr[myIdx + 1]; acts += ` <button class="btn-out" onclick="returnForRework('${t.taskId}')">⬇️ Pass Down to ${nextEmp}</button>`; } else { acts += ` <button class="btn-train-start" onclick="forwardTaskPrompt('${t.taskId}')">Forward Task</button>`; } }
-                        else if (t.status === "In Progress") { acts = `<button class="btn-in" onclick="completeWork('${t.taskId}')">✅ Mark Completed</button> <button class="btn-train-start" onclick="forwardTaskPrompt('${t.taskId}')">Forward Task</button>`; }
+                        
+                        if(t.status === "Pending Start") { 
+                            acts = `<button class="btn-in" onclick="promptStartWork('${t.taskId}')">🚀 Start Work</button> <button class="btn-train-start" onclick="forwardTaskPrompt('${t.taskId}')">Forward Task</button>`; 
+                            actionableCount++;
+                        }
+                        else if (t.status === "Rework") { 
+                            acts = `<button class="btn-in" onclick="promptStartWork('${t.taskId}')">🚀 Start Work (Fix It)</button>`; 
+                            if (myIdx < chainArr.length - 1) { let nextEmp = chainArr[myIdx + 1]; acts += ` <button class="btn-out" onclick="returnForRework('${t.taskId}')">⬇️ Pass Down to ${nextEmp}</button>`; } else { acts += ` <button class="btn-train-start" onclick="forwardTaskPrompt('${t.taskId}')">Forward Task</button>`; } 
+                            actionableCount++;
+                        }
+                        else if (t.status === "In Progress") { 
+                            acts = `<button class="btn-in" onclick="completeWork('${t.taskId}')">✅ Mark Completed</button> <button class="btn-train-start" onclick="forwardTaskPrompt('${t.taskId}')">Forward Task</button>`; 
+                        }
                         myHtml += `<div class="task-item ${stClass}">${chainBadge}<strong>ID:</strong> ${t.taskId} <span style="float:right;">${beautifulStatus}</span><br>${formatDesc}<strong>Deadline:</strong> ${t.deadline ? new Date(t.deadline).toLocaleString('hi-IN') : 'Not Set'}<br>${penaltyBadge}<div class="task-actions">${acts}</div></div>`;
                     }
                     if(t.currAssignee === myId && t.status === "Review") {
                         let acts = (t.originalAssigner === myId) ? `<button class="btn-in" onclick="promptCloseTask('${t.taskId}')">🔓 Enter Password to Close</button>` : `<button class="btn-in" onclick="forwardReviewUp('${t.taskId}')">⬆️ Approve & Send Up</button> <button class="btn-out" onclick="returnForRework('${t.taskId}')">🔄 Return for Rework</button>`;
                         revHtml += `<div class="task-item review">${chainBadge}<strong>ID:</strong> ${t.taskId} <span style="float:right;">${beautifulStatus}</span><br>${formatDesc}<div class="task-actions">${acts}</div></div>`;
+                        if (t.originalAssigner === myId) actionableCount++;
                     }
                     if(t.chain.includes(myId) && t.currAssignee !== myId && t.status !== "Closed") {
                         trackHtml += `<div class="task-item track">${chainBadge}<strong>ID:</strong> ${t.taskId}<br><strong>Current Owner:</strong> <span style="color:#d32f2f; font-weight:bold;">${t.currAssignee} (${EMP_LIST[t.currAssignee]?.name || 'Unknown'})</span><br><strong>Status:</strong> ${beautifulStatus}<br>${formatDesc}<strong>Deadline:</strong> ${t.deadline ? new Date(t.deadline).toLocaleString('hi-IN') : 'Not Set'}</div>`;
                     }
                 });
-                document.getElementById("myTasksList").innerHTML = myHtml || "<p style='text-align:center;'>No tasks right now.</p>"; document.getElementById("reviewTasksList").innerHTML = revHtml || "<p style='text-align:center;'>No tasks pending review.</p>"; document.getElementById("trackTasksList").innerHTML = trackHtml || "<p style='text-align:center;'>No active sent tasks.</p>";
+                document.getElementById("myTasksList").innerHTML = myHtml || "<p style='text-align:center;'>No tasks right now.</p>";
+                document.getElementById("reviewTasksList").innerHTML = revHtml || "<p style='text-align:center;'>No tasks pending review.</p>";
+                document.getElementById("trackTasksList").innerHTML = trackHtml || "<p style='text-align:center;'>No active sent tasks.</p>";
+                
+                // 🌟 UPDATE NOTIFICATION BADGE 🌟
+                let badge = document.getElementById("taskBadge");
+                if(actionableCount > 0) { badge.innerText = actionableCount; badge.style.display = "block"; } 
+                else { badge.style.display = "none"; }
+
             } catch(e) { }
         }
 
