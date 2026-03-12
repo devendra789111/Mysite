@@ -48,17 +48,8 @@
         
         /* 🌟 MODERN TASK NOTIFICATION BADGE 🌟 */
         .task-btn-container { position: relative; display: inline-block; }
-        .task-badge {
-            position: absolute; top: -8px; right: -8px; background: #E91E63; color: white;
-            border-radius: 50%; padding: 4px 8px; font-size: 13px; font-weight: bold;
-            box-shadow: 0 2px 8px rgba(233, 30, 99, 0.6); display: none; z-index: 10;
-            animation: pulseBadge 1.5s infinite ease-in-out;
-        }
-        @keyframes pulseBadge { 
-            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(233, 30, 99, 0.7); } 
-            70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(233, 30, 99, 0); } 
-            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(233, 30, 99, 0); } 
-        }
+        .task-badge { position: absolute; top: -8px; right: -8px; background: #E91E63; color: white; border-radius: 50%; padding: 4px 8px; font-size: 13px; font-weight: bold; box-shadow: 0 2px 8px rgba(233, 30, 99, 0.6); display: none; z-index: 10; animation: pulseBadge 1.5s infinite ease-in-out; }
+        @keyframes pulseBadge { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(233, 30, 99, 0.7); } 70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(233, 30, 99, 0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(233, 30, 99, 0); } }
 
         #toastBox { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 8px; padding: 16px; position: fixed; z-index: 10009; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 16px; font-weight: bold; box-shadow: 0px 4px 15px rgba(0,0,0,0.4); opacity: 0; transition: opacity 0.4s, bottom 0.4s; }
         #toastBox.show { visibility: visible; opacity: 1; bottom: 60px; }
@@ -303,7 +294,7 @@
                 let localToken = localStorage.getItem(`session_${savedId}`) || "";
                 if (serverToken === "" || serverToken === localToken) {
                     currentLoggedInId = savedId; applyLoggedInUI(savedId);
-                    updateTaskBadge(); // Update badge instantly on restore
+                    updateTaskBadge(); 
                 } else { logoutEmp(true); }
             }
         }
@@ -340,7 +331,7 @@
             
             currentLoggedInId = id; localStorage.setItem('activeSessionId', id); 
             document.getElementById('passwordModal').style.display = 'none'; applyLoggedInUI(id);
-            updateTaskBadge(); // Update badge instantly on login
+            updateTaskBadge(); 
             showToast("✅ Login Successful! Welcome " + EMP_LIST[id].name, "success");
         }
 
@@ -353,7 +344,7 @@
             if(!silent) showToast("🚪 Logged Out Successfully", "success");
         }
 
-        // 🌟 NEW: SILENT BACKGROUND BADGE UPDATER 🌟
+        // 🌟 NEW: SILENT BACKGROUND BADGE UPDATER (INCLUDES REVIEWS) 🌟
         async function updateTaskBadge() {
             if(!currentLoggedInId) return;
             try {
@@ -361,8 +352,7 @@
                 let tasks = await res.json();
                 let actionableCount = 0;
                 tasks.forEach(t => {
-                    if(t.currAssignee === currentLoggedInId && (t.status === "Pending Start" || t.status === "Rework")) actionableCount++;
-                    if(t.currAssignee === currentLoggedInId && t.status === "Review" && t.originalAssigner === currentLoggedInId) actionableCount++;
+                    if(t.currAssignee === currentLoggedInId && (t.status === "Pending Start" || t.status === "Rework" || t.status === "Review")) actionableCount++;
                 });
                 let badge = document.getElementById("taskBadge");
                 if(actionableCount > 0) { badge.innerText = actionableCount; badge.style.display = "block"; } 
@@ -379,7 +369,7 @@
                     EMP_LIST = fetchedList; localStorage.setItem('cachedEmpList', JSON.stringify(EMP_LIST)); 
                     if(currentLoggedInId) {
                         updateProfileSidebar(currentLoggedInId);
-                        updateTaskBadge(); // Keeps the badge live
+                        updateTaskBadge(); 
                         let sToken = EMP_LIST[currentLoggedInId].sessionToken || ""; let lToken = localStorage.getItem(`session_${currentLoggedInId}`) || "";
                         if (sToken !== "" && sToken !== lToken) { logoutEmp(true); showToast("⚠️ आपकी ID किसी अन्य डिवाइस पर लॉगिन की गई है!", "error"); }
                     } else if (document.getElementById("empId").value.length > 3) { autoFillName(); }
@@ -429,7 +419,6 @@
                     let gt = document.getElementById("geoText"); 
                     let sBox = document.getElementById("statusBox"); 
                     
-                    // 🌟 LOCALSTORAGE BACKED GRACE PERIOD 🌟
                     if (sBox && sBox.style.display !== "none" && currentLoggedInId) {
                         let tsKey = `gpsErrorTs_${currentLoggedInId}_${todayDateStr}`;
 
@@ -446,15 +435,11 @@
                             sBox.style.background = "#ffebee"; sBox.style.borderColor = "#f44336"; 
                             gt.innerHTML = `<span style="color:#f44336; font-weight:bold;">🚸 बफर ज़ोन: कृपया वापस लौटें (${Math.round(currentDist)}m)</span>`;
                         } else {
-                            // Zone 4 (>150m) OR GPS is OFF
                             let savedTs = localStorage.getItem(tsKey);
-                            if (!savedTs) {
-                                savedTs = Date.now();
-                                localStorage.setItem(tsKey, savedTs);
-                            }
+                            if (!savedTs) { savedTs = Date.now(); localStorage.setItem(tsKey, savedTs); }
                             let elapsedMs = Date.now() - parseInt(savedTs);
                             
-                            if (elapsedMs < 300000) { // 5 minutes grace period (300,000 ms)
+                            if (elapsedMs < 300000) { // 5 mins grace
                                 isTimerActive = true;
                                 let secondsLeft = Math.ceil((300000 - elapsedMs) / 1000);
                                 let mins = Math.floor(secondsLeft / 60); let secs = secondsLeft % 60;
@@ -491,6 +476,12 @@
             if(!isSystemReady) return showToast("⏳ सिस्टम लोड हो रहा है... 2 सेकंड रुकें।", "error");
             if(isHolidayOrOff) return showToast(`🛑 Today is ${holidayName || 'Weekly Off (Monday)'}.`, "error");
             if(attendanceDb[id]) return showToast("आप इस डिवाइस पर आज का पंच-इन पहले ही कर चुके हैं!", "error");
+            
+            // 🌟 STRICT 50m PUNCH IN CHECK 🌟
+            if(isGpsError || currentDist > 50) {
+                return alert("⚠️ Punch-In केवल 50 मीटर के 'Working Zone' के अंदर ही अलाउड है!\nकृपया ज़ोन में आएं।");
+            }
+
             let serverLog = TODAY_SERVER_LOGS[id];
             if(!attendanceDb[id] && serverLog && serverLog.inTime && serverLog.inTime !== "-") { return showToast("⚠️ क्रॉस-डिवाइस अलर्ट!\nआप पहले ही किसी दूसरे डिवाइस से पंच-इन कर चुके हैं।", "error"); }
             
@@ -683,8 +674,6 @@
             try {
                 let res = await fetch(`${SCRIPT_URL}?action=getTasks&id=${myId}&nocache=${Date.now()}`); let tasks = await res.json(); 
                 let myHtml = "", revHtml = "", trackHtml = "";
-                
-                let actionableCount = 0; // For Notification Badge
 
                 tasks.forEach(t => {
                     let chainBadge = `<div style="font-size:11px; color:#666; margin-bottom:5px;">Chain: ${t.chain}</div>`;
@@ -695,25 +684,14 @@
 
                     if(t.currAssignee === myId && ["Pending Start", "In Progress", "Rework"].includes(t.status)) {
                         let acts = ""; let stClass = t.status === "Pending Start" ? "pending" : "active";
-                        
-                        if(t.status === "Pending Start") { 
-                            acts = `<button class="btn-in" onclick="promptStartWork('${t.taskId}')">🚀 Start Work</button> <button class="btn-train-start" onclick="forwardTaskPrompt('${t.taskId}')">Forward Task</button>`; 
-                            actionableCount++;
-                        }
-                        else if (t.status === "Rework") { 
-                            acts = `<button class="btn-in" onclick="promptStartWork('${t.taskId}')">🚀 Start Work (Fix It)</button>`; 
-                            if (myIdx < chainArr.length - 1) { let nextEmp = chainArr[myIdx + 1]; acts += ` <button class="btn-out" onclick="returnForRework('${t.taskId}')">⬇️ Pass Down to ${nextEmp}</button>`; } else { acts += ` <button class="btn-train-start" onclick="forwardTaskPrompt('${t.taskId}')">Forward Task</button>`; } 
-                            actionableCount++;
-                        }
-                        else if (t.status === "In Progress") { 
-                            acts = `<button class="btn-in" onclick="completeWork('${t.taskId}')">✅ Mark Completed</button> <button class="btn-train-start" onclick="forwardTaskPrompt('${t.taskId}')">Forward Task</button>`; 
-                        }
+                        if(t.status === "Pending Start") { acts = `<button class="btn-in" onclick="promptStartWork('${t.taskId}')">🚀 Start Work</button> <button class="btn-train-start" onclick="forwardTaskPrompt('${t.taskId}')">Forward Task</button>`; }
+                        else if (t.status === "Rework") { acts = `<button class="btn-in" onclick="promptStartWork('${t.taskId}')">🚀 Start Work (Fix It)</button>`; if (myIdx < chainArr.length - 1) { let nextEmp = chainArr[myIdx + 1]; acts += ` <button class="btn-out" onclick="returnForRework('${t.taskId}')">⬇️ Pass Down to ${nextEmp}</button>`; } else { acts += ` <button class="btn-train-start" onclick="forwardTaskPrompt('${t.taskId}')">Forward Task</button>`; } }
+                        else if (t.status === "In Progress") { acts = `<button class="btn-in" onclick="completeWork('${t.taskId}')">✅ Mark Completed</button> <button class="btn-train-start" onclick="forwardTaskPrompt('${t.taskId}')">Forward Task</button>`; }
                         myHtml += `<div class="task-item ${stClass}">${chainBadge}<strong>ID:</strong> ${t.taskId} <span style="float:right;">${beautifulStatus}</span><br>${formatDesc}<strong>Deadline:</strong> ${t.deadline ? new Date(t.deadline).toLocaleString('hi-IN') : 'Not Set'}<br>${penaltyBadge}<div class="task-actions">${acts}</div></div>`;
                     }
                     if(t.currAssignee === myId && t.status === "Review") {
                         let acts = (t.originalAssigner === myId) ? `<button class="btn-in" onclick="promptCloseTask('${t.taskId}')">🔓 Enter Password to Close</button>` : `<button class="btn-in" onclick="forwardReviewUp('${t.taskId}')">⬆️ Approve & Send Up</button> <button class="btn-out" onclick="returnForRework('${t.taskId}')">🔄 Return for Rework</button>`;
                         revHtml += `<div class="task-item review">${chainBadge}<strong>ID:</strong> ${t.taskId} <span style="float:right;">${beautifulStatus}</span><br>${formatDesc}<div class="task-actions">${acts}</div></div>`;
-                        if (t.originalAssigner === myId) actionableCount++;
                     }
                     if(t.chain.includes(myId) && t.currAssignee !== myId && t.status !== "Closed") {
                         trackHtml += `<div class="task-item track">${chainBadge}<strong>ID:</strong> ${t.taskId}<br><strong>Current Owner:</strong> <span style="color:#d32f2f; font-weight:bold;">${t.currAssignee} (${EMP_LIST[t.currAssignee]?.name || 'Unknown'})</span><br><strong>Status:</strong> ${beautifulStatus}<br>${formatDesc}<strong>Deadline:</strong> ${t.deadline ? new Date(t.deadline).toLocaleString('hi-IN') : 'Not Set'}</div>`;
@@ -722,12 +700,6 @@
                 document.getElementById("myTasksList").innerHTML = myHtml || "<p style='text-align:center;'>No tasks right now.</p>";
                 document.getElementById("reviewTasksList").innerHTML = revHtml || "<p style='text-align:center;'>No tasks pending review.</p>";
                 document.getElementById("trackTasksList").innerHTML = trackHtml || "<p style='text-align:center;'>No active sent tasks.</p>";
-                
-                // 🌟 UPDATE NOTIFICATION BADGE 🌟
-                let badge = document.getElementById("taskBadge");
-                if(actionableCount > 0) { badge.innerText = actionableCount; badge.style.display = "block"; } 
-                else { badge.style.display = "none"; }
-
             } catch(e) { }
         }
 
