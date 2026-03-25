@@ -1,62 +1,143 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telecaller Panel</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quality Education - Telecaller Panel</title>
     <style>
-        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { margin: 0; background: #f4f6f9; color: #333; display: flex; flex-direction: column; align-items: center; padding: 15px; }
-        .screen { width: 100%; max-width: 650px; display: none; flex-direction: column; }
+        /* ================= PREMIUM GLASSMORPHISM UI ================= */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        
+        body { 
+            margin: 0; padding: 0; 
+            /* Soft professional gradient for employees */
+            background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+            background-attachment: fixed;
+            color: #2c3e50; 
+            display: flex; flex-direction: column; align-items: center; padding: 15px;
+            min-height: 100vh;
+        }
+        
+        .screen { width: 100%; max-width: 700px; display: none; flex-direction: column; animation: fadeIn 0.4s ease; }
         .active-screen { display: flex; }
-        .card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        .header { display: flex; justify-content: space-between; align-items: center; background: #007bff; color: white; padding: 15px 20px; border-radius: 10px; margin-bottom: 20px;}
-        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #ced4da; border-radius: 6px; margin-bottom: 15px; }
-        button { background: #007bff; color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; }
-        button:hover { background: #0056b3; }
-        .btn-green { background: #28a745; width: auto; } .btn-green:hover { background: #218838; }
-        .btn-red { background: #dc3545; width: auto; }
+        
+        /* Glassy Elements */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.55);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+            padding: 25px; margin-bottom: 20px;
+        }
+
+        /* Navbar */
+        .header { 
+            display: flex; justify-content: space-between; align-items: center; 
+            background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,0.5); box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            padding: 15px 20px; border-radius: 12px; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;
+        }
+        .header h3 { margin: 0; font-size: 1.2em; color: #1e3c72; display: flex; align-items: center; gap: 8px; }
+        .emp-name { font-weight: 700; color: #0984e3; background: rgba(9, 132, 227, 0.1); padding: 5px 12px; border-radius: 20px; font-size: 0.9em; }
+
+        /* Form Elements */
+        label { font-weight: 600; font-size: 0.9em; color: #444; display: block; margin-top: 15px; margin-bottom: 5px; }
+        input, select, textarea { 
+            width: 100%; padding: 12px 15px; border: 1px solid rgba(255,255,255,0.8); 
+            border-radius: 8px; font-size: 0.95em; outline: none;
+            background: rgba(255, 255, 255, 0.8); color: #333; transition: 0.3s;
+        }
+        input:focus, select:focus, textarea:focus { background: #fff; border-color: #007bff; box-shadow: 0 0 8px rgba(0,123,255,0.2); }
+        textarea { resize: vertical; min-height: 90px; }
+        
+        /* Buttons */
+        button { border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 1em; transition: 0.3s; width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px; }
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .btn-primary:hover { box-shadow: 0 5px 15px rgba(118, 75, 162, 0.4); transform: translateY(-2px); }
+        .btn-success { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; width: auto; }
+        .btn-success:hover { box-shadow: 0 5px 15px rgba(56, 239, 125, 0.4); transform: translateY(-2px); }
+        .btn-danger { background: linear-gradient(135deg, #ff0844 0%, #ffb199 100%); color: white; width: auto; padding: 10px 15px; }
+        .btn-danger:hover { box-shadow: 0 5px 15px rgba(255, 8, 68, 0.4); transform: translateY(-2px); }
+        button:disabled { background: #95a5a6; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        /* History Timeline */
+        .history-container { margin-top: 5px; margin-bottom: 15px; }
+        .history-card { 
+            background: rgba(255, 255, 255, 0.7); border-left: 4px solid #0984e3; 
+            padding: 12px 15px; margin-bottom: 10px; border-radius: 6px; font-size: 0.9em; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02); transition: all 0.3s;
+        }
+        .history-card.solved { border-left-color: #00b894; }
+        .history-card.pending { border-left-color: #d63031; }
+        .history-header { display: flex; justify-content: space-between; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 5px; margin-bottom: 8px; font-size: 0.85em; color: #666; }
         
         /* Modal for WhatsApp */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000; }
-        .modal-content { background: white; padding: 25px; border-radius: 10px; width: 90%; max-width: 400px; text-align: center; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(5px); align-items: center; justify-content: center; z-index: 1000; animation: fadeIn 0.3s; }
+        .modal-content { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(15px); padding: 25px; border-radius: 15px; width: 90%; max-width: 450px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.5);}
         .msg-list { text-align: left; max-height: 250px; overflow-y: auto; margin-bottom: 15px; }
-        .msg-item { padding: 10px; background: #f8f9fa; border: 1px solid #ddd; margin-bottom: 5px; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        .msg-item:hover { background: #e9ecef; border-color: #007bff; }
-        
-        .history-card { background: #f8f9fa; border-left: 4px solid #007bff; padding: 12px; margin-bottom: 10px; font-size: 0.9em; }
+        .msg-item { padding: 12px; background: rgba(255,255,255,0.8); border: 1px solid #ddd; margin-bottom: 8px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s; color: #1e3c72; }
+        .msg-item:hover { background: #e9ecef; border-color: #007bff; transform: translateX(5px); }
+
+        /* Toaster */
+        .toast { padding: 12px; border-radius: 8px; margin-top: 15px; text-align: center; font-weight: 600; display: none; animation: fadeIn 0.3s; }
+        .toast.success { background: rgba(56, 239, 125, 0.2); color: #00b894; border: 1px solid rgba(56, 239, 125, 0.4); display: block; }
+        .toast.error { background: rgba(255, 8, 68, 0.2); color: #d63031; border: 1px solid rgba(255, 8, 68, 0.4); display: block; }
+        .toast.info { background: rgba(9, 132, 227, 0.2); color: #0984e3; border: 1px solid rgba(9, 132, 227, 0.4); display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        @media (max-width: 480px) {
+            .header { justify-content: center; }
+            .header div { width: 100%; display: flex; justify-content: space-between; margin-top: 10px; }
+        }
     </style>
 </head>
 <body>
 
     <div id="login-screen" class="screen active-screen">
-        <div class="card" style="margin-top: 10vh; text-align: center;">
-            <h2 style="color: #007bff; margin-top: 0;">Employee Login</h2>
-            <input type="text" id="login-username" placeholder="Username">
-            <input type="password" id="login-password" placeholder="Password">
-            <button onclick="login()">Login to CRM</button>
+        <div class="glass-panel" style="max-width: 400px; margin: 10vh auto; text-align: center;">
+            <div style="font-size: 3em; margin-bottom: 10px;">🎧</div>
+            <h2 style="color: #1e3c72; margin-top: 0;">Employee Login</h2>
+            <p style="color: #666; font-size: 0.9em;">Quality Education CRM</p>
+            
+            <input type="text" id="login-username" placeholder="Enter Username">
+            <input type="password" id="login-password" placeholder="Enter Password">
+            
+            <button class="btn-primary" onclick="login()">Login to Workspace 🚀</button>
+            <div id="login-msg" class="toast"></div>
         </div>
     </div>
 
     <div id="employee-screen" class="screen">
+        
         <div class="header">
-            <h3 style="margin: 0;">📞 Telecaller</h3>
-            <div>
-                <button class="btn-green" onclick="openWhatsAppModal()">💬 WhatsApp</button>
-                <button class="btn-red" onclick="logout()">Logout</button>
+            <h3><span style="font-size:1.2em;">🎓</span> Telecaller Panel</h3>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <span id="emp-name-display" class="emp-name">👤 Hi, User</span>
+                <button class="btn-success" style="padding: 8px 15px;" onclick="openWhatsAppModal()">💬 WhatsApp</button>
+                <button class="btn-danger" style="padding: 8px 15px;" onclick="logout()">🚪 Logout</button>
             </div>
         </div>
         
-        <div class="card">
-            <h3 style="margin-top: 0; border-bottom: 2px solid #f0f0f0; padding-bottom: 12px;">Add Call Entry</h3>
+        <div class="glass-panel">
+            <h3 style="margin-top: 0; color: #1e3c72; border-bottom: 2px solid rgba(0,0,0,0.05); padding-bottom: 12px;">📝 Add Call Entry</h3>
             
-            <label><b>Mobile Number</b></label>
-            <input type="number" id="emp-mobile" onblur="fetchMobileHistory()" placeholder="10-digit mobile number">
+            <label>Mobile Number</label>
+            <input type="number" id="emp-mobile" onblur="fetchMobileHistory()" placeholder="Enter 10-digit mobile number">
+            <small style="color: #555; display: block; margin-top: 5px;">* Type number and click outside to load past history.</small>
             
-            <div id="history-box" style="display:none; margin-bottom: 15px;"></div>
+            <div id="history-box" class="history-container" style="display: none;"></div>
 
-            <input type="text" id="emp-name" placeholder="Student Name">
+            <label>Student Name</label>
+            <input type="text" id="emp-name" placeholder="Enter Student Name">
+
+            <label>Problem Type</label>
             <select id="emp-problem">
-                <option value="" disabled selected>Select an issue category...</option>
+                <option value="" disabled selected>📂 Select an issue category...</option>
                 <option value="Online Course Related">Online Course Related</option>
                 <option value="Online Test Series Related">Online Test Series Related</option>
                 <option value="Offline Test Series Related">Offline Test Series Related</option>
@@ -65,69 +146,200 @@
                 <option value="Teacher Feedback">Teacher Feedback</option>
                 <option value="Others">Others</option>
             </select>
-            <textarea id="emp-issue" rows="3" placeholder="Describe the problem..."></textarea>
-            <textarea id="emp-response" rows="3" placeholder="Your response/solution..."></textarea>
-            <button onclick="submitCallEntry()">Submit Entry</button>
+
+            <label>Issue Details</label>
+            <textarea id="emp-issue" placeholder="✍️ Describe the student's problem in detail..."></textarea>
+
+            <label>Your Response / Solution provided</label>
+            <textarea id="emp-response" placeholder="🗣️ What solution or timeline did you provide?"></textarea>
+
+            <button id="submit-btn" class="btn-primary" onclick="submitCallEntry()">Submit Entry ✅</button>
+            <div id="form-msg" class="toast"></div>
         </div>
     </div>
 
     <div id="wa-modal" class="modal">
         <div class="modal-content">
-            <h3 style="margin-top:0;">Send WhatsApp Message</h3>
+            <h3 style="margin-top:0; color: #1e3c72;">💬 Send WhatsApp Message</h3>
             
             <div id="step-1">
-                <p style="font-size:0.9em; color:#666;">Select a message template:</p>
-                <div class="msg-list" id="wa-msg-list">Loading messages...</div>
-                <button class="btn-red" onclick="closeModal()">Close</button>
+                <p style="font-size:0.9em; color:#666;">Select a template saved by Admin:</p>
+                <div class="msg-list" id="wa-msg-list">Fetching messages... ⏳</div>
+                <button class="btn-danger" style="width: 100%;" onclick="closeModal()">Close</button>
             </div>
 
             <div id="step-2" style="display:none;">
-                <p style="font-size:0.9em; color:#007bff; font-weight:bold;" id="selected-msg-title"></p>
-                <input type="number" id="wa-mobile" placeholder="Enter Student Mobile No.">
-                <button class="btn-green" onclick="sendWhatsAppFinal()">🚀 Send to WhatsApp</button>
-                <button class="btn-red" style="margin-top:10px;" onclick="document.getElementById('step-1').style.display='block'; document.getElementById('step-2').style.display='none';">Back</button>
+                <div style="background: rgba(9, 132, 227, 0.1); padding: 10px; border-radius: 8px; margin-bottom: 15px;">
+                    <span style="font-size:0.85em; color:#666;">Sending Template:</span><br>
+                    <strong style="color:#0984e3;" id="selected-msg-title"></strong>
+                </div>
+                <input type="number" id="wa-mobile" placeholder="📱 Enter Student Mobile No.">
+                <button class="btn-success" style="width: 100%; margin-bottom: 10px;" onclick="sendWhatsAppFinal()">🚀 Send to WhatsApp</button>
+                <button class="btn-danger" style="width: 100%;" onclick="document.getElementById('step-1').style.display='block'; document.getElementById('step-2').style.display='none';">⬅️ Back</button>
             </div>
         </div>
     </div>
 
     <script>
+        // 🛑 IMPORTANT: PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE
         const API_URL = "https://script.google.com/macros/s/AKfycbyI9FRnm9GUhhjKY7Er__pdONW4FqSSc7LBdVQ6MHTSqndwBowM8Krl36Nj12l1-F0tjA/exec"; 
+        
         let currentUser = null;
         let selectedMessageContent = "";
 
-        window.onload = () => { if (localStorage.getItem("qei_user")) { currentUser = JSON.parse(localStorage.getItem("qei_user")); showScreen("employee-screen"); } };
+        window.onload = () => {
+            const savedUser = localStorage.getItem("qei_user");
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                showEmployeeScreen();
+            }
+        };
 
-        async function apiCall(payload) { try { const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }); return await r.json(); } catch { return { success: false }; } }
-        function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen')); document.getElementById(id).classList.add('active-screen'); }
+        async function apiCall(payload) {
+            try {
+                const response = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
+                return await response.json();
+            } catch (err) {
+                return { success: false, message: "Network error. Please check your internet connection." };
+            }
+        }
+
+        function showToast(elementId, message, type) {
+            const el = document.getElementById(elementId);
+            el.innerText = message;
+            el.className = `toast ${type}`;
+            if(type !== 'info') setTimeout(() => { el.className = "toast"; }, 4000);
+        }
 
         async function login() {
-            const u = document.getElementById("login-username").value, p = document.getElementById("login-password").value;
-            const res = await apiCall({ action: "login", username: u, password: p });
-            if (res.success) { currentUser = res.user; localStorage.setItem("qei_user", JSON.stringify(currentUser)); showScreen("employee-screen"); } else alert("Invalid Login");
-        }
-        function logout() { localStorage.removeItem("qei_user"); location.reload(); }
+            const user = document.getElementById("login-username").value;
+            const pass = document.getElementById("login-password").value;
+            const btn = document.querySelector("#login-screen button");
+            
+            if(!user || !pass) return showToast("login-msg", "⚠️ Please enter username and password", "error");
 
+            btn.disabled = true; btn.innerText = "Verifying... ⏳";
+            showToast("login-msg", "Logging in securely...", "info");
+
+            const res = await apiCall({ action: "login", username: user, password: pass });
+            
+            if (res.success) {
+                currentUser = res.user;
+                localStorage.setItem("qei_user", JSON.stringify(currentUser));
+                showEmployeeScreen();
+            } else {
+                showToast("login-msg", "❌ " + (res.message || "Invalid credentials!"), "error");
+            }
+            btn.disabled = false; btn.innerText = "Login to Workspace 🚀";
+        }
+
+        function logout() {
+            localStorage.removeItem("qei_user");
+            currentUser = null;
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
+            document.getElementById("login-screen").classList.add('active-screen');
+            document.getElementById("login-username").value = "";
+            document.getElementById("login-password").value = "";
+            document.getElementById("login-msg").className = "toast";
+        }
+
+        function showEmployeeScreen() {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
+            document.getElementById("employee-screen").classList.add('active-screen');
+            document.getElementById("emp-name-display").innerText = "👤 Hi, " + currentUser.name;
+        }
+
+        // --- FETCH FULL HISTORY WITH CLEAN DATE & SHOW MORE ---
         async function fetchMobileHistory() {
             const mobile = document.getElementById("emp-mobile").value;
-            if (mobile.length < 10) return;
-            const histBox = document.getElementById("history-box"); histBox.style.display = "block"; histBox.innerHTML = "<i>Searching history...</i>";
+            const histBox = document.getElementById("history-box");
+            
+            if (mobile.length < 10) { histBox.style.display = "none"; return; }
+
+            histBox.style.display = "block";
+            histBox.innerHTML = "<div style='padding:10px; color:#0984e3; text-align:center;'><em>Searching records... ⏳</em></div>";
+
             const res = await apiCall({ action: "fetchMobileInfo", mobile: mobile });
             
-            if (res.success && res.history.length > 0) {
+            if (res.success && res.history && res.history.length > 0) {
                 document.getElementById("emp-name").value = res.lastRecord.studentName;
-                histBox.innerHTML = res.history.slice().reverse().slice(0,2).map(r => `
-                    <div class="history-card">
-                        <b>${new Date(r.date).toLocaleDateString()}</b> - <span style="color:${r.status=='Pending'?'red':'green'}">${r.status}</span><br>
-                        ${r.issue}<br><b>Admin:</b> ${r.adminComment||'Wait...'}
-                    </div>`).join('');
-            } else { histBox.innerHTML = "<span style='color:green'>New Student!</span>"; }
+                
+                let historyHTML = `<h4 style="margin:0 0 10px 0; color:#1e3c72;">📑 Past Records (${res.history.length}):</h4>`;
+                const reversedHistory = res.history.slice().reverse();
+
+                reversedHistory.forEach((record, index) => {
+                    let statusClass = record.status === "Pending" ? "pending" : "solved";
+                    let statusColor = record.status === "Pending" ? "#d63031" : "#00b894";
+                    
+                    let cleanDate = record.date;
+                    try {
+                        let d = new Date(record.date);
+                        if(!isNaN(d)) cleanDate = d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+                    } catch(e) {}
+
+                    let isHidden = index >= 2 ? "display: none;" : "";
+                    let extraClass = index >= 2 ? "older-record" : "";
+                    
+                    historyHTML += `
+                        <div class="history-card ${statusClass} ${extraClass}" style="${isHidden}">
+                            <div class="history-header">
+                                <span>🗓️ <b>${cleanDate}</b></span>
+                                <strong><span style="color:${statusColor}">● ${record.status}</span></strong>
+                            </div>
+                            <div style="margin-bottom:6px;"><strong>Issue:</strong> ${record.issue}</div>
+                            <div style="background:rgba(255,255,255,0.8); padding:8px; border-radius:6px; font-size:0.95em;">
+                                <strong>👨‍💼 Admin Reply:</strong> ${record.adminComment || '<span style="color:gray">Awaiting reply...</span>'}
+                            </div>
+                        </div>
+                    `;
+                });
+
+                if (reversedHistory.length > 2) {
+                    historyHTML += `<button type="button" id="toggle-history-btn" onclick="toggleOlderRecords()" style="margin-top:5px; background:rgba(0,0,0,0.1); color:#333; padding: 8px;">⬇️ Show ${reversedHistory.length - 2} Older Complaints</button>`;
+                }
+                histBox.innerHTML = historyHTML;
+            } else {
+                histBox.innerHTML = "<div class='history-card' style='border-left-color:#00b894; background:rgba(56,239,125,0.1);'>✅ New Student! No past complaints found.</div>";
+            }
         }
 
+        function toggleOlderRecords() {
+            const olderRecords = document.querySelectorAll('.older-record');
+            const btn = document.getElementById('toggle-history-btn');
+            let isShowing = olderRecords[0].style.display !== 'none';
+
+            olderRecords.forEach(el => { el.style.display = isShowing ? 'none' : 'block'; });
+            btn.innerHTML = isShowing ? `⬇️ Show ${olderRecords.length} Older Complaints` : `⬆️ Hide Older Complaints`;
+        }
+
+        // --- SUBMIT NEW COMPLAINT (FAST UI) ---
         async function submitCallEntry() {
-            const m = document.getElementById("emp-mobile").value, n = document.getElementById("emp-name").value, p = document.getElementById("emp-problem").value, i = document.getElementById("emp-issue").value, r = document.getElementById("emp-response").value;
-            if(!m || !n || !p || !i) return alert("Fill mandatory fields");
-            await apiCall({ action: "addComplaint", data: {mobile: m, studentName: n, problemType: p, issue: i, employeeResponse: r, employeeId: currentUser.employeeId} });
-            alert("Saved!"); location.reload();
+            const mobile = document.getElementById("emp-mobile").value;
+            const name = document.getElementById("emp-name").value;
+            const problem = document.getElementById("emp-problem").value;
+            const issue = document.getElementById("emp-issue").value;
+            const response = document.getElementById("emp-response").value;
+            const btn = document.getElementById("submit-btn");
+
+            if(!mobile || !name || !problem || !issue) return showToast("form-msg", "⚠️ Please fill Mobile, Name, Problem Type and Issue Details!", "error");
+
+            btn.disabled = true; btn.innerText = "Saving Data... ⏳";
+            showToast("form-msg", "Connecting to secure database...", "info");
+
+            const data = { mobile: mobile, studentName: name, problemType: problem, issue: issue, employeeResponse: response, employeeId: currentUser.employeeId };
+            const res = await apiCall({ action: "addComplaint", data: data });
+            
+            if (res.success) {
+                showToast("form-msg", "✅ Call Entry Saved Successfully!", "success");
+                
+                // Clear Form immediately
+                document.getElementById("emp-mobile").value = ""; document.getElementById("emp-name").value = "";
+                document.getElementById("emp-issue").value = ""; document.getElementById("emp-response").value = "";
+                document.getElementById("history-box").style.display = "none"; document.getElementById("emp-problem").selectedIndex = 0;
+            } else {
+                showToast("form-msg", "❌ Error saving data. Please try again.", "error");
+            }
+            btn.disabled = false; btn.innerText = "Submit Entry ✅";
         }
 
         // --- WHATSAPP MODAL LOGIC ---
@@ -142,7 +354,7 @@
                     <div class="msg-item" onclick="selectMessage('${m.title}', \`${m.content}\`)">📄 ${m.title}</div>
                 `).join('');
             } else {
-                document.getElementById('wa-msg-list').innerHTML = "No templates created by admin yet.";
+                document.getElementById('wa-msg-list').innerHTML = "<div style='color:#d63031; padding:10px;'>No templates created by admin yet.</div>";
             }
         }
 
@@ -150,25 +362,18 @@
 
         function selectMessage(title, content) {
             selectedMessageContent = content;
-            document.getElementById('selected-msg-title').innerText = "Sending: " + title;
-            // Agar pehle se number dala hua hai to use fill kar do
+            document.getElementById('selected-msg-title').innerText = title;
             document.getElementById('wa-mobile').value = document.getElementById('emp-mobile').value;
-            
-            document.getElementById('step-1').style.display = 'none';
-            document.getElementById('step-2').style.display = 'block';
+            document.getElementById('step-1').style.display = 'none'; document.getElementById('step-2').style.display = 'block';
         }
 
         function sendWhatsAppFinal() {
             const number = document.getElementById('wa-mobile').value;
             if(number.length < 10) return alert("Enter valid 10 digit number");
             
-            // Format number (adds 91 if not present)
             let finalNumber = number.length === 10 ? "91" + number : number;
-            
-            // Encode message for URL
             let encodedMsg = encodeURIComponent(selectedMessageContent);
             
-            // Open WhatsApp
             window.open(`https://wa.me/${finalNumber}?text=${encodedMsg}`, '_blank');
             closeModal();
         }
