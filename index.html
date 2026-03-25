@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telecaller Panel - QEI CRM</title>
+    <title>Telecaller Panel - QE CRM</title>
     <style>
         /* ================= RESPONSIVE CSS STYLING ================= */
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -34,8 +34,8 @@
         .logout-btn:hover { background-color: #c82333; }
 
         /* Full History Timeline Styling */
-        .history-container { margin-top: 10px; margin-bottom: 20px; max-height: 300px; overflow-y: auto; padding-right: 5px; }
-        .history-card { background: #f8f9fa; border: 1px solid #e9ecef; border-left: 4px solid #007bff; padding: 12px; margin-bottom: 10px; border-radius: 4px; font-size: 0.9em; }
+        .history-container { margin-top: 10px; margin-bottom: 20px; }
+        .history-card { background: #f8f9fa; border: 1px solid #e9ecef; border-left: 4px solid #007bff; padding: 12px; margin-bottom: 10px; border-radius: 4px; font-size: 0.9em; transition: all 0.3s; }
         .history-card.solved { border-left-color: #28a745; }
         .history-card.pending { border-left-color: #dc3545; }
         .history-header { display: flex; justify-content: space-between; border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-bottom: 5px; font-size: 0.85em; color: #666; }
@@ -45,7 +45,6 @@
         .toast.success { background-color: #d4edda; color: #155724; display: block; }
         .toast.error { background-color: #f8d7da; color: #721c24; display: block; }
 
-        /* Mobile Optimization */
         @media (max-width: 480px) {
             .card { padding: 15px; }
             .header { flex-direction: column; text-align: center; }
@@ -60,10 +59,8 @@
             <h2 style="text-align: center; color: #007bff; margin-top: 0;">Employee Login</h2>
             <label>Username</label>
             <input type="text" id="login-username" placeholder="Enter username">
-            
             <label>Password</label>
             <input type="password" id="login-password" placeholder="Enter password">
-            
             <button onclick="login()">Login to CRM</button>
             <div id="login-msg" class="toast"></div>
         </div>
@@ -140,7 +137,6 @@
             }
         }
 
-        // --- LOGIN & LOGOUT ---
         async function login() {
             const user = document.getElementById("login-username").value;
             const pass = document.getElementById("login-password").value;
@@ -182,7 +178,7 @@
             document.getElementById("emp-name-display").innerText = "Hi, " + currentUser.name;
         }
 
-        // --- FETCH FULL HISTORY ---
+        // --- FETCH FULL HISTORY WITH CLEAN DATE & SHOW MORE ---
         async function fetchMobileHistory() {
             const mobile = document.getElementById("emp-mobile").value;
             const histBox = document.getElementById("history-box");
@@ -198,20 +194,33 @@
             const res = await apiCall({ action: "fetchMobileInfo", mobile: mobile });
             
             if (res.success && res.history && res.history.length > 0) {
-                // Auto-fill latest name
                 document.getElementById("emp-name").value = res.lastRecord.studentName;
                 
                 let historyHTML = `<h4 style="margin:0 0 10px 0; color:#444;">Past Complaints (${res.history.length}):</h4>`;
                 
-                // Reverse array to show newest tickets at the top
-                res.history.slice().reverse().forEach(record => {
+                const reversedHistory = res.history.slice().reverse();
+
+                reversedHistory.forEach((record, index) => {
                     let statusClass = record.status === "Pending" ? "pending" : "solved";
                     let statusColor = record.status === "Pending" ? "red" : "green";
                     
+                    // 1. Clean the Date (e.g., "25 Mar, 2024")
+                    let cleanDate = record.date;
+                    try {
+                        let d = new Date(record.date);
+                        if(!isNaN(d)) {
+                            cleanDate = d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+                        }
+                    } catch(e) {}
+
+                    // 2. Hide older records (Keep only top 2 visible)
+                    let isHidden = index >= 2 ? "display: none;" : "";
+                    let extraClass = index >= 2 ? "older-record" : "";
+                    
                     historyHTML += `
-                        <div class="history-card ${statusClass}">
+                        <div class="history-card ${statusClass} ${extraClass}" style="${isHidden}">
                             <div class="history-header">
-                                <span>🗓️ ${record.date}</span>
+                                <span>🗓️ ${cleanDate}</span>
                                 <strong>Status: <span style="color:${statusColor}">${record.status}</span></strong>
                             </div>
                             <div style="margin-bottom:5px;"><strong>Issue:</strong> ${record.issue}</div>
@@ -222,13 +231,38 @@
                         </div>
                     `;
                 });
+
+                // Add "Show More" button if there are more than 2 records
+                if (reversedHistory.length > 2) {
+                    historyHTML += `<button type="button" id="toggle-history-btn" onclick="toggleOlderRecords()" style="margin-top:0; background-color:#6c757d; padding: 8px; font-size:0.9em;">⬇️ Show ${reversedHistory.length - 2} Older Complaints</button>`;
+                }
+
                 histBox.innerHTML = historyHTML;
             } else {
                 histBox.innerHTML = "<div class='history-card' style='border-left-color:#17a2b8;'>✅ No past complaints found. This is a new student.</div>";
             }
         }
 
-        // --- SUBMIT NEW COMPLAINT (OPTIMIZED FOR SPEED) ---
+        // --- FUNCTION TO TOGGLE OLDER RECORDS ---
+        function toggleOlderRecords() {
+            const olderRecords = document.querySelectorAll('.older-record');
+            const btn = document.getElementById('toggle-history-btn');
+            
+            // Check if they are currently hidden
+            let isShowing = olderRecords[0].style.display !== 'none';
+
+            olderRecords.forEach(el => {
+                el.style.display = isShowing ? 'none' : 'block';
+            });
+
+            // Change button text
+            if (isShowing) {
+                btn.innerHTML = `⬇️ Show ${olderRecords.length} Older Complaints`;
+            } else {
+                btn.innerHTML = `⬆️ Hide Older Complaints`;
+            }
+        }
+
         async function submitCallEntry() {
             const mobile = document.getElementById("emp-mobile").value;
             const name = document.getElementById("emp-name").value;
@@ -242,7 +276,6 @@
                 return showToast(msgBox, "Please fill Mobile, Name, Problem Type and Issue!", "error");
             }
 
-            // 1. UI Optimization: Disable button and show loading immediately
             btn.disabled = true;
             btn.innerText = "Saving Data... Please wait";
             showToast(msgBox, "Connecting to database...", "success");
@@ -256,14 +289,11 @@
                 employeeId: currentUser.employeeId
             };
 
-            // 2. Network Call
             const res = await apiCall({ action: "addComplaint", data: data });
             
-            // 3. Handle Result
             if (res.success) {
                 showToast(msgBox, "✅ Call Entry Saved Successfully!", "success");
                 
-                // Clear Form immediately
                 document.getElementById("emp-mobile").value = "";
                 document.getElementById("emp-name").value = "";
                 document.getElementById("emp-issue").value = "";
@@ -271,7 +301,6 @@
                 document.getElementById("history-box").classList.add("hidden");
                 document.getElementById("emp-problem").selectedIndex = 0;
                 
-                // Hide success message after 3 seconds
                 setTimeout(() => { msgBox.className = "toast"; }, 3000);
             } else {
                 showToast(msgBox, "❌ Error saving data. Please try again.", "error");
