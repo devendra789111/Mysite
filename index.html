@@ -3,52 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telecaller Panel - Quality Education CRM</title>
+    <title>Telecaller Panel - QEI CRM</title>
     <style>
-        /* ================= CSS STYLING ================= */
+        /* ================= RESPONSIVE CSS STYLING ================= */
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { margin: 0; padding: 0; background-color: #f4f6f9; color: #333; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        body { margin: 0; padding: 0; background-color: #f4f6f9; color: #333; display: flex; flex-direction: column; align-items: center; padding: 15px; }
         
-        .screen { width: 100%; max-width: 600px; display: flex; flex-direction: column; align-items: center; }
+        .screen { width: 100%; max-width: 650px; display: flex; flex-direction: column; align-items: center; }
         .hidden { display: none !important; }
-        .error { color: red; font-size: 0.9em; text-align: center; }
         
-        /* Cards */
-        .card { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); width: 100%; margin-bottom: 20px; }
+        /* Cards & Layout */
+        .card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); width: 100%; margin-bottom: 20px; }
         
         /* Header */
-        .header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 20px; background: #007bff; color: white; padding: 15px 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);}
-        .header h2 { margin: 0; font-size: 1.2em; }
+        .header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 20px; background: #007bff; color: white; padding: 15px 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); flex-wrap: wrap; gap: 10px;}
+        .header h2 { margin: 0; font-size: 1.2em; white-space: nowrap; }
         
-        /* Inputs & Buttons */
-        label { font-weight: bold; font-size: 0.9em; color: #555; display: block; margin-top: 15px; margin-bottom: 5px; }
-        input, select, textarea { width: 100%; padding: 12px; margin-bottom: 5px; border: 1px solid #ccc; border-radius: 4px; font-size: 1em; }
-        textarea { resize: vertical; min-height: 80px; }
+        /* Inputs & Form */
+        label { font-weight: 600; font-size: 0.9em; color: #444; display: block; margin-top: 15px; margin-bottom: 5px; }
+        input, select, textarea { width: 100%; padding: 12px 15px; border: 1px solid #ced4da; border-radius: 6px; font-size: 1em; transition: border-color 0.15s ease-in-out; }
+        input:focus, select:focus, textarea:focus { border-color: #80bdff; outline: 0; }
+        textarea { resize: vertical; min-height: 90px; }
         
-        button { background-color: #007bff; color: white; border: none; padding: 12px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; font-size: 1em; margin-top: 15px; }
+        /* Buttons */
+        button { background-color: #007bff; color: white; border: none; padding: 14px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; font-size: 1em; margin-top: 20px; transition: 0.2s; }
         button:hover { background-color: #0056b3; }
-        button:disabled { background-color: #999; cursor: not-allowed; }
+        button:disabled { background-color: #6c757d; cursor: not-allowed; opacity: 0.8; }
         
-        .logout-btn { background-color: #dc3545; width: auto; padding: 8px 15px; margin-top: 0; }
+        .logout-btn { background-color: #dc3545; width: auto; padding: 8px 15px; margin-top: 0; font-size: 0.9em; }
         .logout-btn:hover { background-color: #c82333; }
 
-        /* History Box */
-        .history-box { background: #eef; padding: 15px; border-left: 4px solid #007bff; margin-top: 5px; margin-bottom: 15px; font-size: 0.9em; border-radius: 0 4px 4px 0; }
+        /* Full History Timeline Styling */
+        .history-container { margin-top: 10px; margin-bottom: 20px; max-height: 300px; overflow-y: auto; padding-right: 5px; }
+        .history-card { background: #f8f9fa; border: 1px solid #e9ecef; border-left: 4px solid #007bff; padding: 12px; margin-bottom: 10px; border-radius: 4px; font-size: 0.9em; }
+        .history-card.solved { border-left-color: #28a745; }
+        .history-card.pending { border-left-color: #dc3545; }
+        .history-header { display: flex; justify-content: space-between; border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-bottom: 5px; font-size: 0.85em; color: #666; }
+        
+        /* Loader/Toaster */
+        .toast { padding: 10px; border-radius: 5px; margin-top: 15px; text-align: center; font-weight: bold; display: none; }
+        .toast.success { background-color: #d4edda; color: #155724; display: block; }
+        .toast.error { background-color: #f8d7da; color: #721c24; display: block; }
+
+        /* Mobile Optimization */
+        @media (max-width: 480px) {
+            .card { padding: 15px; }
+            .header { flex-direction: column; text-align: center; }
+            .header div { margin-top: 10px; }
+        }
     </style>
 </head>
 <body>
 
     <div id="login-screen" class="screen">
-        <div class="card" style="max-width: 400px; margin-top: 50px;">
-            <h2 style="text-align: center; color: #007bff;">Employee Login</h2>
+        <div class="card" style="max-width: 400px; margin-top: 10vh;">
+            <h2 style="text-align: center; color: #007bff; margin-top: 0;">Employee Login</h2>
             <label>Username</label>
             <input type="text" id="login-username" placeholder="Enter username">
             
             <label>Password</label>
             <input type="password" id="login-password" placeholder="Enter password">
             
-            <button onclick="login()">Login</button>
-            <p id="login-msg" class="error"></p>
+            <button onclick="login()">Login to CRM</button>
+            <div id="login-msg" class="toast"></div>
         </div>
     </div>
 
@@ -56,25 +73,26 @@
         <div class="header">
             <h2>📞 Telecaller Panel</h2>
             <div>
-                <span id="emp-name-display" style="margin-right: 15px; font-weight: bold;"></span>
+                <span id="emp-name-display" style="margin-right: 15px; font-weight: 600;"></span>
                 <button class="logout-btn" onclick="logout()">Logout</button>
             </div>
         </div>
         
         <div class="card">
-            <h3 style="margin-top: 0; color: #333; border-bottom: 2px solid #eee; padding-bottom: 10px;">Add New Call Entry</h3>
+            <h3 style="margin-top: 0; color: #333; border-bottom: 2px solid #f0f0f0; padding-bottom: 12px;">Add New Call Entry</h3>
             
-            <label>Mobile Number (Search History)</label>
+            <label>Mobile Number</label>
             <input type="number" id="emp-mobile" onblur="fetchMobileHistory()" placeholder="Enter 10-digit mobile number">
-            <small style="color: gray; display: block; margin-bottom: 10px;">* Type number and click outside the box to auto-search past complaints.</small>
+            <small style="color: #6c757d; display: block; margin-top: 5px;">* Type number and click outside to load past history.</small>
             
-            <div id="history-box" class="history-box hidden"></div>
+            <div id="history-box" class="history-container hidden"></div>
 
             <label>Student Name</label>
             <input type="text" id="emp-name" placeholder="Enter Student Name">
 
             <label>Problem Type</label>
             <select id="emp-problem">
+                <option value="" disabled selected>Select an issue category...</option>
                 <option value="Online Course Related">Online Course Related</option>
                 <option value="Online Test Series Related">Online Test Series Related</option>
                 <option value="Offline Test Series Related">Offline Test Series Related</option>
@@ -91,6 +109,7 @@
             <textarea id="emp-response" placeholder="What solution or timeline did you provide?"></textarea>
 
             <button id="submit-btn" onclick="submitCallEntry()">Submit Entry</button>
+            <div id="form-msg" class="toast"></div>
         </div>
     </div>
 
@@ -100,7 +119,6 @@
         
         let currentUser = null;
 
-        // Check if user is already logged in on page load
         window.onload = () => {
             const savedUser = localStorage.getItem("qei_user");
             if (savedUser) {
@@ -109,7 +127,6 @@
             }
         };
 
-        // --- API HELPER ---
         async function apiCall(payload) {
             try {
                 const response = await fetch(API_URL, {
@@ -119,8 +136,7 @@
                 });
                 return await response.json();
             } catch (err) {
-                console.error(err);
-                return { success: false, message: "Network error. Please check your internet or URL." };
+                return { success: false, message: "Network error. Please check your internet." };
             }
         }
 
@@ -131,14 +147,11 @@
             const msgBox = document.getElementById("login-msg");
             const btn = document.querySelector("#login-screen button");
             
-            if(!user || !pass) {
-                msgBox.innerText = "Please enter both username and password.";
-                return;
-            }
+            if(!user || !pass) return showToast(msgBox, "Enter username and password", "error");
 
-            msgBox.style.color = "blue";
-            msgBox.innerText = "Logging in please wait...";
             btn.disabled = true;
+            btn.innerText = "Verifying...";
+            showToast(msgBox, "Logging in...", "success");
 
             const res = await apiCall({ action: "login", username: user, password: pass });
             
@@ -147,10 +160,10 @@
                 localStorage.setItem("qei_user", JSON.stringify(currentUser));
                 showEmployeeScreen();
             } else {
-                msgBox.style.color = "red";
-                msgBox.innerText = res.message || "Invalid credentials!";
+                showToast(msgBox, res.message || "Invalid credentials!", "error");
             }
             btn.disabled = false;
+            btn.innerText = "Login to CRM";
         }
 
         function logout() {
@@ -158,9 +171,9 @@
             currentUser = null;
             document.getElementById("employee-screen").classList.add("hidden");
             document.getElementById("login-screen").classList.remove("hidden");
-            document.getElementById("login-msg").innerText = "";
             document.getElementById("login-username").value = "";
             document.getElementById("login-password").value = "";
+            document.getElementById("login-msg").className = "toast";
         }
 
         function showEmployeeScreen() {
@@ -169,7 +182,7 @@
             document.getElementById("emp-name-display").innerText = "Hi, " + currentUser.name;
         }
 
-        // --- FETCH PAST COMPLAINT HISTORY ---
+        // --- FETCH FULL HISTORY ---
         async function fetchMobileHistory() {
             const mobile = document.getElementById("emp-mobile").value;
             const histBox = document.getElementById("history-box");
@@ -180,65 +193,97 @@
             }
 
             histBox.classList.remove("hidden");
-            histBox.innerHTML = "<em>Searching past records...</em>";
+            histBox.innerHTML = "<div style='padding:10px; color:#007bff;'><em>Searching past records...</em></div>";
 
             const res = await apiCall({ action: "fetchMobileInfo", mobile: mobile });
             
-            if (res.success && res.lastRecord) {
+            if (res.success && res.history && res.history.length > 0) {
+                // Auto-fill latest name
                 document.getElementById("emp-name").value = res.lastRecord.studentName;
                 
-                let statusColor = res.lastRecord.status === "Pending" ? "red" : "green";
-                histBox.innerHTML = `
-                    <div style="margin-bottom:5px;"><strong>Last Issue:</strong> ${res.lastRecord.issue}</div>
-                    <div style="margin-bottom:5px;"><strong>Status:</strong> <span style="color:${statusColor}; font-weight:bold;">${res.lastRecord.status}</span></div>
-                    <div><strong>Admin Reply:</strong> ${res.lastRecord.adminComment || 'No reply yet'}</div>
-                `;
+                let historyHTML = `<h4 style="margin:0 0 10px 0; color:#444;">Past Complaints (${res.history.length}):</h4>`;
+                
+                // Reverse array to show newest tickets at the top
+                res.history.slice().reverse().forEach(record => {
+                    let statusClass = record.status === "Pending" ? "pending" : "solved";
+                    let statusColor = record.status === "Pending" ? "red" : "green";
+                    
+                    historyHTML += `
+                        <div class="history-card ${statusClass}">
+                            <div class="history-header">
+                                <span>🗓️ ${record.date}</span>
+                                <strong>Status: <span style="color:${statusColor}">${record.status}</span></strong>
+                            </div>
+                            <div style="margin-bottom:5px;"><strong>Issue:</strong> ${record.issue}</div>
+                            <div style="margin-bottom:5px;"><strong>Telecaller Reply:</strong> ${record.employeeResponse}</div>
+                            <div style="background:#fff; padding:6px; border-radius:4px; border:1px dashed #ccc;">
+                                <strong>👨‍💼 Admin Sol.:</strong> ${record.adminComment || '<span style="color:gray">Awaiting reply...</span>'}
+                            </div>
+                        </div>
+                    `;
+                });
+                histBox.innerHTML = historyHTML;
             } else {
-                histBox.innerHTML = "<span style='color:green;'>No past complaints found. This is a new student.</span>";
+                histBox.innerHTML = "<div class='history-card' style='border-left-color:#17a2b8;'>✅ No past complaints found. This is a new student.</div>";
             }
         }
 
-        // --- SUBMIT NEW COMPLAINT ---
+        // --- SUBMIT NEW COMPLAINT (OPTIMIZED FOR SPEED) ---
         async function submitCallEntry() {
             const mobile = document.getElementById("emp-mobile").value;
             const name = document.getElementById("emp-name").value;
+            const problem = document.getElementById("emp-problem").value;
             const issue = document.getElementById("emp-issue").value;
+            const response = document.getElementById("emp-response").value;
             const btn = document.getElementById("submit-btn");
+            const msgBox = document.getElementById("form-msg");
 
-            if(!mobile || !name || !issue) {
-                alert("Please fill Mobile, Name and Issue Details!");
-                return;
+            if(!mobile || !name || !problem || !issue) {
+                return showToast(msgBox, "Please fill Mobile, Name, Problem Type and Issue!", "error");
             }
 
+            // 1. UI Optimization: Disable button and show loading immediately
             btn.disabled = true;
-            btn.innerText = "Saving Data...";
+            btn.innerText = "Saving Data... Please wait";
+            showToast(msgBox, "Connecting to database...", "success");
 
             const data = {
                 mobile: mobile,
                 studentName: name,
-                problemType: document.getElementById("emp-problem").value,
+                problemType: problem,
                 issue: issue,
-                employeeResponse: document.getElementById("emp-response").value,
+                employeeResponse: response,
                 employeeId: currentUser.employeeId
             };
 
+            // 2. Network Call
             const res = await apiCall({ action: "addComplaint", data: data });
             
+            // 3. Handle Result
             if (res.success) {
-                alert("Call Entry Saved Successfully!");
-                // Clear Form
+                showToast(msgBox, "✅ Call Entry Saved Successfully!", "success");
+                
+                // Clear Form immediately
                 document.getElementById("emp-mobile").value = "";
                 document.getElementById("emp-name").value = "";
                 document.getElementById("emp-issue").value = "";
                 document.getElementById("emp-response").value = "";
                 document.getElementById("history-box").classList.add("hidden");
                 document.getElementById("emp-problem").selectedIndex = 0;
+                
+                // Hide success message after 3 seconds
+                setTimeout(() => { msgBox.className = "toast"; }, 3000);
             } else {
-                alert("Error saving data. Please try again.");
+                showToast(msgBox, "❌ Error saving data. Please try again.", "error");
             }
             
             btn.disabled = false;
             btn.innerText = "Submit Entry";
+        }
+
+        function showToast(element, message, type) {
+            element.innerText = message;
+            element.className = `toast ${type}`;
         }
     </script>
 </body>
