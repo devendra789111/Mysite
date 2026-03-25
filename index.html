@@ -1,93 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telecaller Panel - QE CRM</title>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telecaller Panel</title>
     <style>
-        /* ================= RESPONSIVE CSS STYLING ================= */
-        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { margin: 0; padding: 0; background-color: #f4f6f9; color: #333; display: flex; flex-direction: column; align-items: center; padding: 15px; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { margin: 0; background: #f4f6f9; color: #333; display: flex; flex-direction: column; align-items: center; padding: 15px; }
+        .screen { width: 100%; max-width: 650px; display: none; flex-direction: column; }
+        .active-screen { display: flex; }
+        .card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; background: #007bff; color: white; padding: 15px 20px; border-radius: 10px; margin-bottom: 20px;}
+        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #ced4da; border-radius: 6px; margin-bottom: 15px; }
+        button { background: #007bff; color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; }
+        button:hover { background: #0056b3; }
+        .btn-green { background: #28a745; width: auto; } .btn-green:hover { background: #218838; }
+        .btn-red { background: #dc3545; width: auto; }
         
-        .screen { width: 100%; max-width: 650px; display: flex; flex-direction: column; align-items: center; }
-        .hidden { display: none !important; }
+        /* Modal for WhatsApp */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000; }
+        .modal-content { background: white; padding: 25px; border-radius: 10px; width: 90%; max-width: 400px; text-align: center; }
+        .msg-list { text-align: left; max-height: 250px; overflow-y: auto; margin-bottom: 15px; }
+        .msg-item { padding: 10px; background: #f8f9fa; border: 1px solid #ddd; margin-bottom: 5px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .msg-item:hover { background: #e9ecef; border-color: #007bff; }
         
-        /* Cards & Layout */
-        .card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); width: 100%; margin-bottom: 20px; }
-        
-        /* Header */
-        .header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 20px; background: #007bff; color: white; padding: 15px 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); flex-wrap: wrap; gap: 10px;}
-        .header h2 { margin: 0; font-size: 1.2em; white-space: nowrap; }
-        
-        /* Inputs & Form */
-        label { font-weight: 600; font-size: 0.9em; color: #444; display: block; margin-top: 15px; margin-bottom: 5px; }
-        input, select, textarea { width: 100%; padding: 12px 15px; border: 1px solid #ced4da; border-radius: 6px; font-size: 1em; transition: border-color 0.15s ease-in-out; }
-        input:focus, select:focus, textarea:focus { border-color: #80bdff; outline: 0; }
-        textarea { resize: vertical; min-height: 90px; }
-        
-        /* Buttons */
-        button { background-color: #007bff; color: white; border: none; padding: 14px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; font-size: 1em; margin-top: 20px; transition: 0.2s; }
-        button:hover { background-color: #0056b3; }
-        button:disabled { background-color: #6c757d; cursor: not-allowed; opacity: 0.8; }
-        
-        .logout-btn { background-color: #dc3545; width: auto; padding: 8px 15px; margin-top: 0; font-size: 0.9em; }
-        .logout-btn:hover { background-color: #c82333; }
-
-        /* Full History Timeline Styling */
-        .history-container { margin-top: 10px; margin-bottom: 20px; }
-        .history-card { background: #f8f9fa; border: 1px solid #e9ecef; border-left: 4px solid #007bff; padding: 12px; margin-bottom: 10px; border-radius: 4px; font-size: 0.9em; transition: all 0.3s; }
-        .history-card.solved { border-left-color: #28a745; }
-        .history-card.pending { border-left-color: #dc3545; }
-        .history-header { display: flex; justify-content: space-between; border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-bottom: 5px; font-size: 0.85em; color: #666; }
-        
-        /* Loader/Toaster */
-        .toast { padding: 10px; border-radius: 5px; margin-top: 15px; text-align: center; font-weight: bold; display: none; }
-        .toast.success { background-color: #d4edda; color: #155724; display: block; }
-        .toast.error { background-color: #f8d7da; color: #721c24; display: block; }
-
-        @media (max-width: 480px) {
-            .card { padding: 15px; }
-            .header { flex-direction: column; text-align: center; }
-            .header div { margin-top: 10px; }
-        }
+        .history-card { background: #f8f9fa; border-left: 4px solid #007bff; padding: 12px; margin-bottom: 10px; font-size: 0.9em; }
     </style>
 </head>
 <body>
 
-    <div id="login-screen" class="screen">
-        <div class="card" style="max-width: 400px; margin-top: 10vh;">
-            <h2 style="text-align: center; color: #007bff; margin-top: 0;">Employee Login</h2>
-            <label>Username</label>
-            <input type="text" id="login-username" placeholder="Enter username">
-            <label>Password</label>
-            <input type="password" id="login-password" placeholder="Enter password">
+    <div id="login-screen" class="screen active-screen">
+        <div class="card" style="margin-top: 10vh; text-align: center;">
+            <h2 style="color: #007bff; margin-top: 0;">Employee Login</h2>
+            <input type="text" id="login-username" placeholder="Username">
+            <input type="password" id="login-password" placeholder="Password">
             <button onclick="login()">Login to CRM</button>
-            <div id="login-msg" class="toast"></div>
         </div>
     </div>
 
-    <div id="employee-screen" class="screen hidden">
+    <div id="employee-screen" class="screen">
         <div class="header">
-            <h2>📞 Telecaller Panel</h2>
+            <h3 style="margin: 0;">📞 Telecaller</h3>
             <div>
-                <span id="emp-name-display" style="margin-right: 15px; font-weight: 600;"></span>
-                <button class="logout-btn" onclick="logout()">Logout</button>
+                <button class="btn-green" onclick="openWhatsAppModal()">💬 WhatsApp</button>
+                <button class="btn-red" onclick="logout()">Logout</button>
             </div>
         </div>
         
         <div class="card">
-            <h3 style="margin-top: 0; color: #333; border-bottom: 2px solid #f0f0f0; padding-bottom: 12px;">Add New Call Entry</h3>
+            <h3 style="margin-top: 0; border-bottom: 2px solid #f0f0f0; padding-bottom: 12px;">Add Call Entry</h3>
             
-            <label>Mobile Number</label>
-            <input type="number" id="emp-mobile" onblur="fetchMobileHistory()" placeholder="Enter 10-digit mobile number">
-            <small style="color: #6c757d; display: block; margin-top: 5px;">* Type number and click outside to load past history.</small>
+            <label><b>Mobile Number</b></label>
+            <input type="number" id="emp-mobile" onblur="fetchMobileHistory()" placeholder="10-digit mobile number">
             
-            <div id="history-box" class="history-container hidden"></div>
+            <div id="history-box" style="display:none; margin-bottom: 15px;"></div>
 
-            <label>Student Name</label>
-            <input type="text" id="emp-name" placeholder="Enter Student Name">
-
-            <label>Problem Type</label>
+            <input type="text" id="emp-name" placeholder="Student Name">
             <select id="emp-problem">
                 <option value="" disabled selected>Select an issue category...</option>
                 <option value="Online Course Related">Online Course Related</option>
@@ -98,221 +65,112 @@
                 <option value="Teacher Feedback">Teacher Feedback</option>
                 <option value="Others">Others</option>
             </select>
+            <textarea id="emp-issue" rows="3" placeholder="Describe the problem..."></textarea>
+            <textarea id="emp-response" rows="3" placeholder="Your response/solution..."></textarea>
+            <button onclick="submitCallEntry()">Submit Entry</button>
+        </div>
+    </div>
 
-            <label>Issue Details</label>
-            <textarea id="emp-issue" placeholder="Describe the student's problem in detail..."></textarea>
+    <div id="wa-modal" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-top:0;">Send WhatsApp Message</h3>
+            
+            <div id="step-1">
+                <p style="font-size:0.9em; color:#666;">Select a message template:</p>
+                <div class="msg-list" id="wa-msg-list">Loading messages...</div>
+                <button class="btn-red" onclick="closeModal()">Close</button>
+            </div>
 
-            <label>Employee Response</label>
-            <textarea id="emp-response" placeholder="What solution or timeline did you provide?"></textarea>
-
-            <button id="submit-btn" onclick="submitCallEntry()">Submit Entry</button>
-            <div id="form-msg" class="toast"></div>
+            <div id="step-2" style="display:none;">
+                <p style="font-size:0.9em; color:#007bff; font-weight:bold;" id="selected-msg-title"></p>
+                <input type="number" id="wa-mobile" placeholder="Enter Student Mobile No.">
+                <button class="btn-green" onclick="sendWhatsAppFinal()">🚀 Send to WhatsApp</button>
+                <button class="btn-red" style="margin-top:10px;" onclick="document.getElementById('step-1').style.display='block'; document.getElementById('step-2').style.display='none';">Back</button>
+            </div>
         </div>
     </div>
 
     <script>
-        // 🛑 IMPORTANT: PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE
         const API_URL = "https://script.google.com/macros/s/AKfycbyI9FRnm9GUhhjKY7Er__pdONW4FqSSc7LBdVQ6MHTSqndwBowM8Krl36Nj12l1-F0tjA/exec"; 
-        
         let currentUser = null;
+        let selectedMessageContent = "";
 
-        window.onload = () => {
-            const savedUser = localStorage.getItem("qei_user");
-            if (savedUser) {
-                currentUser = JSON.parse(savedUser);
-                showEmployeeScreen();
-            }
-        };
+        window.onload = () => { if (localStorage.getItem("qei_user")) { currentUser = JSON.parse(localStorage.getItem("qei_user")); showScreen("employee-screen"); } };
 
-        async function apiCall(payload) {
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify(payload)
-                });
-                return await response.json();
-            } catch (err) {
-                return { success: false, message: "Network error. Please check your internet." };
-            }
-        }
+        async function apiCall(payload) { try { const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }); return await r.json(); } catch { return { success: false }; } }
+        function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen')); document.getElementById(id).classList.add('active-screen'); }
 
         async function login() {
-            const user = document.getElementById("login-username").value;
-            const pass = document.getElementById("login-password").value;
-            const msgBox = document.getElementById("login-msg");
-            const btn = document.querySelector("#login-screen button");
-            
-            if(!user || !pass) return showToast(msgBox, "Enter username and password", "error");
-
-            btn.disabled = true;
-            btn.innerText = "Verifying...";
-            showToast(msgBox, "Logging in...", "success");
-
-            const res = await apiCall({ action: "login", username: user, password: pass });
-            
-            if (res.success) {
-                currentUser = res.user;
-                localStorage.setItem("qei_user", JSON.stringify(currentUser));
-                showEmployeeScreen();
-            } else {
-                showToast(msgBox, res.message || "Invalid credentials!", "error");
-            }
-            btn.disabled = false;
-            btn.innerText = "Login to CRM";
+            const u = document.getElementById("login-username").value, p = document.getElementById("login-password").value;
+            const res = await apiCall({ action: "login", username: u, password: p });
+            if (res.success) { currentUser = res.user; localStorage.setItem("qei_user", JSON.stringify(currentUser)); showScreen("employee-screen"); } else alert("Invalid Login");
         }
+        function logout() { localStorage.removeItem("qei_user"); location.reload(); }
 
-        function logout() {
-            localStorage.removeItem("qei_user");
-            currentUser = null;
-            document.getElementById("employee-screen").classList.add("hidden");
-            document.getElementById("login-screen").classList.remove("hidden");
-            document.getElementById("login-username").value = "";
-            document.getElementById("login-password").value = "";
-            document.getElementById("login-msg").className = "toast";
-        }
-
-        function showEmployeeScreen() {
-            document.getElementById("login-screen").classList.add("hidden");
-            document.getElementById("employee-screen").classList.remove("hidden");
-            document.getElementById("emp-name-display").innerText = "Hi, " + currentUser.name;
-        }
-
-        // --- FETCH FULL HISTORY WITH CLEAN DATE & SHOW MORE ---
         async function fetchMobileHistory() {
             const mobile = document.getElementById("emp-mobile").value;
-            const histBox = document.getElementById("history-box");
-            
-            if (mobile.length < 10) {
-                histBox.classList.add("hidden");
-                return;
-            }
-
-            histBox.classList.remove("hidden");
-            histBox.innerHTML = "<div style='padding:10px; color:#007bff;'><em>Searching past records...</em></div>";
-
+            if (mobile.length < 10) return;
+            const histBox = document.getElementById("history-box"); histBox.style.display = "block"; histBox.innerHTML = "<i>Searching history...</i>";
             const res = await apiCall({ action: "fetchMobileInfo", mobile: mobile });
             
-            if (res.success && res.history && res.history.length > 0) {
+            if (res.success && res.history.length > 0) {
                 document.getElementById("emp-name").value = res.lastRecord.studentName;
-                
-                let historyHTML = `<h4 style="margin:0 0 10px 0; color:#444;">Past Complaints (${res.history.length}):</h4>`;
-                
-                const reversedHistory = res.history.slice().reverse();
-
-                reversedHistory.forEach((record, index) => {
-                    let statusClass = record.status === "Pending" ? "pending" : "solved";
-                    let statusColor = record.status === "Pending" ? "red" : "green";
-                    
-                    // 1. Clean the Date (e.g., "25 Mar, 2024")
-                    let cleanDate = record.date;
-                    try {
-                        let d = new Date(record.date);
-                        if(!isNaN(d)) {
-                            cleanDate = d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
-                        }
-                    } catch(e) {}
-
-                    // 2. Hide older records (Keep only top 2 visible)
-                    let isHidden = index >= 2 ? "display: none;" : "";
-                    let extraClass = index >= 2 ? "older-record" : "";
-                    
-                    historyHTML += `
-                        <div class="history-card ${statusClass} ${extraClass}" style="${isHidden}">
-                            <div class="history-header">
-                                <span>🗓️ ${cleanDate}</span>
-                                <strong>Status: <span style="color:${statusColor}">${record.status}</span></strong>
-                            </div>
-                            <div style="margin-bottom:5px;"><strong>Issue:</strong> ${record.issue}</div>
-                            <div style="margin-bottom:5px;"><strong>Telecaller Reply:</strong> ${record.employeeResponse}</div>
-                            <div style="background:#fff; padding:6px; border-radius:4px; border:1px dashed #ccc;">
-                                <strong>👨‍💼 Admin Sol.:</strong> ${record.adminComment || '<span style="color:gray">Awaiting reply...</span>'}
-                            </div>
-                        </div>
-                    `;
-                });
-
-                // Add "Show More" button if there are more than 2 records
-                if (reversedHistory.length > 2) {
-                    historyHTML += `<button type="button" id="toggle-history-btn" onclick="toggleOlderRecords()" style="margin-top:0; background-color:#6c757d; padding: 8px; font-size:0.9em;">⬇️ Show ${reversedHistory.length - 2} Older Complaints</button>`;
-                }
-
-                histBox.innerHTML = historyHTML;
-            } else {
-                histBox.innerHTML = "<div class='history-card' style='border-left-color:#17a2b8;'>✅ No past complaints found. This is a new student.</div>";
-            }
-        }
-
-        // --- FUNCTION TO TOGGLE OLDER RECORDS ---
-        function toggleOlderRecords() {
-            const olderRecords = document.querySelectorAll('.older-record');
-            const btn = document.getElementById('toggle-history-btn');
-            
-            // Check if they are currently hidden
-            let isShowing = olderRecords[0].style.display !== 'none';
-
-            olderRecords.forEach(el => {
-                el.style.display = isShowing ? 'none' : 'block';
-            });
-
-            // Change button text
-            if (isShowing) {
-                btn.innerHTML = `⬇️ Show ${olderRecords.length} Older Complaints`;
-            } else {
-                btn.innerHTML = `⬆️ Hide Older Complaints`;
-            }
+                histBox.innerHTML = res.history.slice().reverse().slice(0,2).map(r => `
+                    <div class="history-card">
+                        <b>${new Date(r.date).toLocaleDateString()}</b> - <span style="color:${r.status=='Pending'?'red':'green'}">${r.status}</span><br>
+                        ${r.issue}<br><b>Admin:</b> ${r.adminComment||'Wait...'}
+                    </div>`).join('');
+            } else { histBox.innerHTML = "<span style='color:green'>New Student!</span>"; }
         }
 
         async function submitCallEntry() {
-            const mobile = document.getElementById("emp-mobile").value;
-            const name = document.getElementById("emp-name").value;
-            const problem = document.getElementById("emp-problem").value;
-            const issue = document.getElementById("emp-issue").value;
-            const response = document.getElementById("emp-response").value;
-            const btn = document.getElementById("submit-btn");
-            const msgBox = document.getElementById("form-msg");
-
-            if(!mobile || !name || !problem || !issue) {
-                return showToast(msgBox, "Please fill Mobile, Name, Problem Type and Issue!", "error");
-            }
-
-            btn.disabled = true;
-            btn.innerText = "Saving Data... Please wait";
-            showToast(msgBox, "Connecting to database...", "success");
-
-            const data = {
-                mobile: mobile,
-                studentName: name,
-                problemType: problem,
-                issue: issue,
-                employeeResponse: response,
-                employeeId: currentUser.employeeId
-            };
-
-            const res = await apiCall({ action: "addComplaint", data: data });
-            
-            if (res.success) {
-                showToast(msgBox, "✅ Call Entry Saved Successfully!", "success");
-                
-                document.getElementById("emp-mobile").value = "";
-                document.getElementById("emp-name").value = "";
-                document.getElementById("emp-issue").value = "";
-                document.getElementById("emp-response").value = "";
-                document.getElementById("history-box").classList.add("hidden");
-                document.getElementById("emp-problem").selectedIndex = 0;
-                
-                setTimeout(() => { msgBox.className = "toast"; }, 3000);
-            } else {
-                showToast(msgBox, "❌ Error saving data. Please try again.", "error");
-            }
-            
-            btn.disabled = false;
-            btn.innerText = "Submit Entry";
+            const m = document.getElementById("emp-mobile").value, n = document.getElementById("emp-name").value, p = document.getElementById("emp-problem").value, i = document.getElementById("emp-issue").value, r = document.getElementById("emp-response").value;
+            if(!m || !n || !p || !i) return alert("Fill mandatory fields");
+            await apiCall({ action: "addComplaint", data: {mobile: m, studentName: n, problemType: p, issue: i, employeeResponse: r, employeeId: currentUser.employeeId} });
+            alert("Saved!"); location.reload();
         }
 
-        function showToast(element, message, type) {
-            element.innerText = message;
-            element.className = `toast ${type}`;
+        // --- WHATSAPP MODAL LOGIC ---
+        async function openWhatsAppModal() {
+            document.getElementById('wa-modal').style.display = 'flex';
+            document.getElementById('step-1').style.display = 'block';
+            document.getElementById('step-2').style.display = 'none';
+            
+            const res = await apiCall({ action: "getMessages" });
+            if(res.success && res.messages.length > 0) {
+                document.getElementById('wa-msg-list').innerHTML = res.messages.map(m => `
+                    <div class="msg-item" onclick="selectMessage('${m.title}', \`${m.content}\`)">📄 ${m.title}</div>
+                `).join('');
+            } else {
+                document.getElementById('wa-msg-list').innerHTML = "No templates created by admin yet.";
+            }
+        }
+
+        function closeModal() { document.getElementById('wa-modal').style.display = 'none'; }
+
+        function selectMessage(title, content) {
+            selectedMessageContent = content;
+            document.getElementById('selected-msg-title').innerText = "Sending: " + title;
+            // Agar pehle se number dala hua hai to use fill kar do
+            document.getElementById('wa-mobile').value = document.getElementById('emp-mobile').value;
+            
+            document.getElementById('step-1').style.display = 'none';
+            document.getElementById('step-2').style.display = 'block';
+        }
+
+        function sendWhatsAppFinal() {
+            const number = document.getElementById('wa-mobile').value;
+            if(number.length < 10) return alert("Enter valid 10 digit number");
+            
+            // Format number (adds 91 if not present)
+            let finalNumber = number.length === 10 ? "91" + number : number;
+            
+            // Encode message for URL
+            let encodedMsg = encodeURIComponent(selectedMessageContent);
+            
+            // Open WhatsApp
+            window.open(`https://wa.me/${finalNumber}?text=${encodedMsg}`, '_blank');
+            closeModal();
         }
     </script>
 </body>
