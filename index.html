@@ -127,10 +127,9 @@
                 <table id="books-table">
                     <thead>
                         <tr>
-                            <th>Book Name</th>
-                            <th>Price Details & Stock</th>
-                            <th>Send Exampustak</th>
-                            <th>Send ApnaBookStore</th>
+                            <th>Book Name & Stock</th>
+                            <th>Exampustak (Price & Link)</th>
+                            <th>ApnaBookStore (Price & Link)</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -190,7 +189,6 @@
         const API_URL = "https://script.google.com/macros/s/AKfycbyI9FRnm9GUhhjKY7Er__pdONW4FqSSc7LBdVQ6MHTSqndwBowM8Krl36Nj12l1-F0tjA/exec"; 
         let currentUser = null, empData = {};
 
-        // Helper Function to Format Dates nicely (e.g. 25 March 2026)
         function formatDateString(dateString) {
             if(!dateString) return "";
             const options = { day: 'numeric', month: 'long', year: 'numeric' };
@@ -230,20 +228,46 @@
             if(res.success) {
                 empData = res;
                 
-                // 1. Render Books Table
+                // 1. Render Books Table (UPDATED FOR SEPARATE PRICES AND STOCK COLORS)
                 document.querySelector("#books-table tbody").innerHTML = res.books.map(b => {
                     let examLink = b.exampustak || '#'; 
                     let apnaLink = b.apnabookstore || '#'; 
-                    let stockColor = (b.stock === 'In Stock') ? 'green' : 'red';
                     
+                    // Fallback to old price if new separate prices don't exist
+                    let ePrice = b.examPrice || b.price || '0';
+                    let eDel = b.examDelivery || b.delivery || '0';
+                    let aPrice = b.apnaPrice || b.price || '0';
+                    let aDel = b.apnaDelivery || b.delivery || '0';
+
+                    // Stock Color Logic
+                    let stockStatus = b.stock || "In Stock";
+                    let stockColor = '#27ae60'; // Green
+                    let stockBg = '#eafaf1';
+
+                    if (stockStatus.toLowerCase().includes('out')) {
+                        stockColor = '#e74c3c'; // Red
+                        stockBg = '#fdedec';
+                    } else if (stockStatus.toLowerCase().includes('upcoming')) {
+                        stockColor = '#d35400'; // Orange
+                        stockBg = '#fdf2e9';
+                    }
+                    
+                    // Safe string escaping for the button function
+                    let safeName = (b.name || '').replace(/'/g, "\\'");
+
                     return `<tr>
-                        <td><b style="color:#1e3c72; font-size:14px;">${b.name}</b></td>
                         <td>
-                            <b>₹${b.price}</b> <small style="color:#666;">(+₹${b.delivery} Del)</small><br>
-                            <span style="color:${stockColor}; font-size:11px; font-weight:bold; background:#eee; padding:2px 6px; border-radius:10px;">${b.stock}</span>
+                            <b style="color:#1e3c72; font-size:14px;">${b.name}</b><br>
+                            <span style="color:${stockColor}; font-size:11px; font-weight:bold; background:${stockBg}; padding:3px 8px; border-radius:12px; display:inline-block; margin-top:4px;">${stockStatus}</span>
                         </td>
-                        <td><button class="btn-wa" style="padding:6px 10px; width:auto;" onclick="triggerWAPrompt('Hello! Aap \\"${b.name}\\" yahan se kharid sakte hain: ${examLink}')">📤 Send WA</button></td>
-                        <td><button class="btn-wa" style="padding:6px 10px; width:auto;" onclick="triggerWAPrompt('Hello! Aap \\"${b.name}\\" yahan se kharid sakte hain: ${apnaLink}')">📤 Send WA</button></td>
+                        <td>
+                            <b>₹${ePrice}</b> <small style="color:#666;">(+₹${eDel} Del)</small><br>
+                            <button class="btn-wa" style="padding:6px 10px; width:auto; margin-top:5px;" onclick="sendBookLink('${safeName}', '${examLink}')">📤 Send WA</button>
+                        </td>
+                        <td>
+                            <b>₹${aPrice}</b> <small style="color:#666;">(+₹${aDel} Del)</small><br>
+                            <button class="btn-wa" style="padding:6px 10px; width:auto; margin-top:5px;" onclick="sendBookLink('${safeName}', '${apnaLink}')">📤 Send WA</button>
+                        </td>
                     </tr>`;
                 }).join('');
                 
@@ -263,7 +287,7 @@
                         </div>
                     </div>`).join('');
 
-                // 3. Render Templates (Clean UI)
+                // 3. Render Templates
                 let adminHTML = "";
                 res.adminMsgs.forEach(m => {
                     adminHTML += `
@@ -290,13 +314,23 @@
             }
         }
 
+        // Dedicated helper function for sending Books (Fixes the button issue)
+        function sendBookLink(bookName, link) {
+            if(!link || link === '#' || link === 'undefined') {
+                alert("Is book ka link abhi available nahi hai!");
+                return;
+            }
+            let msg = `Hello! Aap "${bookName}" yahan se kharid sakte hain: ${link}`;
+            triggerWAPrompt(msg);
+        }
+
         function startEntryFromCall(name, number) {
             document.getElementById("emp-mobile").value = number; document.getElementById("emp-name").value = name;
             switchTab('tab-entry'); fetchHistory();
         }
         async function markDone(id) { await apiCall({action:"markCallDone", callId:id}); loadDashboardData(); }
 
-        // ================= ADD ENTRY & HISTORY (Formatted Date) =================
+        // ================= ADD ENTRY & HISTORY =================
         async function fetchHistory() {
             const m = document.getElementById("emp-mobile").value; const hBox = document.getElementById("history-box");
             if(m.length<10){ hBox.style.display="none"; return; }
@@ -336,7 +370,6 @@
         function closeModal(modalId) { document.getElementById(modalId).style.display = "none"; }
         
         function triggerWAPrompt(messageContent) {
-            // First check if user has typed a number in the Add Entry form to make it easier
             let formNumber = document.getElementById("emp-mobile").value;
             if(formNumber && formNumber.length >= 10) {
                 document.getElementById("prompt-wa-number").value = formNumber;
@@ -385,11 +418,11 @@
             if(!t || !c) return alert("Title and Content are required.");
             
             let templateObj = {employeeId:currentUser.employeeId, title:t, content:c};
-            if(id) templateObj.tempId = id; // Send ID if editing
+            if(id) templateObj.tempId = id; 
 
             await apiCall({action:"saveEmpTemplate", template: templateObj});
             closeModal('template-editor-modal');
-            loadDashboardData(); // Refresh UI
+            loadDashboardData(); 
         }
 
         async function delMyTemp(id) { 
