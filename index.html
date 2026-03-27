@@ -172,10 +172,10 @@
         function showLoader() { document.getElementById("global-loader").style.display = "flex"; }
         function hideLoader() { document.getElementById("global-loader").style.display = "none"; }
 
-        function formatDateString(dateString) {
-            if(!dateString) return "";
-            const options = { day: 'numeric', month: 'long', year: 'numeric' };
-            return new Date(dateString).toLocaleDateString('en-IN', options);
+        function safeDate(dStr) {
+            if(!dStr) return "N/A";
+            let d = new Date(dStr);
+            return isNaN(d.getTime()) ? dStr : d.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
         }
 
         window.onload = () => { 
@@ -209,7 +209,6 @@
             if(res.success) {
                 empData = res;
                 
-                // RENDER BOOKS
                 if(res.books && res.books.length > 0) {
                     document.querySelector("#books-table tbody").innerHTML = res.books.map(b => {
                         let eStockCol = b.examStock === 'Available' ? '#27ae60' : (b.examStock === 'Upcoming' ? '#d35400' : '#e74c3c');
@@ -237,7 +236,6 @@
                     document.querySelector("#books-table tbody").innerHTML = "<tr><td colspan='3'>No books available right now.</td></tr>";
                 }
                 
-                // RENDER CALLS
                 const pendingCalls = (res.assignedCalls || []).filter(c=>c.status==='Pending');
                 if(pendingCalls.length>0){ document.getElementById("calls-badge").innerText = pendingCalls.length; document.getElementById("calls-badge").style.display = "inline-block"; }
                 
@@ -253,7 +251,6 @@
                         </div>
                     </div>`).join('');
 
-                // RENDER TEMPLATES
                 let adminHTML = "";
                 (res.adminMsgs || []).forEach(m => {
                     adminHTML += `<div style="background:#f8f9fa; border:1px solid #e2e8f0; padding:12px; border-radius:8px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
@@ -279,11 +276,7 @@
         function sendBookLink(encName, encLink) {
             let bookName = decodeURIComponent(encName);
             let link = decodeURIComponent(encLink);
-            
-            if(!link || link.trim() === '' || link === '#') {
-                alert(`Is book ka link abhi add nahi kiya gaya hai!`);
-                return;
-            }
+            if(!link || link.trim() === '' || link === '#' || link === 'undefined') { alert(`Is book ka link available nahi hai!`); return; }
             let msg = encodeURIComponent(`Hello! Aap "${bookName}" yahan se kharid sakte hain: ${link}`);
             triggerWAPrompt(msg);
         }
@@ -302,7 +295,7 @@
                 hBox.innerHTML = res.history.slice().reverse().map(r=>`
                     <div class="history-card" style="border-left-color:${r.status=='Pending'?'#e74c3c':'#2ecc71'}; background:#fdfdfe;">
                         <div style="display:flex;justify-content:space-between;border-bottom:1px solid #eee;padding-bottom:5px;margin-bottom:8px;">
-                            <b style="color:#333;">📅 ${formatDateString(r.date)}</b>
+                            <b style="color:#333;">📅 ${safeDate(r.date)}</b>
                             <b style="color:${r.status=='Pending'?'#e74c3c':'#2ecc71'}; background:#f4f6f7; padding:2px 8px; border-radius:10px; font-size:11px;">${r.status}</b>
                         </div>
                         <div style="color:#444; font-size:13px;"><b>Problem:</b> ${r.problemType}</div>
