@@ -3,319 +3,322 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quality Education - Admin Panel</title>
+    <title>Quality Education - Employee App</title>
     <style>
         /* ================= PREMIUM GLASSMORPHISM UI ================= */
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
         * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { margin: 0; padding: 0; background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%); background-attachment: fixed; color: #2c3e50; min-height: 100vh; }
-        .screen { display: none; flex-direction: column; align-items: center; padding: 20px; width: 100%; animation: fadeIn 0.4s ease; }
+        body { margin: 0; padding: 0; background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); background-attachment: fixed; color: #2c3e50; min-height: 100vh; }
+        .screen { display: none; flex-direction: column; align-items: center; padding: 15px; width: 100%; animation: fadeIn 0.4s ease; }
         .active-screen { display: flex; }
-        .glass-panel { background: rgba(255, 255, 255, 0.45); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 12px; box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1); }
-        .navbar { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 15px 30px; position: sticky; top: 0; z-index: 100; background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.5); }
-        .nav-brand { font-size: 1.4em; font-weight: 700; color: #1e3c72; display: flex; align-items: center; gap: 10px; }
-        .tab-menu { display: flex; gap: 10px; flex-wrap: wrap; }
-        .tab-btn { background: transparent; color: #555; border: none; padding: 8px 15px; font-weight: 600; cursor: pointer; border-radius: 8px; transition: 0.3s; }
-        .tab-btn:hover { background: rgba(255,255,255,0.5); color: #007bff; }
-        .tab-btn.active { background: #007bff; color: white; box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3); }
-        .container { width: 100%; max-width: 1200px; margin-top: 10px; }
+        .glass-panel { background: rgba(255, 255, 255, 0.55); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.5); border-radius: 12px; box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1); }
+        
+        /* Mobile Friendly Navbar */
+        .navbar { width: 100%; display: flex; flex-direction: column; gap: 10px; padding: 15px; position: sticky; top: 0; z-index: 100; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.5); border-radius: 0 0 15px 15px; }
+        .nav-header { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .nav-brand { font-size: 1.2em; font-weight: 700; color: #1e3c72; display: flex; align-items: center; gap: 5px; }
+        .tab-menu { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+        .tab-btn { background: rgba(255,255,255,0.6); color: #333; border: 1px solid #ddd; padding: 8px 12px; font-weight: 600; font-size: 13px; cursor: pointer; border-radius: 8px; transition: 0.3s; flex-grow: 1; text-align: center; }
+        .tab-btn:hover { background: rgba(255,255,255,0.9); color: #667eea; }
+        .tab-btn.active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; box-shadow: 0 4px 10px rgba(118, 75, 162, 0.3); }
+        
+        .container { width: 100%; max-width: 1000px; margin-top: 15px; }
         .tab-content { display: none; } .tab-content.active { display: block; animation: fadeIn 0.4s; }
-        .card { padding: 25px; margin-bottom: 25px; }
-        input, select, textarea { padding: 10px 15px; border: 1px solid rgba(255,255,255,0.8); border-radius: 8px; width: 100%; margin-bottom: 15px; outline: none; background: rgba(255, 255, 255, 0.7); transition: 0.3s; }
-        input:focus, select:focus, textarea:focus { background: #fff; border-color: #007bff; box-shadow: 0 0 8px rgba(0,123,255,0.2); }
-        button { border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.3s; display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
+        .card { padding: 20px; margin-bottom: 20px; }
+        input, select, textarea { padding: 12px 15px; border: 1px solid rgba(255,255,255,0.8); border-radius: 8px; width: 100%; margin-bottom: 12px; outline: none; background: rgba(255, 255, 255, 0.8); font-size: 14px; transition: 0.3s; }
+        input:focus, select:focus { background: #fff; border-color: #667eea; box-shadow: 0 0 8px rgba(102,126,234,0.2); }
+        
+        button { border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px; transition: 0.3s; display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
         .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
         .btn-success { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; }
         .btn-danger { background: linear-gradient(135deg, #ff0844 0%, #ffb199 100%); color: white; }
-        .btn-primary:hover, .btn-success:hover, .btn-danger:hover { transform: translateY(-2px); opacity: 0.9; }
-        .table-wrapper { overflow-x: auto; border-radius: 12px; }
-        table { width: 100%; border-collapse: collapse; min-width: 900px; }
-        th, td { padding: 12px 15px; text-align: left; vertical-align: top; border-bottom: 1px solid rgba(255,255,255,0.3); }
-        th { background: rgba(255, 255, 255, 0.6); color: #333; font-weight: 600; }
-        tr:hover { background: rgba(255, 255, 255, 0.3); }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .filter-row { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
-        .filter-row input, .filter-row select { margin:0; flex:1; min-width: 150px;}
+        .btn-wa { background: #25D366; color: white; }
+        .btn-call { background: #007bff; color: white; }
         
-        /* Modal Overlay CSS for Template Editor */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
-        .modal-content { width: 100%; max-width: 450px; }
+        .table-wrapper { overflow-x: auto; border-radius: 12px; }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        th, td { padding: 12px; text-align: left; vertical-align: middle; border-bottom: 1px solid rgba(255,255,255,0.4); font-size: 14px; }
+        th { background: rgba(255, 255, 255, 0.7); color: #1e3c72; font-weight: 700; }
+        tr:hover { background: rgba(255, 255, 255, 0.4); }
+        
+        .badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; color: white; }
+        .badge-pending { background: #ff9f43; }
+        .badge-done { background: #1dd1a1; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
+
     <div id="login-screen" class="screen active-screen">
-        <div class="glass-panel card" style="max-width: 400px; margin-top: 15vh; text-align: center;">
-            <div style="font-size: 3em; margin-bottom: 10px;">🎓</div>
-            <h2 style="color: #1e3c72; margin-top: 0;">Quality Education</h2>
-            <input type="text" id="login-username" placeholder="Admin Username">
-            <input type="password" id="login-password" placeholder="Password">
-            <button class="btn-primary" style="width: 100%; padding: 12px;" onclick="login()">Login</button>
-            <p id="login-msg" style="color:#d63031; display:none;"></p>
+        <div class="glass-panel card" style="max-width: 350px; margin-top: 10vh; text-align: center; width: 100%;">
+            <div style="font-size: 3.5em; margin-bottom: 5px;">🎧</div>
+            <h2 style="color: #1e3c72; margin-top: 0;">Employee Portal</h2>
+            <p style="color: #555; font-size: 13px; margin-bottom: 20px;">Quality Education Team</p>
+            <input type="text" id="login-username" placeholder="Your Username">
+            <input type="password" id="login-password" placeholder="Your Password">
+            <button class="btn-primary" style="width: 100%; padding: 12px; font-size: 15px;" onclick="login()">Login to Dashboard</button>
+            <p id="login-msg" style="color:#d63031; display:none; margin-top: 15px; font-weight: bold;"></p>
         </div>
     </div>
 
-    <div id="admin-screen" class="screen">
+    <div id="emp-screen" class="screen">
         <div class="navbar">
-            <div class="nav-brand">🎓 Quality Education Admin</div>
+            <div class="nav-header">
+                <div class="nav-brand">🎧 <span id="emp-name-display">Telecaller</span></div>
+                <button class="btn-danger" style="padding: 6px 12px; font-size: 12px;" onclick="logout()">Logout</button>
+            </div>
             <div class="tab-menu">
-                <button class="tab-btn active" onclick="switchTab('tab-complaints')">📋 Complaints</button>
-                <button class="tab-btn" onclick="switchTab('tab-calls')">📞 Assign Calls</button>
+                <button class="tab-btn active" onclick="switchTab('tab-calls')">📞 My Calls</button>
                 <button class="tab-btn" onclick="switchTab('tab-books')">📚 Books Info</button>
-                <button class="tab-btn" onclick="switchTab('tab-employees')">👥 Team</button>
-                <button class="tab-btn" onclick="switchTab('tab-messages')">💬 WhatsApp</button>
-                <button class="tab-btn" style="color: #d63031;" onclick="logout()">🚪 Logout</button>
+                <button class="tab-btn" onclick="switchTab('tab-messages')">💬 Templates</button>
             </div>
         </div>
 
         <div class="container">
-            <div id="tab-complaints" class="tab-content active">
-                <div class="glass-panel card">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
-                        <h2 style="margin:0; color:#1e3c72;">Student Complaints</h2>
-                    </div>
-                    <div class="filter-row">
-                        <input type="text" id="search-box" placeholder="🔍 Search..." oninput="applyFilters()">
-                        <select id="filter-category" onchange="applyFilters()"><option value="">All Categories</option><option value="Online Course Related">Online Course</option><option value="Online Test Series Related">Test Series</option><option value="Others">Others</option></select>
-                        <select id="filter-status" onchange="applyFilters()"><option value="">All Status</option><option value="Pending">Pending</option><option value="Solved">Solved</option></select>
-                    </div>
-                    <div class="table-wrapper">
-                        <table id="complaints-table">
-                            <thead><tr><th>Date & ID</th><th>Student</th><th>Problem</th><th>Telecaller Reply</th><th>Admin Action</th></tr></thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div id="tab-calls" class="tab-content">
-                <div style="display: flex; gap:20px; flex-wrap:wrap;">
-                    <div class="glass-panel card" style="flex:1; min-width:300px;">
-                        <h3 style="color:#1e3c72; margin-top:0;">📞 Assign New Call</h3>
-                        <select id="assign-emp"><option value="">Select Telecaller...</option></select>
-                        <input type="text" id="assign-name" placeholder="Student Name">
-                        <input type="number" id="assign-number" placeholder="10-digit Mobile">
-                        <input type="text" id="assign-title" placeholder="Reason (e.g. Course Renewal)">
-                        <button class="btn-primary" style="width:100%" onclick="assignCall()">Assign Call</button>
-                    </div>
-                    <div class="glass-panel card table-wrapper" style="flex:2; min-width:300px;">
-                        <h3 style="color:#1e3c72; margin-top:0;">📋 Assigned Leads</h3>
-                        <table id="calls-table">
-                            <thead><tr><th>Date</th><th>Assigned To</th><th>Student</th><th>Reason</th><th>Status</th><th>Action</th></tr></thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
+            
+            <div id="tab-calls" class="tab-content active">
+                <div class="glass-panel card table-wrapper">
+                    <h3 style="color:#1e3c72; margin-top:0;">📞 My Assigned Leads</h3>
+                    <table id="my-calls-table">
+                        <thead>
+                            <tr>
+                                <th>Student Details</th>
+                                <th>Reason / Title</th>
+                                <th>Status</th>
+                                <th>Actions (Contact)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            </tbody>
+                    </table>
                 </div>
             </div>
 
             <div id="tab-books" class="tab-content">
-                <div style="display: flex; gap:20px; flex-wrap:wrap;">
-                    <div class="glass-panel card" style="flex:1; min-width:300px;">
-                        <h3 style="color:#1e3c72; margin-top:0;">📚 Add Book Details</h3>
-                        <input type="text" id="bk-name" placeholder="Book Name">
-                        <input type="number" id="bk-price" placeholder="Price (₹)">
-                        <input type="number" id="bk-delivery" placeholder="Delivery Charge (₹)">
-                        <input type="text" id="bk-exampustak" placeholder="Exampustak Link">
-                        <input type="text" id="bk-apnabookstore" placeholder="ApnaBookStore Link">
-                        <select id="bk-stock"><option value="In Stock">✅ In Stock</option><option value="Out of Stock">❌ Out of Stock</option></select>
-                        <button class="btn-primary" style="width:100%" onclick="saveBook()">Save Book</button>
-                    </div>
-                    <div class="glass-panel card table-wrapper" style="flex:2; min-width:300px;">
-                        <h3 style="color:#1e3c72; margin-top:0;">📖 Inventory Viewer</h3>
-                        <table id="books-table">
-                            <thead><tr><th>Book Name</th><th>Price + Delivery</th><th>Send Links (WhatsApp)</th><th>Stock</th><th>Action</th></tr></thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div id="tab-employees" class="tab-content">
-                <div style="display: flex; gap:20px; flex-wrap:wrap;">
-                    <div class="glass-panel card" style="flex:1; min-width:300px;"><h3 style="color:#1e3c72; margin-top:0;">➕ Add Telecaller</h3><input type="text" id="new-emp-name" placeholder="Name"><input type="text" id="new-emp-user" placeholder="Username"><input type="text" id="new-emp-pass" placeholder="Password"><button class="btn-primary" style="width:100%" onclick="addNewEmployee()">Create</button></div>
-                    <div class="glass-panel card table-wrapper" style="flex:2; min-width:300px;"><h3 style="color:#1e3c72; margin-top:0;">👥 Team</h3><table id="employees-table"><thead><tr><th>Name</th><th>Username</th><th>Password</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
+                <div class="glass-panel card table-wrapper">
+                    <h3 style="color:#1e3c72; margin-top:0;">📖 Send Book Links</h3>
+                    <table id="books-table">
+                        <thead>
+                            <tr>
+                                <th>Book Name</th>
+                                <th>Price</th>
+                                <th>Send Exampustak</th>
+                                <th>Send ApnaBookStore</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            </tbody>
+                    </table>
                 </div>
             </div>
 
             <div id="tab-messages" class="tab-content">
-                <div class="glass-panel card table-wrapper" style="width:100%;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                        <h3 style="color:#1e3c72; margin-top:0;">💬 Saved Templates</h3>
-                        <button class="btn-primary" onclick="openTemplateModal()" style="border-radius:20px; padding:8px 15px;">➕ Add New Template</button>
-                    </div>
+                <div class="glass-panel card table-wrapper">
+                    <h3 style="color:#1e3c72; margin-top:0;">💬 Quick WhatsApp Templates</h3>
                     <table id="messages-table">
-                        <thead><tr><th>Title</th><th>Preview</th><th>Actions</th></tr></thead>
-                        <tbody></tbody>
+                        <thead>
+                            <tr>
+                                <th>Template Title</th>
+                                <th>Message Preview</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            </tbody>
                     </table>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <div id="templateModal" class="modal-overlay">
-        <div class="glass-panel card modal-content">
-            <h3 id="modal-heading" style="color:#1e3c72; margin-top:0;">📝 Create/Edit Template</h3>
-            <input type="hidden" id="msg-id">
-            <input type="text" id="msg-title" placeholder="Title">
-            <textarea id="msg-content" rows="5" placeholder="Message content..."></textarea>
-            <div style="display:flex; gap:10px;">
-                <button class="btn-success" style="flex:1" onclick="saveMessage()">Save</button>
-                <button class="btn-danger" style="flex:1" onclick="closeTemplateModal()">Cancel</button>
-            </div>
         </div>
     </div>
 
     <script>
+        // AAPKA GOOGLE APPS SCRIPT LINK (Same as Admin)
         const API_URL = "https://script.google.com/macros/s/AKfycbyI9FRnm9GUhhjKY7Er__pdONW4FqSSc7LBdVQ6MHTSqndwBowM8Krl36Nj12l1-F0tjA/exec"; 
-        let allComplaints = [], employeesMap = {}, adminData = {};
+        
+        let currentUser = null;
 
-        window.onload = () => { if (localStorage.getItem("qei_admin")) { showScreen("admin-screen"); loadData(); } };
-        async function apiCall(p) { try { const r = await fetch(API_URL, {method:'POST', body:JSON.stringify(p)}); return await r.json(); } catch { return {success:false}; } }
-        function showScreen(id) { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active-screen')); document.getElementById(id).classList.add('active-screen'); }
-        function switchTab(id) { document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active')); document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); document.getElementById(id).classList.add('active'); event.target.classList.add('active'); }
-        async function login() { const u=document.getElementById("login-username").value, p=document.getElementById("login-password").value; const r=await apiCall({action:"login", username:u, password:p}); if(r.success && r.user.role==="admin"){ localStorage.setItem("qei_admin","yes"); location.reload(); }else{ alert("Invalid"); } }
-        function logout() { localStorage.removeItem("qei_admin"); location.reload(); }
+        window.onload = () => { 
+            let storedUser = localStorage.getItem("qei_emp_data");
+            if (storedUser) { 
+                currentUser = JSON.parse(storedUser);
+                document.getElementById("emp-name-display").innerText = currentUser.name;
+                showScreen("emp-screen"); 
+                loadEmployeeData(); 
+            } 
+        };
 
-        async function loadData() {
+        // Standard API Fetch Function
+        async function apiCall(p) { 
+            try { 
+                const r = await fetch(API_URL, {method:'POST', body:JSON.stringify(p)}); 
+                return await r.json(); 
+            } catch (error) { 
+                console.error("API Error:", error);
+                return {success:false}; 
+            } 
+        }
+
+        // Screen & Tab Switching
+        function showScreen(id) { 
+            document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active-screen')); 
+            document.getElementById(id).classList.add('active-screen'); 
+        }
+        function switchTab(id) { 
+            document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active')); 
+            document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); 
+            document.getElementById(id).classList.add('active'); 
+            event.target.classList.add('active'); 
+        }
+
+        // Employee Login
+        async function login() { 
+            const u = document.getElementById("login-username").value;
+            const p = document.getElementById("login-password").value; 
+            const msgBox = document.getElementById("login-msg");
+            
+            msgBox.style.display = "block";
+            msgBox.style.color = "#1e3c72";
+            msgBox.innerText = "Checking credentials... Please wait.";
+
+            const r = await apiCall({action:"login", username:u, password:p}); 
+            
+            // Checking if login is successful (Allowing non-admins / employees)
+            if(r.success && r.user) { 
+                localStorage.setItem("qei_emp_data", JSON.stringify(r.user)); 
+                location.reload(); 
+            } else { 
+                msgBox.style.color = "#d63031";
+                msgBox.innerText = "❌ Invalid Username or Password!"; 
+            } 
+        }
+
+        function logout() { 
+            localStorage.removeItem("qei_emp_data"); 
+            location.reload(); 
+        }
+
+        // Load Dashboard Data
+        async function loadEmployeeData() {
+            // Hum getAdminData ka use kar sakte hain, aur frontend par sirf employee ka data filter kar lenge.
+            // Agar aapke script mein getEmployeeData ka function hai, toh use badal lena.
             const res = await apiCall({ action: "getAdminData" });
+            
             if (res.success) {
-                adminData = res; allComplaints = res.complaints.slice().reverse();
-                employeesMap = {}; res.employees.forEach(e => employeesMap[e.employeeId] = e.name);
-                applyFilters(); renderEmployees(res.employees); renderBooks(res.books); renderAssignedCalls(res.assignedCalls);
-                
-                const empSelect = document.getElementById("assign-emp");
-                empSelect.innerHTML = `<option value="">Select Telecaller...</option>` + res.employees.filter(e=>e.username!=='admin').map(e=>`<option value="${e.employeeId}">${e.name}</option>`).join('');
-                
-                // Load Messages Tab
+                // 1. FILTER CALLS ONLY FOR LOGGED IN EMPLOYEE
+                let myCalls = res.assignedCalls.filter(c => c.employeeId === currentUser.employeeId);
+                renderMyCalls(myCalls);
+
+                // 2. RENDER BOOKS
+                renderBooks(res.books);
+
+                // 3. LOAD MESSAGES (TEMPLATES)
                 const msgRes = await apiCall({ action: "getMessages" });
                 if(msgRes.success) {
-                    document.querySelector("#messages-table tbody").innerHTML = msgRes.messages.map(m=>`<tr>
-                        <td><b>${m.title}</b></td>
-                        <td>${m.content.substring(0,35)}...</td>
-                        <td>
-                            <button class="btn-success" style="padding:5px 10px;" onclick="sendWA('${encodeURIComponent(m.content)}')">📤 Send</button>
-                            <button class="btn-primary" style="padding:5px 10px;" onclick="editTemplateModal('${m.msgId}', '${encodeURIComponent(m.title)}', '${encodeURIComponent(m.content)}')">✏️ Edit</button>
-                            <button class="btn-danger" style="padding:5px 10px;" onclick="deleteMsg('${m.msgId}')">🗑️</button>
-                        </td>
-                    </tr>`).join('');
+                    renderMessages(msgRes.messages);
                 }
+            } else {
+                alert("Data load karne mein problem aayi. Please refresh karein.");
             }
         }
 
-        function applyFilters() {
-            const s=document.getElementById("search-box").value.toLowerCase(), c=document.getElementById("filter-category").value, st=document.getElementById("filter-status").value;
-            const f = allComplaints.filter(x=>(s===""||x.mobile.includes(s)||x.studentName.toLowerCase().includes(s)) && (c===""||x.problemType===c) && (st===""||x.status===st));
-            document.querySelector("#complaints-table tbody").innerHTML = f.map(x=>`<tr>
-                <td><small>${new Date(x.date).toLocaleDateString()}</small><br>ID: ${x.complaintId.slice(-3)}</td>
-                <td><b>${x.studentName}</b><br>📞 ${x.mobile}</td>
-                <td><span style="color:#0984e3; font-weight:bold">${x.problemType}</span><br>${x.issue}</td>
-                <td>${x.employeeResponse}<br><b style="color:#1e3c72;font-size:0.8em;">By: ${employeesMap[x.employeeId]}</b></td>
-                <td>${x.status=='Pending'?`<textarea id="rep-${x.complaintId}" rows="1" placeholder="Reply..." style="margin-bottom:5px;"></textarea><button class="btn-success" style="padding:5px;" onclick="markSolved('${x.complaintId}')">✔️ Solve</button>` : `<b style="color:green">✅ Solved</b><br><small>${x.adminComment}</small>`}
-                <button class="btn-danger" style="padding:5px; margin-top:5px;" onclick="deleteComplaint('${x.complaintId}')">🗑️</button></td></tr>`).join('');
-        }
-        async function markSolved(id) { await apiCall({action:"updateComplaint", complaintId:id, adminComment:document.getElementById(`rep-${id}`).value||"Solved."}); loadData(); }
-        async function deleteComplaint(id) { if(confirm("Delete?")){ await apiCall({action:"deleteComplaint", complaintId:id}); loadData(); } }
+        // ================= 1. RENDER CALLS =================
+        function renderMyCalls(calls) {
+            let tbody = document.querySelector("#my-calls-table tbody");
+            if(calls.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">🎉 Koi pending calls nahi hain!</td></tr>`;
+                return;
+            }
 
-        // ================= UPDATED BOOKS LOGIC =================
-        async function saveBook() {
-            const n=document.getElementById("bk-name").value, p=document.getElementById("bk-price").value, d=document.getElementById("bk-delivery").value, 
-                  exam=document.getElementById("bk-exampustak").value, apna=document.getElementById("bk-apnabookstore").value, s=document.getElementById("bk-stock").value;
-            if(!n) return alert("Enter book name");
-            
-            // Note: Saving exampustak and apnabookstore inside the object.
-            await apiCall({action:"saveBook", book:{name:n, price:p, delivery:d, exampustak:exam, apnabookstore:apna, stock:s}});
-            
-            document.getElementById("bk-name").value=""; document.getElementById("bk-price").value=""; document.getElementById("bk-delivery").value=""; 
-            document.getElementById("bk-exampustak").value=""; document.getElementById("bk-apnabookstore").value="";
-            loadData();
+            // Sabse nayi call upar dikhane ke liye reverse()
+            tbody.innerHTML = calls.slice().reverse().map(c => {
+                let statusBadge = c.status === 'Pending' ? `<span class="badge badge-pending">⏳ Pending</span>` : `<span class="badge badge-done">✅ ${c.status}</span>`;
+                
+                return `<tr>
+                    <td>
+                        <strong style="color:#1e3c72; font-size:15px;">${c.name}</strong><br>
+                        <span style="color:#555;">📞 ${c.number}</span><br>
+                        <small style="color:#888;">Assigned: ${new Date(c.date).toLocaleDateString()}</small>
+                    </td>
+                    <td><b>${c.title}</b></td>
+                    <td>
+                        ${statusBadge}
+                        <div style="margin-top:5px;">
+                            <select id="status-${c.callId}" style="padding:4px; font-size:12px; width:auto; margin-bottom:0;">
+                                <option value="">Update Status...</option>
+                                <option value="Completed">Completed</option>
+                                <option value="Interested">Interested</option>
+                                <option value="Not Interested">Not Interested</option>
+                            </select>
+                            <button class="btn-primary" style="padding:4px 8px; font-size:11px;" onclick="updateCallStatus('${c.callId}')">Save</button>
+                        </div>
+                    </td>
+                    <td>
+                        <div style="display:flex; gap:5px; flex-direction:column;">
+                            <a href="tel:${c.number}" class="btn-call" style="text-decoration:none; padding:6px 10px; border-radius:6px; text-align:center;">☎️ Direct Call</a>
+                            <a href="https://wa.me/91${c.number}" target="_blank" class="btn-wa" style="text-decoration:none; padding:6px 10px; border-radius:6px; text-align:center;">🟢 WhatsApp</a>
+                        </div>
+                    </td>
+                </tr>`;
+            }).join('');
         }
 
+        // Status Update Call to Backend
+        async function updateCallStatus(callId) {
+            let newStatus = document.getElementById(`status-${callId}`).value;
+            if(!newStatus) return alert("Pehle dropdown se status select karein!");
+            
+            // Note: Backend script me 'updateAssignedCall' function hona chahiye
+            let res = await apiCall({action: "updateAssignedCall", callId: callId, status: newStatus});
+            alert("Status Updated Successfully!");
+            loadEmployeeData(); // Refresh list
+        }
+
+        // ================= 2. RENDER BOOKS =================
         function renderBooks(books) {
-            document.querySelector("#books-table tbody").innerHTML = books.map(b=>`<tr>
-                <td><b>${b.name}</b></td>
-                <td>₹${b.price} <small>(+₹${b.delivery} Del)</small></td>
-                <td>
-                    <button class="btn-success" style="padding:4px 8px; font-size:12px; margin-bottom:5px;" onclick="sendBookLink('${b.name}', '${b.exampustak}')">Exampustak 📤</button><br>
-                    <button class="btn-primary" style="padding:4px 8px; font-size:12px;" onclick="sendBookLink('${b.name}', '${b.apnabookstore}')">ApnaBookStore 📤</button>
-                </td>
-                <td style="color:${b.stock=='In Stock'?'green':'red'}"><b>${b.stock}</b></td>
-                <td><button class="btn-danger" style="padding:5px" onclick="deleteBk('${b.bookId}')">🗑️</button></td></tr>`).join('');
+            document.querySelector("#books-table tbody").innerHTML = books.map(b => {
+                let examLink = b.exampustak || '#'; 
+                let apnaLink = b.apnabookstore || '#'; 
+
+                return `<tr>
+                    <td><b>${b.name}</b><br><small style="color:${b.stock=='In Stock'?'green':'red'}">${b.stock}</small></td>
+                    <td>₹${b.price}</td>
+                    <td><button class="btn-primary" style="padding:6px 10px; font-size:12px;" onclick="sendLink('${b.name}', '${examLink}', 'Exampustak')">📤 Send Exampustak</button></td>
+                    <td><button class="btn-primary" style="background:linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding:6px 10px; font-size:12px;" onclick="sendLink('${b.name}', '${apnaLink}', 'ApnaBookStore')">📤 Send ApnaBook</button></td>
+                </tr>`;
+            }).join('');
         }
 
-        function sendBookLink(bookName, link) {
-            if(!link || link === "undefined") return alert("Is book ka ye link add nahi kiya gaya hai!");
-            let num = prompt(`"${bookName}" ka link bhejne ke liye 10-digit number dalein:`);
+        function sendLink(bookName, link, store) {
+            if(!link || link === "undefined" || link === "#") return alert(`Is book ka ${store} link abhi available nahi hai.`);
+            let num = prompt(`Student ka WhatsApp number dalein (${store} link bhejne ke liye):`);
             if(num && num.trim() !== "") {
                 let msg = encodeURIComponent(`Hello! Aap "${bookName}" yahan se kharid sakte hain: ${link}`);
                 window.open(`https://wa.me/91${num}?text=${msg}`, '_blank');
             }
         }
-        async function deleteBk(id) { if(confirm("Delete Book?")){ await apiCall({action:"deleteBook", bookId:id}); loadData(); } }
 
-        // ASSIGN CALLS LOGIC
-        async function assignCall() {
-            const e=document.getElementById("assign-emp").value, n=document.getElementById("assign-name").value, m=document.getElementById("assign-number").value, t=document.getElementById("assign-title").value;
-            if(!e||!n||!m) return alert("Select Emp, Name, Number!");
-            await apiCall({action:"assignCall", callData:{employeeId:e, name:n, number:m, title:t}});
-            document.getElementById("assign-name").value=""; document.getElementById("assign-number").value=""; document.getElementById("assign-title").value="";
-            loadData();
-        }
-        function renderAssignedCalls(calls) {
-            document.querySelector("#calls-table tbody").innerHTML = calls.slice().reverse().map(c=>`<tr>
-                <td><small>${new Date(c.date).toLocaleDateString()}</small></td>
-                <td><b>${employeesMap[c.employeeId]}</b></td>
-                <td>${c.name}<br>📞 ${c.number}</td><td>${c.title}</td>
-                <td style="color:${c.status=='Pending'?'red':'green'}"><b>${c.status}</b></td>
-                <td><button class="btn-danger" style="padding:5px" onclick="deleteACall('${c.callId}')">🗑️</button></td></tr>`).join('');
-        }
-        async function deleteACall(id) { if(confirm("Delete Assigned Call?")){ await apiCall({action:"deleteAssignedCall", callId:id}); loadData(); } }
-
-        // TEAM
-        function renderEmployees(emps) { document.querySelector("#employees-table tbody").innerHTML = emps.filter(e=>e.username!=='admin').map(e=>`<tr><td><b>${e.name}</b></td><td>${e.username}</td><td><input type="text" id="p-${e.employeeId}" value="${e.password}" style="width:100px;margin:0;"><button class="btn-success" style="padding:5px" onclick="updatePass('${e.employeeId}')">Save</button></td><td><button class="btn-danger" style="padding:5px" onclick="deleteEmp('${e.employeeId}')">🗑️</button></td></tr>`).join(''); }
-        async function addNewEmployee() { const n=document.getElementById("new-emp-name").value, u=document.getElementById("new-emp-user").value, p=document.getElementById("new-emp-pass").value; if(!n||!u||!p)return; await apiCall({action:"addEmployee", employee:{name:n,username:u,password:p}}); loadData(); }
-        async function updatePass(id) { await apiCall({action:"updatePassword", empId:id, newPass:document.getElementById(`p-${id}`).value}); alert("Updated"); }
-        async function deleteEmp(id) { if(confirm("Remove?")){ await apiCall({action:"deleteEmployee", empId:id}); loadData(); } }
-        
-        // ================= UPDATED MESSAGES LOGIC =================
-        function openTemplateModal() {
-            document.getElementById("msg-id").value = "";
-            document.getElementById("msg-title").value = "";
-            document.getElementById("msg-content").value = "";
-            document.getElementById("modal-heading").innerText = "📝 Create New Template";
-            document.getElementById("templateModal").style.display = "flex";
-        }
-        
-        function editTemplateModal(id, title, content) {
-            document.getElementById("msg-id").value = id;
-            document.getElementById("msg-title").value = decodeURIComponent(title);
-            document.getElementById("msg-content").value = decodeURIComponent(content);
-            document.getElementById("modal-heading").innerText = "✏️ Edit Template";
-            document.getElementById("templateModal").style.display = "flex";
+        // ================= 3. RENDER MESSAGES (TEMPLATES) =================
+        function renderMessages(messages) {
+            document.querySelector("#messages-table tbody").innerHTML = messages.map(m => `
+                <tr>
+                    <td><b>${m.title}</b></td>
+                    <td style="font-size:13px; color:#444;">${m.content.substring(0, 50)}...</td>
+                    <td>
+                        <button class="btn-wa" style="padding:8px 15px;" onclick="sendTemplate('${encodeURIComponent(m.content)}')">📤 Send to Student</button>
+                    </td>
+                </tr>
+            `).join('');
         }
 
-        function closeTemplateModal() {
-            document.getElementById("templateModal").style.display = "none";
-        }
-
-        async function saveMessage() { 
-            const t=document.getElementById("msg-title").value, c=document.getElementById("msg-content").value, id=document.getElementById("msg-id").value; 
-            if(!t||!c) return alert("Title and Content required"); 
-            
-            let payload = {action:"saveMessage", message:{title:t, content:c}};
-            if(id) payload.message.msgId = id; // Update logic if ID exists
-            
-            await apiCall(payload); 
-            closeTemplateModal();
-            loadData(); 
-        }
-
-        function sendWA(encodedMsg) {
+        function sendTemplate(encodedMsg) {
             let msg = decodeURIComponent(encodedMsg);
-            let num = prompt("Message bhejne ke liye 10-digit WhatsApp number dalein:");
+            let num = prompt("Template bhejne ke liye 10-digit WhatsApp number dalein:");
             if(num && num.trim() !== "") {
                 window.open(`https://wa.me/91${num}?text=${encodeURIComponent(msg)}`, '_blank');
             }
         }
-        async function deleteMsg(id) { if(confirm("Delete Template?")){ await apiCall({action:"deleteMessage", msgId:id}); loadData(); } }
     </script>
 </body>
 </html>
