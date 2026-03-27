@@ -16,27 +16,32 @@
         .glass-panel { background: rgba(255, 255, 255, 0.55); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.5); border-radius: 15px; box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1); padding: 20px; margin-bottom: 20px; width: 100%; max-width: 800px; }
         
         /* Navbar & Tabs */
-        .header { display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.8); border-bottom: 1px solid rgba(255,255,255,0.5); padding: 15px 20px; border-radius: 12px; margin-bottom: 15px; width: 100%; max-width: 800px; }
+        .header { display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.9); border-bottom: 1px solid rgba(255,255,255,0.5); padding: 12px 20px; border-radius: 12px; margin-bottom: 15px; width: 100%; max-width: 800px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         .tab-menu { display: flex; gap: 10px; width: 100%; max-width: 800px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px; }
-        .tab-btn { background: rgba(255,255,255,0.6); color: #1e3c72; border: 1px solid rgba(255,255,255,0.8); padding: 10px 15px; font-weight: 600; cursor: pointer; border-radius: 8px; transition: 0.3s; white-space: nowrap; flex:1; text-align: center; }
+        .tab-btn { background: rgba(255,255,255,0.6); color: #1e3c72; border: 1px solid rgba(255,255,255,0.8); padding: 10px 15px; font-weight: 600; cursor: pointer; border-radius: 8px; transition: 0.3s; white-space: nowrap; flex:1; text-align: center; font-size: 13px; }
         .tab-btn.active { background: #007bff; color: white; border-color: #007bff; box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3); }
 
         .tab-content { display: none; width: 100%; max-width: 800px; } .tab-content.active { display: block; animation: fadeIn 0.4s; }
 
-        input, select, textarea { width: 100%; padding: 12px; border: 1px solid rgba(255,255,255,0.8); border-radius: 8px; font-size: 0.95em; outline: none; background: rgba(255, 255, 255, 0.8); margin-bottom: 15px; }
-        input:focus, select:focus, textarea:focus { background: #fff; border-color: #007bff; }
+        input, select, textarea { width: 100%; padding: 12px; border: 1px solid rgba(255,255,255,0.8); border-radius: 8px; font-size: 0.95em; outline: none; background: rgba(255, 255, 255, 0.8); margin-bottom: 15px; transition: 0.3s; }
+        input:focus, select:focus, textarea:focus { background: #fff; border-color: #007bff; box-shadow: 0 0 5px rgba(0,123,255,0.2); }
         
-        button { border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.3s; }
+        button { border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.3s; font-size: 13px; }
         .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; width: 100%; }
         .btn-success { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; }
         .btn-danger { background: linear-gradient(135deg, #ff0844 0%, #ffb199 100%); color: white; }
         .btn-wa { background: #25D366; color: white; }
+        .btn-edit { background: #f39c12; color: white; }
         
         /* History & Lists */
-        .history-card { background: rgba(255, 255, 255, 0.7); border-left: 4px solid #0984e3; padding: 15px; margin-bottom: 10px; border-radius: 6px; font-size: 0.9em; }
-        table { width: 100%; border-collapse: collapse; background: rgba(255,255,255,0.6); border-radius: 8px; overflow: hidden; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.5); }
-        th { background: rgba(255,255,255,0.8); color: #1e3c72; }
+        .history-card { background: rgba(255, 255, 255, 0.8); border-left: 4px solid #0984e3; padding: 15px; margin-bottom: 10px; border-radius: 6px; font-size: 0.9em; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        table { width: 100%; border-collapse: collapse; background: rgba(255,255,255,0.7); border-radius: 8px; overflow: hidden; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.5); font-size: 13px; }
+        th { background: rgba(255,255,255,0.9); color: #1e3c72; }
+
+        /* Modals (Popups) */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; padding: 15px; }
+        .modal-content { background: #fff; width: 100%; max-width: 400px; border-radius: 15px; padding: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); animation: fadeIn 0.3s ease; }
 
         .toast { padding: 12px; border-radius: 8px; margin-top: 15px; text-align: center; font-weight: 600; display: none; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -56,12 +61,16 @@
     </div>
 
     <div id="employee-screen" class="screen">
+        
         <div class="header">
-            <h3 style="margin: 0; color: #1e3c72;">🎓 Workspace</h3>
-            <div style="display: flex; gap: 10px; align-items: center;">
-                <span id="emp-name-display" style="font-weight:bold; color:#0984e3;">👤 Hi, User</span>
-                <button class="btn-danger" style="padding: 6px 12px;" onclick="logout()">Logout</button>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 20px; box-shadow: 0 4px 10px rgba(118, 75, 162, 0.3);">🎧</div>
+                <div>
+                    <h3 style="margin: 0; color: #1e3c72; font-size: 16px; font-weight: 700;">Quality Education</h3>
+                    <div id="emp-name-display" style="font-size: 12px; color: #555; font-weight: 600;">Telecaller Desk</div>
+                </div>
             </div>
+            <button class="btn-danger" style="padding: 6px 15px; width: auto;" onclick="logout()">Logout</button>
         </div>
 
         <div class="tab-menu">
@@ -73,30 +82,34 @@
         
         <div id="tab-entry" class="tab-content active">
             <div class="glass-panel">
-                <label>Mobile Number</label>
-                <input type="number" id="emp-mobile" onblur="fetchHistory()" placeholder="10-digit mobile number">
+                <label style="font-weight:600; color:#1e3c72; font-size:14px;">Mobile Number</label>
+                <input type="number" id="emp-mobile" onblur="fetchHistory()" placeholder="Enter 10-digit mobile number">
                 
-                <div id="history-box" style="display:none; margin-bottom:15px; max-height:300px; overflow-y:auto;"></div>
+                <div id="history-box" style="display:none; margin-bottom:15px; max-height:300px; overflow-y:auto; border-radius:8px; padding:5px;"></div>
 
-                <label>Student Name</label>
+                <label style="font-weight:600; color:#1e3c72; font-size:14px;">Student Name</label>
                 <input type="text" id="emp-name" placeholder="Student Name">
 
-                <label>Problem Type</label>
+                <label style="font-weight:600; color:#1e3c72; font-size:14px;">Problem Type / Category</label>
                 <select id="emp-problem">
                     <option value="" disabled selected>📂 Select category...</option>
                     <option value="Online Course Related">Online Course Related</option>
-                    <option value="Online Test Series Related">Test Series Related</option>
-                    <option value="Offline Test Series Related">Offline Test Series</option>
-                    <option value="Notes Related">Notes Related</option>
-                    <option value="Others">Others</option>
+                    <option value="Online test series related">Online test series related</option>
+                    <option value="offline test series related">offline test series related</option>
+                    <option value="notes related">notes related</option>
+                    <option value="youtube related">youtube related</option>
+                    <option value="teacher feedback">teacher feedback</option>
+                    <option value="app issue/feedback">app issue/feedback</option>
+                    <option value="others">others</option>
                 </select>
 
-                <label>Issue Details</label>
-                <textarea id="emp-issue" placeholder="Describe problem..."></textarea>
-                <label>Your Response</label>
-                <textarea id="emp-response" placeholder="What solution did you provide?"></textarea>
+                <label style="font-weight:600; color:#1e3c72; font-size:14px;">Issue Details</label>
+                <textarea id="emp-issue" rows="3" placeholder="Describe problem..."></textarea>
+                
+                <label style="font-weight:600; color:#1e3c72; font-size:14px;">Your Response</label>
+                <textarea id="emp-response" rows="2" placeholder="What solution did you provide?"></textarea>
 
-                <button id="submit-btn" class="btn-primary" onclick="submitEntry()">Submit Entry ✅</button>
+                <button id="submit-btn" class="btn-primary" style="font-size: 15px; padding: 12px;" onclick="submitEntry()">Submit Entry ✅</button>
                 <div id="form-msg" class="toast"></div>
             </div>
         </div>
@@ -110,14 +123,14 @@
 
         <div id="tab-books" class="tab-content">
             <div class="glass-panel" style="overflow-x:auto;">
-                <h3 style="color:#1e3c72; margin-top:0;">📚 Inventory & Pricing</h3>
+                <h3 style="color:#1e3c72; margin-top:0;">📚 Inventory & Links</h3>
                 <table id="books-table">
                     <thead>
                         <tr>
                             <th>Book Name</th>
                             <th>Price Details & Stock</th>
-                            <th>Exampustak Link</th>
-                            <th>ApnaBookStore Link</th>
+                            <th>Send Exampustak</th>
+                            <th>Send ApnaBookStore</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -126,37 +139,69 @@
         </div>
 
         <div id="tab-whatsapp" class="tab-content">
-            <div class="glass-panel">
-                <h3 style="color:#1e3c72; margin-top:0;">💬 Send Message</h3>
-                <label>Student Mobile Number</label>
-                <div style="display:flex; gap:10px;">
-                    <input type="number" id="wa-mobile" placeholder="Mobile Number" style="margin-bottom:0;">
-                    <button class="btn-primary" style="width:auto; padding:10px 15px;" onclick="document.getElementById('wa-mobile').value = document.getElementById('emp-mobile').value">Get from Form</button>
+            <div class="glass-panel" style="position: relative;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <h3 style="color:#1e3c72; margin-top:0;">💬 Message Templates</h3>
+                    <button class="btn-primary" onclick="openTemplateEditor()" style="border-radius:50%; width:45px; height:45px; padding:0; font-size:22px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">➕</button>
                 </div>
-                
-                <h4 style="color:#1e3c72; margin-bottom:5px;">Select Template to Send:</h4>
-                <div id="templates-list" style="max-height: 200px; overflow-y:auto; border:1px solid rgba(255,255,255,0.8); border-radius:8px; padding:10px; background:rgba(255,255,255,0.4); margin-bottom:20px;"></div>
 
-                <hr style="border:1px solid rgba(255,255,255,0.3); margin:20px 0;">
+                <h4 style="color:#555; border-bottom:2px solid #ddd; padding-bottom:5px; margin-bottom:10px;">🏢 Admin Templates</h4>
+                <div id="admin-templates-list" style="margin-bottom:25px;"></div>
 
-                <h3 style="color:#1e3c72; margin-top:0;">📝 Create My Own Template</h3>
-                <input type="text" id="my-temp-title" placeholder="Template Name">
-                <textarea id="my-temp-content" rows="3" placeholder="Write your custom message..."></textarea>
-                <button class="btn-success" style="width:100%" onclick="saveMyTemplate()">Save My Template</button>
+                <h4 style="color:#555; border-bottom:2px solid #ddd; padding-bottom:5px; margin-bottom:10px;">👤 My Templates</h4>
+                <div id="my-templates-list"></div>
             </div>
         </div>
-
     </div>
+
+    <div id="wa-number-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 style="color:#1e3c72; margin-top:0; text-align:center;">🟢 Send WhatsApp Message</h3>
+            <p style="font-size:13px; color:#555; text-align:center;">Enter student's 10-digit mobile number to send the selected link/template.</p>
+            <input type="number" id="prompt-wa-number" placeholder="e.g. 9876543210" style="background:#f4f7f6; border: 2px solid #ddd; font-size: 16px; text-align:center;">
+            
+            <input type="hidden" id="pending-wa-message">
+
+            <div style="display:flex; gap:10px; margin-top:15px;">
+                <button class="btn-wa" style="flex:1; padding: 12px; font-size: 15px;" onclick="executeSendWA()">Send 🚀</button>
+                <button class="btn-danger" style="flex:1; padding: 12px; font-size: 15px;" onclick="closeModal('wa-number-modal')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="template-editor-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 id="tpl-modal-title" style="color:#1e3c72; margin-top:0;">📝 Create Template</h3>
+            <input type="hidden" id="msg-temp-id">
+            <label style="font-size:12px; font-weight:bold; color:#555;">Template Title:</label>
+            <input type="text" id="msg-temp-title" placeholder="e.g. Course Renewal Reminder" style="background:#f4f7f6;">
+            <label style="font-size:12px; font-weight:bold; color:#555;">Message Content:</label>
+            <textarea id="msg-temp-content" rows="5" placeholder="Write your complete message here..." style="background:#f4f7f6;"></textarea>
+            
+            <div style="display:flex; gap:10px; margin-top:10px;">
+                <button class="btn-success" style="flex:1; padding: 12px;" onclick="saveTemplateData()">💾 Save</button>
+                <button class="btn-danger" style="flex:1; padding: 12px;" onclick="closeModal('template-editor-modal')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbyI9FRnm9GUhhjKY7Er__pdONW4FqSSc7LBdVQ6MHTSqndwBowM8Krl36Nj12l1-F0tjA/exec"; 
         let currentUser = null, empData = {};
 
+        // Helper Function to Format Dates nicely (e.g. 25 March 2026)
+        function formatDateString(dateString) {
+            if(!dateString) return "";
+            const options = { day: 'numeric', month: 'long', year: 'numeric' };
+            return new Date(dateString).toLocaleDateString('en-IN', options);
+        }
+
         window.onload = () => { 
             if(localStorage.getItem("qei_user")) { 
                 currentUser = JSON.parse(localStorage.getItem("qei_user")); 
                 showScreen("employee-screen"); 
-                document.getElementById("emp-name-display").innerText = "👤 Hi, " + currentUser.name; 
+                document.getElementById("emp-name-display").innerText = "Hi, " + currentUser.name; 
                 loadDashboardData(); 
             } 
         };
@@ -174,70 +219,74 @@
             if(res.success){ 
                 currentUser=res.user; localStorage.setItem("qei_user", JSON.stringify(currentUser)); location.reload(); 
             } else {
-                msgBox.innerText="Invalid Login"; msgBox.style.color="red";
+                msgBox.innerText="❌ Invalid Login"; msgBox.style.color="red";
             }
         }
         function logout() { localStorage.removeItem("qei_user"); location.reload(); }
 
+        // ================= DASHBOARD DATA LOAD =================
         async function loadDashboardData() {
             const res = await apiCall({action: "getEmpDashboardData", empId: currentUser.employeeId});
             if(res.success) {
                 empData = res;
                 
-                // ================= RENDER BOOKS (UPDATED) =================
+                // 1. Render Books Table
                 document.querySelector("#books-table tbody").innerHTML = res.books.map(b => {
                     let examLink = b.exampustak || '#'; 
                     let apnaLink = b.apnabookstore || '#'; 
                     let stockColor = (b.stock === 'In Stock') ? 'green' : 'red';
                     
                     return `<tr>
-                        <td><b>${b.name}</b></td>
+                        <td><b style="color:#1e3c72; font-size:14px;">${b.name}</b></td>
                         <td>
-                            <b>₹${b.price}</b> <small>(+₹${b.delivery} Del)</small><br>
-                            <span style="color:${stockColor}; font-size:12px; font-weight:bold;">${b.stock}</span>
+                            <b>₹${b.price}</b> <small style="color:#666;">(+₹${b.delivery} Del)</small><br>
+                            <span style="color:${stockColor}; font-size:11px; font-weight:bold; background:#eee; padding:2px 6px; border-radius:10px;">${b.stock}</span>
                         </td>
-                        <td><button class="btn-wa" style="padding:6px 10px; font-size:12px; border:none; border-radius:4px; cursor:pointer;" onclick="sendBookLink('${b.name}', '${examLink}')">📤 Send WA</button></td>
-                        <td><button class="btn-wa" style="padding:6px 10px; font-size:12px; border:none; border-radius:4px; cursor:pointer;" onclick="sendBookLink('${b.name}', '${apnaLink}')">📤 Send WA</button></td>
+                        <td><button class="btn-wa" style="padding:6px 10px; width:auto;" onclick="triggerWAPrompt('Hello! Aap \\"${b.name}\\" yahan se kharid sakte hain: ${examLink}')">📤 Send WA</button></td>
+                        <td><button class="btn-wa" style="padding:6px 10px; width:auto;" onclick="triggerWAPrompt('Hello! Aap \\"${b.name}\\" yahan se kharid sakte hain: ${apnaLink}')">📤 Send WA</button></td>
                     </tr>`;
                 }).join('');
                 
-                // ================= RENDER ASSIGNED CALLS =================
+                // 2. Render Assigned Calls
                 const pendingCalls = res.assignedCalls.filter(c=>c.status==='Pending');
                 if(pendingCalls.length>0){ document.getElementById("calls-badge").innerText = pendingCalls.length; document.getElementById("calls-badge").style.display = "inline-block"; }
                 
-                if(pendingCalls.length===0) document.getElementById("assigned-calls-list").innerHTML = "<div style='padding:20px; text-align:center; color:green;'>🎉 Great! No pending calls.</div>";
+                if(pendingCalls.length===0) document.getElementById("assigned-calls-list").innerHTML = "<div style='padding:20px; text-align:center; color:green; background:#e8f5e9; border-radius:8px;'>🎉 Great! No pending calls for today.</div>";
                 else document.getElementById("assigned-calls-list").innerHTML = pendingCalls.map(c=>`
-                    <div class="history-card" style="border-color:#1e3c72; background:rgba(255,255,255,0.8);">
-                        <div style="display:flex; justify-content:space-between; margin-bottom:5px;"><b>${c.name}</b> <span style="color:#007bff; font-weight:bold;">📞 ${c.number}</span></div>
-                        <div style="color:#555; font-size:0.9em; margin-bottom:10px;"><b>Reason:</b> ${c.title}</div>
-                        <div style="display:flex; gap:10px;">
-                            <button class="btn-success" style="padding:6px; flex:1;" onclick="window.open('tel:${c.number}')">Call Now</button>
-                            <button class="btn-primary" style="padding:6px; flex:1;" onclick="startEntryFromCall('${c.name}', '${c.number}')">Make Entry</button>
-                            <button class="btn-danger" style="padding:6px; flex:1;" onclick="markDone('${c.callId}')">Mark Done</button>
+                    <div class="history-card" style="border-color:#1e3c72;">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:5px;"><b style="font-size:15px;">${c.name}</b> <span style="color:#007bff; font-weight:bold;">📞 ${c.number}</span></div>
+                        <div style="color:#555; font-size:13px; margin-bottom:12px;"><b>Reason:</b> ${c.title}</div>
+                        <div style="display:flex; gap:8px;">
+                            <button class="btn-success" style="padding:8px; font-size:12px; flex:1;" onclick="window.open('tel:${c.number}')">☎️ Call</button>
+                            <button class="btn-primary" style="padding:8px; font-size:12px; flex:1;" onclick="startEntryFromCall('${c.name}', '${c.number}')">📝 Entry</button>
+                            <button class="btn-danger" style="padding:8px; font-size:12px; flex:1;" onclick="markDone('${c.callId}')">✔️ Done</button>
                         </div>
                     </div>`).join('');
 
-                // ================= RENDER TEMPLATES =================
-                let tmplHTML = `<div style="color:gray;font-size:0.8em;margin-bottom:5px;">Admin Templates</div>`;
-                res.adminMsgs.forEach(m => tmplHTML += `<div style="padding:10px; background:#fff; margin-bottom:5px; border-radius:5px; cursor:pointer; border:1px solid #ddd;" onclick="sendWA(\`${encodeURIComponent(m.content)}\`)">📄 ${m.title}</div>`);
+                // 3. Render Templates (Clean UI)
+                let adminHTML = "";
+                res.adminMsgs.forEach(m => {
+                    adminHTML += `
+                    <div style="background:#f8f9fa; border:1px solid #e2e8f0; padding:12px; border-radius:8px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+                        <div><strong style="color:#1e3c72;">${m.title}</strong><br><small style="color:#666;">${m.content.substring(0,30)}...</small></div>
+                        <button class="btn-wa" style="width:auto; padding:6px 12px; border-radius:20px;" onclick="triggerWAPrompt(\`${m.content}\`)">📤 Send</button>
+                    </div>`;
+                });
+                document.getElementById("admin-templates-list").innerHTML = adminHTML || "<p style='font-size:13px; color:#888;'>No admin templates available.</p>";
                 
-                tmplHTML += `<div style="color:gray;font-size:0.8em;margin:10px 0 5px 0;">My Templates</div>`;
-                res.myMsgs.forEach(m => tmplHTML += `<div style="display:flex; gap:5px; margin-bottom:5px;"><div style="flex:1; padding:10px; background:#eef; border-radius:5px; cursor:pointer;" onclick="sendWA(\`${encodeURIComponent(m.content)}\`)">📄 ${m.title}</div><button class="btn-danger" style="padding:5px 10px;" onclick="delMyTemp('${m.tempId}')">🗑️</button></div>`);
-                
-                document.getElementById("templates-list").innerHTML = tmplHTML;
-            }
-        }
-
-        function sendBookLink(bookName, link) {
-            if(!link || link === "undefined" || link === "#") return alert(`Is book ka link abhi add nahi hua hai.`);
-            // Fetch number from the common WhatsApp mobile input
-            let num = document.getElementById("wa-mobile").value;
-            if(!num || num.length < 10) {
-                num = prompt("Link bhejne ke liye 10-digit WhatsApp number dalein:");
-            }
-            if(num && num.length >= 10) {
-                let msg = encodeURIComponent(`Hello! Aap "${bookName}" yahan se kharid sakte hain: ${link}`);
-                window.open(`https://wa.me/91${num}?text=${msg}`, '_blank');
+                let myHTML = "";
+                res.myMsgs.forEach(m => {
+                    myHTML += `
+                    <div style="background:#eef2ff; border:1px solid #c7d2fe; padding:12px; border-radius:8px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+                        <div style="flex:1;"><strong style="color:#3730a3;">${m.title}</strong><br><small style="color:#666;">${m.content.substring(0,30)}...</small></div>
+                        <div style="display:flex; gap:5px;">
+                            <button class="btn-wa" style="width:auto; padding:6px 10px; border-radius:6px;" onclick="triggerWAPrompt(\`${m.content}\`)">📤</button>
+                            <button class="btn-edit" style="width:auto; padding:6px 10px; border-radius:6px;" onclick="editMyTemplate('${m.tempId}', \`${m.title}\`, \`${m.content}\`)">✏️</button>
+                            <button class="btn-danger" style="width:auto; padding:6px 10px; border-radius:6px;" onclick="delMyTemp('${m.tempId}')">🗑️</button>
+                        </div>
+                    </div>`;
+                });
+                document.getElementById("my-templates-list").innerHTML = myHTML || "<p style='font-size:13px; color:#888;'>You haven't created any templates yet.</p>";
             }
         }
 
@@ -247,47 +296,108 @@
         }
         async function markDone(id) { await apiCall({action:"markCallDone", callId:id}); loadDashboardData(); }
 
-        // ================= ADD ENTRY & HISTORY =================
+        // ================= ADD ENTRY & HISTORY (Formatted Date) =================
         async function fetchHistory() {
             const m = document.getElementById("emp-mobile").value; const hBox = document.getElementById("history-box");
             if(m.length<10){ hBox.style.display="none"; return; }
-            hBox.style.display="block"; hBox.innerHTML = "<i>Searching...</i>";
+            hBox.style.display="block"; hBox.innerHTML = "<i style='color:#555; padding:10px;'>🔍 Fetching student history...</i>";
+            
             const res = await apiCall({action:"fetchMobileInfo", mobile:m});
+            
             if(res.success && res.history.length>0) {
                 document.getElementById("emp-name").value = res.lastRecord.studentName;
                 hBox.innerHTML = res.history.slice().reverse().map(r=>`
-                    <div class="history-card" style="border-left-color:${r.status=='Pending'?'red':'green'}">
-                        <div style="display:flex;justify-content:space-between;border-bottom:1px solid #ddd;padding-bottom:5px;margin-bottom:5px;"><b>${new Date(r.date).toLocaleDateString()}</b><b style="color:${r.status=='Pending'?'red':'green'}">${r.status}</b></div>
-                        <div><b>Issue:</b> ${r.issue}</div>
-                        <div style="color:#0984e3; margin:5px 0;"><b>Your Reply:</b> ${r.employeeResponse}</div>
-                        <div style="background:#fff; padding:5px; border-radius:4px;"><b>👨‍💼 Admin:</b> ${r.adminComment||'Wait...'}</div>
+                    <div class="history-card" style="border-left-color:${r.status=='Pending'?'#e74c3c':'#2ecc71'}; background:#fdfdfe;">
+                        <div style="display:flex;justify-content:space-between;border-bottom:1px solid #eee;padding-bottom:5px;margin-bottom:8px;">
+                            <b style="color:#333;">📅 ${formatDateString(r.date)}</b>
+                            <b style="color:${r.status=='Pending'?'#e74c3c':'#2ecc71'}; background:#f4f6f7; padding:2px 8px; border-radius:10px; font-size:11px;">${r.status}</b>
+                        </div>
+                        <div style="color:#444; font-size:13px;"><b>Problem:</b> ${r.problemType}</div>
+                        <div style="color:#444; font-size:13px;"><b>Issue:</b> ${r.issue}</div>
+                        <div style="color:#0984e3; margin:8px 0; font-size:13px; background:#ebf5fb; padding:6px; border-radius:4px;"><b>🎧 Your Reply:</b> ${r.employeeResponse}</div>
+                        <div style="background:#e8f8f5; padding:6px; border-radius:4px; font-size:13px; border-left:3px solid #1abc9c;"><b>👨‍💼 Admin:</b> ${r.adminComment||'Pending Review...'}</div>
                     </div>`).join('');
-            } else { hBox.innerHTML = "<span style='color:green;font-weight:bold;'>✅ New Student!</span>"; }
+            } else { hBox.innerHTML = "<div style='background:#eafaf1; color:#27ae60; padding:10px; border-radius:6px; font-weight:bold; text-align:center;'>✅ New Student - No Previous History!</div>"; }
         }
 
         async function submitEntry() {
             const btn=document.getElementById("submit-btn"); const m=document.getElementById("emp-mobile").value, n=document.getElementById("emp-name").value, p=document.getElementById("emp-problem").value, i=document.getElementById("emp-issue").value, r=document.getElementById("emp-response").value;
-            if(!m||!n||!p||!i) return alert("Fill mandatory fields");
-            btn.disabled=true; btn.innerText="Saving...";
+            if(!m||!n||!p||!i) return alert("Please fill all mandatory fields (Mobile, Name, Category, Issue)");
+            btn.disabled=true; btn.innerText="Saving Data... ⏳";
             const res = await apiCall({action:"addComplaint", data:{mobile:m, studentName:n, problemType:p, issue:i, employeeResponse:r, employeeId:currentUser.employeeId}});
-            if(res.success){ alert("Saved Successfully!"); document.getElementById("emp-mobile").value=""; document.getElementById("emp-name").value=""; document.getElementById("emp-issue").value=""; document.getElementById("emp-response").value=""; document.getElementById("history-box").style.display="none"; }
+            if(res.success){ 
+                alert("✅ Entry Saved Successfully!"); 
+                document.getElementById("emp-mobile").value=""; document.getElementById("emp-name").value=""; document.getElementById("emp-issue").value=""; document.getElementById("emp-response").value=""; document.getElementById("emp-problem").value=""; document.getElementById("history-box").style.display="none"; 
+            }
             btn.disabled=false; btn.innerText="Submit Entry ✅";
         }
 
-        // ================= WHATSAPP & CUSTOM TEMPLATES =================
-        function sendWA(encodedContent) {
-            const content = decodeURIComponent(encodedContent);
-            const num = document.getElementById("wa-mobile").value;
-            if(num.length < 10) return alert("Enter student mobile number first in the box above!");
-            window.open(`https://wa.me/91${num}?text=${encodeURIComponent(content)}`, '_blank');
+        // ================= MODALS & CUSTOM WA PROMPT SYSTEM =================
+        function closeModal(modalId) { document.getElementById(modalId).style.display = "none"; }
+        
+        function triggerWAPrompt(messageContent) {
+            // First check if user has typed a number in the Add Entry form to make it easier
+            let formNumber = document.getElementById("emp-mobile").value;
+            if(formNumber && formNumber.length >= 10) {
+                document.getElementById("prompt-wa-number").value = formNumber;
+            } else {
+                document.getElementById("prompt-wa-number").value = "";
+            }
+
+            document.getElementById("pending-wa-message").value = messageContent;
+            document.getElementById("wa-number-modal").style.display = "flex";
         }
-        async function saveMyTemplate() {
-            const t=document.getElementById("my-temp-title").value, c=document.getElementById("my-temp-content").value;
-            if(!t||!c) return alert("Fill template details");
-            await apiCall({action:"saveEmpTemplate", template:{employeeId:currentUser.employeeId, title:t, content:c}});
-            document.getElementById("my-temp-title").value=""; document.getElementById("my-temp-content").value=""; loadDashboardData();
+
+        function executeSendWA() {
+            let num = document.getElementById("prompt-wa-number").value;
+            let msg = document.getElementById("pending-wa-message").value;
+            
+            if(!num || num.length < 10) {
+                alert("Please enter a valid 10-digit mobile number!");
+                return;
+            }
+            
+            window.open(`https://wa.me/91${num}?text=${encodeURIComponent(msg)}`, '_blank');
+            closeModal('wa-number-modal');
         }
-        async function delMyTemp(id) { if(confirm("Delete your template?")){ await apiCall({action:"deleteEmpTemplate", tempId:id}); loadDashboardData(); } }
+
+        // ================= CUSTOM TEMPLATE CREATE/EDIT =================
+        function openTemplateEditor() {
+            document.getElementById("msg-temp-id").value = "";
+            document.getElementById("msg-temp-title").value = "";
+            document.getElementById("msg-temp-content").value = "";
+            document.getElementById("tpl-modal-title").innerText = "📝 Create New Template";
+            document.getElementById("template-editor-modal").style.display = "flex";
+        }
+
+        function editMyTemplate(id, title, content) {
+            document.getElementById("msg-temp-id").value = id;
+            document.getElementById("msg-temp-title").value = title;
+            document.getElementById("msg-temp-content").value = content;
+            document.getElementById("tpl-modal-title").innerText = "✏️ Edit Template";
+            document.getElementById("template-editor-modal").style.display = "flex";
+        }
+
+        async function saveTemplateData() {
+            const id = document.getElementById("msg-temp-id").value;
+            const t = document.getElementById("msg-temp-title").value;
+            const c = document.getElementById("msg-temp-content").value;
+            if(!t || !c) return alert("Title and Content are required.");
+            
+            let templateObj = {employeeId:currentUser.employeeId, title:t, content:c};
+            if(id) templateObj.tempId = id; // Send ID if editing
+
+            await apiCall({action:"saveEmpTemplate", template: templateObj});
+            closeModal('template-editor-modal');
+            loadDashboardData(); // Refresh UI
+        }
+
+        async function delMyTemp(id) { 
+            if(confirm("Are you sure you want to delete this template?")){ 
+                await apiCall({action:"deleteEmpTemplate", tempId:id}); 
+                loadDashboardData(); 
+            } 
+        }
     </script>
 </body>
 </html>
