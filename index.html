@@ -17,7 +17,7 @@
         .tab-btn.active { background: #007bff; color: white; border-color: #007bff; box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3); }
         .tab-content { display: none; width: 100%; max-width: 800px; } .tab-content.active { display: block; animation: fadeIn 0.4s; }
         input, select, textarea { width: 100%; padding: 12px; border: 1px solid rgba(255,255,255,0.8); border-radius: 8px; font-size: 0.95em; outline: none; background: rgba(255, 255, 255, 0.8); margin-bottom: 15px; transition: 0.3s; }
-        input:focus, select:focus, textarea:focus { background: #fff; border-color: #007bff; box-shadow: 0 0 5px rgba(0,123,255,0.2); }
+        input:focus, select:focus, textarea:focus { background: #fff; border-color: #007bff; }
         button { border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.3s; font-size: 13px; }
         .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; width: 100%; }
         .btn-success { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; }
@@ -50,7 +50,7 @@
     <div id="employee-screen" class="screen">
         <div class="header">
             <div style="display: flex; align-items: center; gap: 12px;">
-                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 20px; box-shadow: 0 4px 10px rgba(118, 75, 162, 0.3);">🎧</div>
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 20px;">🎧</div>
                 <div>
                     <h3 style="margin: 0; color: #1e3c72; font-size: 16px; font-weight: 700;">Quality Education</h3>
                     <div id="emp-name-display" style="font-size: 12px; color: #555; font-weight: 600;">Telecaller Desk</div>
@@ -73,7 +73,7 @@
                 <div id="history-box" style="display:none; margin-bottom:15px; max-height:300px; overflow-y:auto; border-radius:8px; padding:5px;"></div>
                 <label style="font-weight:600; color:#1e3c72; font-size:14px;">Student Name</label>
                 <input type="text" id="emp-name" placeholder="Student Name">
-                <label style="font-weight:600; color:#1e3c72; font-size:14px;">Problem Type / Category</label>
+                <label style="font-weight:600; color:#1e3c72; font-size:14px;">Category</label>
                 <select id="emp-problem">
                     <option value="" disabled selected>📂 Select category...</option>
                     <option value="Online Course Related">Online Course Related</option>
@@ -90,7 +90,6 @@
                 <label style="font-weight:600; color:#1e3c72; font-size:14px;">Your Response</label>
                 <textarea id="emp-response" rows="2" placeholder="What solution did you provide?"></textarea>
                 <button id="submit-btn" class="btn-primary" style="font-size: 15px; padding: 12px;" onclick="submitEntry()">Submit Entry ✅</button>
-                <div id="form-msg" class="toast"></div>
             </div>
         </div>
 
@@ -103,13 +102,13 @@
 
         <div id="tab-books" class="tab-content">
             <div class="glass-panel" style="overflow-x:auto;">
-                <h3 style="color:#1e3c72; margin-top:0;">📚 Inventory & Links</h3>
+                <h3 style="color:#1e3c72; margin-top:0;">📚 Book Links & Stock</h3>
                 <table id="books-table">
                     <thead>
                         <tr>
-                            <th>Book Name & Stock</th>
-                            <th>Exampustak (Price & Link)</th>
-                            <th>ApnaBookStore (Price & Link)</th>
+                            <th>Book Name</th>
+                            <th>Exampustak</th>
+                            <th>ApnaBookStore</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -121,7 +120,7 @@
             <div class="glass-panel" style="position: relative;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                     <h3 style="color:#1e3c72; margin-top:0;">💬 Message Templates</h3>
-                    <button class="btn-primary" onclick="openTemplateEditor()" style="border-radius:50%; width:45px; height:45px; padding:0; font-size:22px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">➕</button>
+                    <button class="btn-primary" onclick="openTemplateEditor()" style="border-radius:50%; width:45px; height:45px; padding:0; font-size:22px;">➕</button>
                 </div>
                 <h4 style="color:#555; border-bottom:2px solid #ddd; padding-bottom:5px; margin-bottom:10px;">🏢 Admin Templates</h4>
                 <div id="admin-templates-list" style="margin-bottom:25px;"></div>
@@ -134,7 +133,7 @@
     <div id="wa-number-modal" class="modal-overlay">
         <div class="modal-content">
             <h3 style="color:#1e3c72; margin-top:0; text-align:center;">🟢 Send WhatsApp Message</h3>
-            <p style="font-size:13px; color:#555; text-align:center;">Enter student's 10-digit mobile number to send the selected link/template.</p>
+            <p style="font-size:13px; color:#555; text-align:center;">Enter student's 10-digit mobile number to send the link/template.</p>
             <input type="number" id="prompt-wa-number" placeholder="e.g. 9876543210" style="background:#f4f7f6; border: 2px solid #ddd; font-size: 16px; text-align:center;">
             <input type="hidden" id="pending-wa-message">
             <div style="display:flex; gap:10px; margin-top:15px;">
@@ -197,46 +196,35 @@
             if(res.success) {
                 empData = res;
                 
-                // RENDER BOOKS (Fix for Link Encoding & Stock Colors)
+                // RENDER BOOKS (SEPARATE EXAM AND APNA COLUMNS)
                 document.querySelector("#books-table tbody").innerHTML = res.books.map(b => {
-                    let examLink = b.exampustak && b.exampustak !== "" ? b.exampustak : '#'; 
-                    let apnaLink = b.apnabookstore && b.apnabookstore !== "" ? b.apnabookstore : '#'; 
-                    
-                    let ePrice = b.examPrice || b.price || '0'; let eDel = b.examDelivery || b.delivery || '0';
-                    let aPrice = b.apnaPrice || b.price || '0'; let aDel = b.apnaDelivery || b.delivery || '0';
+                    let eStockCol = b.examStock === 'Available' ? '#27ae60' : (b.examStock === 'Upcoming' ? '#d35400' : '#e74c3c');
+                    let aStockCol = b.apnaStock === 'Available' ? '#27ae60' : (b.apnaStock === 'Upcoming' ? '#d35400' : '#e74c3c');
 
-                    let stockStatus = b.stock || "In Stock";
-                    let stockColor = '#27ae60'; let stockBg = '#eafaf1'; // Green (Available)
-                    
-                    if (stockStatus.toLowerCase().includes('out')) { stockColor = '#e74c3c'; stockBg = '#fdedec'; } // Red (Out)
-                    else if (stockStatus.toLowerCase().includes('upcoming')) { stockColor = '#d35400'; stockBg = '#fdf2e9'; } // Orange (Upcoming)
-
-                    // Encoding completely avoids breaking the HTML button onclick
-                    let encodedName = encodeURIComponent(b.name || '');
-                    let encodedExamLink = encodeURIComponent(examLink);
-                    let encodedApnaLink = encodeURIComponent(apnaLink);
+                    let encName = encodeURIComponent(b.name || '');
+                    let encExamLink = encodeURIComponent(b.examLink || '');
+                    let encApnaLink = encodeURIComponent(b.apnaLink || '');
 
                     return `<tr>
+                        <td><b style="color:#1e3c72; font-size:14px;">${b.name}</b></td>
                         <td>
-                            <b style="color:#1e3c72; font-size:14px;">${b.name}</b><br>
-                            <span style="color:${stockColor}; font-size:11px; font-weight:bold; background:${stockBg}; padding:3px 8px; border-radius:12px; display:inline-block; margin-top:4px;">${stockStatus}</span>
+                            <b>₹${b.examPrice}</b> <small style="color:#666;">(+₹${b.examDelivery} Del)</small><br>
+                            <span style="color:${eStockCol}; font-size:11px; font-weight:bold;">${b.examStock}</span><br>
+                            <button class="btn-wa" style="padding:4px 8px; margin-top:5px;" onclick="sendBookLink('${encName}', '${encExamLink}')">📤 Send</button>
                         </td>
                         <td>
-                            <b>₹${ePrice}</b> <small style="color:#666;">(+₹${eDel} Del)</small><br>
-                            <button class="btn-wa" style="padding:6px 10px; width:auto; margin-top:5px;" onclick="sendBookLink('${encodedName}', '${encodedExamLink}', 'Exampustak')">📤 Send WA</button>
-                        </td>
-                        <td>
-                            <b>₹${aPrice}</b> <small style="color:#666;">(+₹${aDel} Del)</small><br>
-                            <button class="btn-wa" style="padding:6px 10px; width:auto; margin-top:5px;" onclick="sendBookLink('${encodedName}', '${encodedApnaLink}', 'ApnaBookStore')">📤 Send WA</button>
+                            <b>₹${b.apnaPrice}</b> <small style="color:#666;">(+₹${b.apnaDelivery} Del)</small><br>
+                            <span style="color:${aStockCol}; font-size:11px; font-weight:bold;">${b.apnaStock}</span><br>
+                            <button class="btn-wa" style="padding:4px 8px; margin-top:5px;" onclick="sendBookLink('${encName}', '${encApnaLink}')">📤 Send</button>
                         </td>
                     </tr>`;
                 }).join('');
                 
-                // RENDER ASSIGNED CALLS
+                // RENDER CALLS
                 const pendingCalls = res.assignedCalls.filter(c=>c.status==='Pending');
                 if(pendingCalls.length>0){ document.getElementById("calls-badge").innerText = pendingCalls.length; document.getElementById("calls-badge").style.display = "inline-block"; }
                 
-                if(pendingCalls.length===0) document.getElementById("assigned-calls-list").innerHTML = "<div style='padding:20px; text-align:center; color:green; background:#e8f5e9; border-radius:8px;'>🎉 Great! No pending calls for today.</div>";
+                if(pendingCalls.length===0) document.getElementById("assigned-calls-list").innerHTML = "<div style='padding:20px; text-align:center; color:green; background:#e8f5e9; border-radius:8px;'>🎉 Great! No pending calls.</div>";
                 else document.getElementById("assigned-calls-list").innerHTML = pendingCalls.map(c=>`
                     <div class="history-card" style="border-color:#1e3c72;">
                         <div style="display:flex; justify-content:space-between; margin-bottom:5px;"><b style="font-size:15px;">${c.name}</b> <span style="color:#007bff; font-weight:bold;">📞 ${c.number}</span></div>
@@ -267,17 +255,17 @@
                             <button class="btn-danger" style="width:auto; padding:6px 10px; border-radius:6px;" onclick="delMyTemp('${m.tempId}')">🗑️</button>
                         </div></div>`;
                 });
-                document.getElementById("my-templates-list").innerHTML = myHTML || "<p style='font-size:13px; color:#888;'>You haven't created any templates yet.</p>";
+                document.getElementById("my-templates-list").innerHTML = myHTML || "<p style='font-size:13px; color:#888;'>No templates yet.</p>";
             }
         }
 
-        // Fix for Send Book Links 
-        function sendBookLink(encName, encLink, storeName) {
+        // SEND BOOK LINK FIX
+        function sendBookLink(encName, encLink) {
             let bookName = decodeURIComponent(encName);
             let link = decodeURIComponent(encLink);
             
-            if(!link || link.trim() === '' || link === '#' || link === 'undefined') {
-                alert(`Is book ka ${storeName} link abhi available nahi hai! (Admin se add karwayein)`);
+            if(!link || link.trim() === '' || link === '#') {
+                alert(`Is book ka link abhi add nahi kiya gaya hai!`);
                 return;
             }
             let msg = encodeURIComponent(`Hello! Aap "${bookName}" yahan se kharid sakte hain: ${link}`);
@@ -287,7 +275,6 @@
         function startEntryFromCall(name, number) { document.getElementById("emp-mobile").value = number; document.getElementById("emp-name").value = name; switchTab('tab-entry'); fetchHistory(); }
         async function markDone(id) { await apiCall({action:"markCallDone", callId:id}); loadDashboardData(); }
 
-        // ADD ENTRY & HISTORY
         async function fetchHistory() {
             const m = document.getElementById("emp-mobile").value; const hBox = document.getElementById("history-box");
             if(m.length<10){ hBox.style.display="none"; return; }
@@ -312,19 +299,18 @@
 
         async function submitEntry() {
             const btn=document.getElementById("submit-btn"); const m=document.getElementById("emp-mobile").value, n=document.getElementById("emp-name").value, p=document.getElementById("emp-problem").value, i=document.getElementById("emp-issue").value, r=document.getElementById("emp-response").value;
-            if(!m||!n||!p||!i) return alert("Please fill all mandatory fields (Mobile, Name, Category, Issue)");
+            if(!m||!n||!p||!i) return alert("Please fill all mandatory fields.");
             btn.disabled=true; btn.innerText="Saving Data... ⏳";
             const res = await apiCall({action:"addComplaint", data:{mobile:m, studentName:n, problemType:p, issue:i, employeeResponse:r, employeeId:currentUser.employeeId}});
             if(res.success){ alert("✅ Entry Saved Successfully!"); document.getElementById("emp-mobile").value=""; document.getElementById("emp-name").value=""; document.getElementById("emp-issue").value=""; document.getElementById("emp-response").value=""; document.getElementById("emp-problem").value=""; document.getElementById("history-box").style.display="none"; }
             btn.disabled=false; btn.innerText="Submit Entry ✅";
         }
 
-        // MODALS & WA PROMPT
         function closeModal(modalId) { document.getElementById(modalId).style.display = "none"; }
         function triggerWAPrompt(encodedMsg) {
             let formNumber = document.getElementById("emp-mobile").value;
             document.getElementById("prompt-wa-number").value = (formNumber && formNumber.length >= 10) ? formNumber : "";
-            document.getElementById("pending-wa-message").value = encodedMsg; // Keep encoded
+            document.getElementById("pending-wa-message").value = encodedMsg; 
             document.getElementById("wa-number-modal").style.display = "flex";
         }
 
@@ -336,15 +322,8 @@
             closeModal('wa-number-modal');
         }
 
-        // TEMPLATES
-        function openTemplateEditor() {
-            document.getElementById("msg-temp-id").value = ""; document.getElementById("msg-temp-title").value = ""; document.getElementById("msg-temp-content").value = "";
-            document.getElementById("tpl-modal-title").innerText = "📝 Create New Template"; document.getElementById("template-editor-modal").style.display = "flex";
-        }
-        function editMyTemplate(id, encTitle, encContent) {
-            document.getElementById("msg-temp-id").value = id; document.getElementById("msg-temp-title").value = decodeURIComponent(encTitle); document.getElementById("msg-temp-content").value = decodeURIComponent(encContent);
-            document.getElementById("tpl-modal-title").innerText = "✏️ Edit Template"; document.getElementById("template-editor-modal").style.display = "flex";
-        }
+        function openTemplateEditor() { document.getElementById("msg-temp-id").value = ""; document.getElementById("msg-temp-title").value = ""; document.getElementById("msg-temp-content").value = ""; document.getElementById("tpl-modal-title").innerText = "📝 Create New Template"; document.getElementById("template-editor-modal").style.display = "flex"; }
+        function editMyTemplate(id, encTitle, encContent) { document.getElementById("msg-temp-id").value = id; document.getElementById("msg-temp-title").value = decodeURIComponent(encTitle); document.getElementById("msg-temp-content").value = decodeURIComponent(encContent); document.getElementById("tpl-modal-title").innerText = "✏️ Edit Template"; document.getElementById("template-editor-modal").style.display = "flex"; }
         async function saveTemplateData() {
             const id = document.getElementById("msg-temp-id").value, t = document.getElementById("msg-temp-title").value, c = document.getElementById("msg-temp-content").value;
             if(!t || !c) return alert("Title and Content are required.");
