@@ -13,7 +13,6 @@
         .active-screen { display: flex; }
         .glass-panel { background: rgba(255, 255, 255, 0.55); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.5); border-radius: 12px; box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1); }
         
-        /* Mobile Friendly Navbar */
         .navbar { width: 100%; display: flex; flex-direction: column; gap: 10px; padding: 15px; position: sticky; top: 0; z-index: 100; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.5); border-radius: 0 0 15px 15px; }
         .nav-header { display: flex; justify-content: space-between; align-items: center; width: 100%; }
         .nav-brand { font-size: 1.2em; font-weight: 700; color: #1e3c72; display: flex; align-items: center; gap: 5px; }
@@ -69,7 +68,7 @@
                 <button class="btn-danger" style="padding: 6px 12px; font-size: 12px;" onclick="logout()">Logout</button>
             </div>
             <div class="tab-menu">
-                <button class="tab-btn active" onclick="switchTab('tab-calls')">📞 My Calls</button>
+                <button class="tab-btn active" onclick="switchTab('tab-calls')">📞 My Calls & Entry</button>
                 <button class="tab-btn" onclick="switchTab('tab-books')">📚 Books Info</button>
                 <button class="tab-btn" onclick="switchTab('tab-messages')">💬 Templates</button>
             </div>
@@ -78,6 +77,17 @@
         <div class="container">
             
             <div id="tab-calls" class="tab-content active">
+                
+                <div class="glass-panel card" style="background: rgba(255,255,255,0.8);">
+                    <h3 style="color:#1e3c72; margin-top:0;">➕ Add New Entry (Lead)</h3>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <input type="text" id="new-entry-name" placeholder="Student Name" style="flex:1; min-width: 150px; margin-bottom:0;">
+                        <input type="number" id="new-entry-number" placeholder="Mobile Number" style="flex:1; min-width: 150px; margin-bottom:0;">
+                        <input type="text" id="new-entry-title" placeholder="Reason / Subject" style="flex:1; min-width: 150px; margin-bottom:0;">
+                        <button class="btn-success" onclick="saveNewEntry()">✅ Save Entry</button>
+                    </div>
+                </div>
+
                 <div class="glass-panel card table-wrapper">
                     <h3 style="color:#1e3c72; margin-top:0;">📞 My Assigned Leads</h3>
                     <table id="my-calls-table">
@@ -102,9 +112,9 @@
                         <thead>
                             <tr>
                                 <th>Book Name</th>
-                                <th>Price</th>
-                                <th>Send Exampustak</th>
-                                <th>Send ApnaBookStore</th>
+                                <th>Price Details & Stock</th>
+                                <th>Exampustak</th>
+                                <th>ApnaBookStore</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -114,14 +124,17 @@
             </div>
 
             <div id="tab-messages" class="tab-content">
-                <div class="glass-panel card table-wrapper">
-                    <h3 style="color:#1e3c72; margin-top:0;">💬 Quick WhatsApp Templates</h3>
+                <div class="glass-panel card table-wrapper" style="position:relative;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                        <h3 style="color:#1e3c72; margin-top:0;">💬 WhatsApp Templates</h3>
+                        <button class="btn-primary" onclick="openTemplateEditor()" style="border-radius:50%; width:40px; height:40px; padding:0; font-size:20px;">➕</button>
+                    </div>
                     <table id="messages-table">
                         <thead>
                             <tr>
                                 <th>Template Title</th>
                                 <th>Message Preview</th>
-                                <th>Action</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -133,8 +146,21 @@
         </div>
     </div>
 
+    <div id="template-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center;">
+        <div class="glass-panel card" style="width:90%; max-width:450px; background:white; box-shadow: 0 15px 50px rgba(0,0,0,0.5);">
+            <h3 id="tpl-modal-title" style="color:#1e3c72; margin-top:0;">📝 Create/Edit Template</h3>
+            <input type="hidden" id="msg-id">
+            <input type="text" id="msg-title" placeholder="Template Title">
+            <textarea id="msg-content" rows="5" placeholder="Type your message here..."></textarea>
+            <div style="display:flex; gap:10px; margin-top:15px;">
+                <button class="btn-success" style="flex:1" onclick="saveTemplateData()">💾 Save</button>
+                <button class="btn-danger" style="flex:1" onclick="closeTemplateEditor()">❌ Close</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // AAPKA GOOGLE APPS SCRIPT LINK (Same as Admin)
+        // AAPKA GOOGLE APPS SCRIPT LINK
         const API_URL = "https://script.google.com/macros/s/AKfycbyI9FRnm9GUhhjKY7Er__pdONW4FqSSc7LBdVQ6MHTSqndwBowM8Krl36Nj12l1-F0tjA/exec"; 
         
         let currentUser = null;
@@ -149,7 +175,6 @@
             } 
         };
 
-        // Standard API Fetch Function
         async function apiCall(p) { 
             try { 
                 const r = await fetch(API_URL, {method:'POST', body:JSON.stringify(p)}); 
@@ -160,7 +185,6 @@
             } 
         }
 
-        // Screen & Tab Switching
         function showScreen(id) { 
             document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active-screen')); 
             document.getElementById(id).classList.add('active-screen'); 
@@ -172,7 +196,6 @@
             event.target.classList.add('active'); 
         }
 
-        // Employee Login
         async function login() { 
             const u = document.getElementById("login-username").value;
             const p = document.getElementById("login-password").value; 
@@ -184,7 +207,6 @@
 
             const r = await apiCall({action:"login", username:u, password:p}); 
             
-            // Checking if login is successful (Allowing non-admins / employees)
             if(r.success && r.user) { 
                 localStorage.setItem("qei_emp_data", JSON.stringify(r.user)); 
                 location.reload(); 
@@ -199,21 +221,13 @@
             location.reload(); 
         }
 
-        // Load Dashboard Data
         async function loadEmployeeData() {
-            // Hum getAdminData ka use kar sakte hain, aur frontend par sirf employee ka data filter kar lenge.
-            // Agar aapke script mein getEmployeeData ka function hai, toh use badal lena.
             const res = await apiCall({ action: "getAdminData" });
-            
             if (res.success) {
-                // 1. FILTER CALLS ONLY FOR LOGGED IN EMPLOYEE
                 let myCalls = res.assignedCalls.filter(c => c.employeeId === currentUser.employeeId);
                 renderMyCalls(myCalls);
-
-                // 2. RENDER BOOKS
                 renderBooks(res.books);
 
-                // 3. LOAD MESSAGES (TEMPLATES)
                 const msgRes = await apiCall({ action: "getMessages" });
                 if(msgRes.success) {
                     renderMessages(msgRes.messages);
@@ -223,7 +237,34 @@
             }
         }
 
-        // ================= 1. RENDER CALLS =================
+        // ================= 1. ENTRY & CALLS =================
+        // Nayi Entry (Lead) add karne ka function
+        async function saveNewEntry() {
+            const name = document.getElementById("new-entry-name").value;
+            const number = document.getElementById("new-entry-number").value;
+            const title = document.getElementById("new-entry-title").value;
+
+            if(!name || !number || !title) return alert("Kripya Name, Number aur Reason teeno bharein!");
+
+            // Employee ki ID use karke uske account mein call assign kar rahe hain
+            await apiCall({
+                action: "assignCall", 
+                callData: {
+                    employeeId: currentUser.employeeId, 
+                    name: name, 
+                    number: number, 
+                    title: title
+                }
+            });
+
+            document.getElementById("new-entry-name").value = "";
+            document.getElementById("new-entry-number").value = "";
+            document.getElementById("new-entry-title").value = "";
+            
+            alert("✅ Nayi Entry Safaltapurvak Add Ho Gayi!");
+            loadEmployeeData(); // Table refresh karega
+        }
+
         function renderMyCalls(calls) {
             let tbody = document.querySelector("#my-calls-table tbody");
             if(calls.length === 0) {
@@ -231,7 +272,6 @@
                 return;
             }
 
-            // Sabse nayi call upar dikhane ke liye reverse()
             tbody.innerHTML = calls.slice().reverse().map(c => {
                 let statusBadge = c.status === 'Pending' ? `<span class="badge badge-pending">⏳ Pending</span>` : `<span class="badge badge-done">✅ ${c.status}</span>`;
                 
@@ -239,7 +279,7 @@
                     <td>
                         <strong style="color:#1e3c72; font-size:15px;">${c.name}</strong><br>
                         <span style="color:#555;">📞 ${c.number}</span><br>
-                        <small style="color:#888;">Assigned: ${new Date(c.date).toLocaleDateString()}</small>
+                        <small style="color:#888;">Date: ${new Date(c.date).toLocaleDateString()}</small>
                     </td>
                     <td><b>${c.title}</b></td>
                     <td>
@@ -256,7 +296,7 @@
                     </td>
                     <td>
                         <div style="display:flex; gap:5px; flex-direction:column;">
-                            <a href="tel:${c.number}" class="btn-call" style="text-decoration:none; padding:6px 10px; border-radius:6px; text-align:center;">☎️ Direct Call</a>
+                            <a href="tel:${c.number}" class="btn-call" style="text-decoration:none; padding:6px 10px; border-radius:6px; text-align:center;">☎️ Call</a>
                             <a href="https://wa.me/91${c.number}" target="_blank" class="btn-wa" style="text-decoration:none; padding:6px 10px; border-radius:6px; text-align:center;">🟢 WhatsApp</a>
                         </div>
                     </td>
@@ -264,26 +304,29 @@
             }).join('');
         }
 
-        // Status Update Call to Backend
         async function updateCallStatus(callId) {
             let newStatus = document.getElementById(`status-${callId}`).value;
             if(!newStatus) return alert("Pehle dropdown se status select karein!");
-            
-            // Note: Backend script me 'updateAssignedCall' function hona chahiye
-            let res = await apiCall({action: "updateAssignedCall", callId: callId, status: newStatus});
+            await apiCall({action: "updateAssignedCall", callId: callId, status: newStatus});
             alert("Status Updated Successfully!");
-            loadEmployeeData(); // Refresh list
+            loadEmployeeData(); 
         }
 
-        // ================= 2. RENDER BOOKS =================
+        // ================= 2. BOOKS INFO (Cleaned Up) =================
         function renderBooks(books) {
             document.querySelector("#books-table tbody").innerHTML = books.map(b => {
                 let examLink = b.exampustak || '#'; 
                 let apnaLink = b.apnabookstore || '#'; 
+                
+                // Color coding for Stock
+                let stockColor = (b.stock === 'In Stock') ? 'green' : 'red';
 
                 return `<tr>
-                    <td><b>${b.name}</b><br><small style="color:${b.stock=='In Stock'?'green':'red'}">${b.stock}</small></td>
-                    <td>₹${b.price}</td>
+                    <td><b>${b.name}</b></td>
+                    <td>
+                        <strong style="font-size: 15px;">₹${b.price}</strong> <small style="color:#555;">(+ ₹${b.delivery} Delivery)</small><br>
+                        <span style="color:${stockColor}; font-weight:bold; font-size: 12px;">Stock: ${b.stock}</span>
+                    </td>
                     <td><button class="btn-primary" style="padding:6px 10px; font-size:12px;" onclick="sendLink('${b.name}', '${examLink}', 'Exampustak')">📤 Send Exampustak</button></td>
                     <td><button class="btn-primary" style="background:linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding:6px 10px; font-size:12px;" onclick="sendLink('${b.name}', '${apnaLink}', 'ApnaBookStore')">📤 Send ApnaBook</button></td>
                 </tr>`;
@@ -299,14 +342,15 @@
             }
         }
 
-        // ================= 3. RENDER MESSAGES (TEMPLATES) =================
+        // ================= 3. MESSAGES (TEMPLATES) =================
         function renderMessages(messages) {
             document.querySelector("#messages-table tbody").innerHTML = messages.map(m => `
                 <tr>
                     <td><b>${m.title}</b></td>
-                    <td style="font-size:13px; color:#444;">${m.content.substring(0, 50)}...</td>
+                    <td style="font-size:13px; color:#444;">${m.content.substring(0, 40)}...</td>
                     <td>
-                        <button class="btn-wa" style="padding:8px 15px;" onclick="sendTemplate('${encodeURIComponent(m.content)}')">📤 Send to Student</button>
+                        <button class="btn-wa" style="padding:6px 12px; font-size: 12px; margin-bottom:4px;" onclick="sendTemplate('${encodeURIComponent(m.content)}')">📤 Send</button>
+                        <button class="btn-primary" style="padding:6px 12px; font-size: 12px;" onclick="editTemplate('${m.msgId}', '${encodeURIComponent(m.title)}', '${encodeURIComponent(m.content)}')">✏️ Edit</button>
                     </td>
                 </tr>
             `).join('');
@@ -318,6 +362,42 @@
             if(num && num.trim() !== "") {
                 window.open(`https://wa.me/91${num}?text=${encodeURIComponent(msg)}`, '_blank');
             }
+        }
+
+        // Template Editor Modal Controls
+        function openTemplateEditor() {
+            document.getElementById('msg-id').value = "";
+            document.getElementById('msg-title').value = "";
+            document.getElementById('msg-content').value = "";
+            document.getElementById('tpl-modal-title').innerText = "📝 Create New Template";
+            document.getElementById('template-modal').style.display = "flex";
+        }
+
+        function closeTemplateEditor() {
+            document.getElementById('template-modal').style.display = "none";
+        }
+
+        function editTemplate(id, title, content) {
+            document.getElementById('msg-id').value = id;
+            document.getElementById('msg-title').value = decodeURIComponent(title);
+            document.getElementById('msg-content').value = decodeURIComponent(content);
+            document.getElementById('tpl-modal-title').innerText = "✏️ Edit Template";
+            document.getElementById('template-modal').style.display = "flex";
+        }
+
+        async function saveTemplateData() { 
+            const id = document.getElementById("msg-id").value;
+            const t = document.getElementById("msg-title").value; 
+            const c = document.getElementById("msg-content").value; 
+            
+            if(!t || !c) return alert("Title and Content required!"); 
+            
+            let payload = {action:"saveMessage", message:{title:t, content:c}};
+            if(id) payload.message.msgId = id; 
+            
+            await apiCall(payload); 
+            closeTemplateEditor();
+            loadEmployeeData(); 
         }
     </script>
 </body>
