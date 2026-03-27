@@ -3,402 +3,291 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quality Education - Employee App</title>
+    <title>Quality Education - Telecaller Workspace</title>
     <style>
         /* ================= PREMIUM GLASSMORPHISM UI ================= */
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
         * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { margin: 0; padding: 0; background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); background-attachment: fixed; color: #2c3e50; min-height: 100vh; }
+        body { margin: 0; padding: 0; background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%); background-attachment: fixed; color: #2c3e50; min-height: 100vh; }
+        
         .screen { display: none; flex-direction: column; align-items: center; padding: 15px; width: 100%; animation: fadeIn 0.4s ease; }
         .active-screen { display: flex; }
-        .glass-panel { background: rgba(255, 255, 255, 0.55); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.5); border-radius: 12px; box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1); }
         
-        .navbar { width: 100%; display: flex; flex-direction: column; gap: 10px; padding: 15px; position: sticky; top: 0; z-index: 100; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.5); border-radius: 0 0 15px 15px; }
-        .nav-header { display: flex; justify-content: space-between; align-items: center; width: 100%; }
-        .nav-brand { font-size: 1.2em; font-weight: 700; color: #1e3c72; display: flex; align-items: center; gap: 5px; }
-        .tab-menu { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
-        .tab-btn { background: rgba(255,255,255,0.6); color: #333; border: 1px solid #ddd; padding: 8px 12px; font-weight: 600; font-size: 13px; cursor: pointer; border-radius: 8px; transition: 0.3s; flex-grow: 1; text-align: center; }
-        .tab-btn:hover { background: rgba(255,255,255,0.9); color: #667eea; }
-        .tab-btn.active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; box-shadow: 0 4px 10px rgba(118, 75, 162, 0.3); }
+        .glass-panel { background: rgba(255, 255, 255, 0.55); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.5); border-radius: 15px; box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1); padding: 20px; margin-bottom: 20px; width: 100%; max-width: 800px; }
         
-        .container { width: 100%; max-width: 1000px; margin-top: 15px; }
-        .tab-content { display: none; } .tab-content.active { display: block; animation: fadeIn 0.4s; }
-        .card { padding: 20px; margin-bottom: 20px; }
-        input, select, textarea { padding: 12px 15px; border: 1px solid rgba(255,255,255,0.8); border-radius: 8px; width: 100%; margin-bottom: 12px; outline: none; background: rgba(255, 255, 255, 0.8); font-size: 14px; transition: 0.3s; }
-        input:focus, select:focus { background: #fff; border-color: #667eea; box-shadow: 0 0 8px rgba(102,126,234,0.2); }
+        /* Navbar & Tabs */
+        .header { display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.8); border-bottom: 1px solid rgba(255,255,255,0.5); padding: 15px 20px; border-radius: 12px; margin-bottom: 15px; width: 100%; max-width: 800px; }
+        .tab-menu { display: flex; gap: 10px; width: 100%; max-width: 800px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px; }
+        .tab-btn { background: rgba(255,255,255,0.6); color: #1e3c72; border: 1px solid rgba(255,255,255,0.8); padding: 10px 15px; font-weight: 600; cursor: pointer; border-radius: 8px; transition: 0.3s; white-space: nowrap; flex:1; text-align: center; }
+        .tab-btn.active { background: #007bff; color: white; border-color: #007bff; box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3); }
+
+        .tab-content { display: none; width: 100%; max-width: 800px; } .tab-content.active { display: block; animation: fadeIn 0.4s; }
+
+        input, select, textarea { width: 100%; padding: 12px; border: 1px solid rgba(255,255,255,0.8); border-radius: 8px; font-size: 0.95em; outline: none; background: rgba(255, 255, 255, 0.8); margin-bottom: 15px; }
+        input:focus, select:focus, textarea:focus { background: #fff; border-color: #007bff; }
         
-        button { border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px; transition: 0.3s; display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
-        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        button { border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.3s; }
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; width: 100%; }
         .btn-success { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; }
         .btn-danger { background: linear-gradient(135deg, #ff0844 0%, #ffb199 100%); color: white; }
         .btn-wa { background: #25D366; color: white; }
-        .btn-call { background: #007bff; color: white; }
         
-        .table-wrapper { overflow-x: auto; border-radius: 12px; }
-        table { width: 100%; border-collapse: collapse; min-width: 600px; }
-        th, td { padding: 12px; text-align: left; vertical-align: middle; border-bottom: 1px solid rgba(255,255,255,0.4); font-size: 14px; }
-        th { background: rgba(255, 255, 255, 0.7); color: #1e3c72; font-weight: 700; }
-        tr:hover { background: rgba(255, 255, 255, 0.4); }
-        
-        .badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; color: white; }
-        .badge-pending { background: #ff9f43; }
-        .badge-done { background: #1dd1a1; }
+        /* History & Lists */
+        .history-card { background: rgba(255, 255, 255, 0.7); border-left: 4px solid #0984e3; padding: 15px; margin-bottom: 10px; border-radius: 6px; font-size: 0.9em; }
+        table { width: 100%; border-collapse: collapse; background: rgba(255,255,255,0.6); border-radius: 8px; overflow: hidden; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.5); }
+        th { background: rgba(255,255,255,0.8); color: #1e3c72; }
 
+        .toast { padding: 12px; border-radius: 8px; margin-top: 15px; text-align: center; font-weight: 600; display: none; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
     <div id="login-screen" class="screen active-screen">
-        <div class="glass-panel card" style="max-width: 350px; margin-top: 10vh; text-align: center; width: 100%;">
-            <div style="font-size: 3.5em; margin-bottom: 5px;">🎧</div>
-            <h2 style="color: #1e3c72; margin-top: 0;">Employee Portal</h2>
-            <p style="color: #555; font-size: 13px; margin-bottom: 20px;">Quality Education Team</p>
-            <input type="text" id="login-username" placeholder="Your Username">
-            <input type="password" id="login-password" placeholder="Your Password">
-            <button class="btn-primary" style="width: 100%; padding: 12px; font-size: 15px;" onclick="login()">Login to Dashboard</button>
-            <p id="login-msg" style="color:#d63031; display:none; margin-top: 15px; font-weight: bold;"></p>
+        <div class="glass-panel" style="max-width: 400px; margin: 10vh auto; text-align: center;">
+            <div style="font-size: 3em; margin-bottom: 10px;">🎧</div>
+            <h2 style="color: #1e3c72; margin-top: 0;">Employee Login</h2>
+            <input type="text" id="login-username" placeholder="Username">
+            <input type="password" id="login-password" placeholder="Password">
+            <button class="btn-primary" onclick="login()">Login 🚀</button>
+            <div id="login-msg" class="toast"></div>
         </div>
     </div>
 
-    <div id="emp-screen" class="screen">
-        <div class="navbar">
-            <div class="nav-header">
-                <div class="nav-brand">🎧 <span id="emp-name-display">Telecaller</span></div>
-                <button class="btn-danger" style="padding: 6px 12px; font-size: 12px;" onclick="logout()">Logout</button>
-            </div>
-            <div class="tab-menu">
-                <button class="tab-btn active" onclick="switchTab('tab-calls')">📞 My Calls & Entry</button>
-                <button class="tab-btn" onclick="switchTab('tab-books')">📚 Books Info</button>
-                <button class="tab-btn" onclick="switchTab('tab-messages')">💬 Templates</button>
+    <div id="employee-screen" class="screen">
+        <div class="header">
+            <h3 style="margin: 0; color: #1e3c72;">🎓 Workspace</h3>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <span id="emp-name-display" style="font-weight:bold; color:#0984e3;">👤 Hi, User</span>
+                <button class="btn-danger" style="padding: 6px 12px;" onclick="logout()">Logout</button>
             </div>
         </div>
 
-        <div class="container">
-            
-            <div id="tab-calls" class="tab-content active">
+        <div class="tab-menu">
+            <button class="tab-btn active" onclick="switchTab('tab-entry')">📝 Add Entry</button>
+            <button class="tab-btn" onclick="switchTab('tab-calls')">📞 My Calls <span id="calls-badge" style="background:red;color:white;padding:2px 6px;border-radius:10px;font-size:0.8em;display:none;"></span></button>
+            <button class="tab-btn" onclick="switchTab('tab-books')">📚 Books Info</button>
+            <button class="tab-btn" onclick="switchTab('tab-whatsapp')">💬 WhatsApp</button>
+        </div>
+        
+        <div id="tab-entry" class="tab-content active">
+            <div class="glass-panel">
+                <label>Mobile Number</label>
+                <input type="number" id="emp-mobile" onblur="fetchHistory()" placeholder="10-digit mobile number">
                 
-                <div class="glass-panel card" style="background: rgba(255,255,255,0.8);">
-                    <h3 style="color:#1e3c72; margin-top:0;">➕ Add New Entry (Lead)</h3>
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <input type="text" id="new-entry-name" placeholder="Student Name" style="flex:1; min-width: 150px; margin-bottom:0;">
-                        <input type="number" id="new-entry-number" placeholder="Mobile Number" style="flex:1; min-width: 150px; margin-bottom:0;">
-                        <input type="text" id="new-entry-title" placeholder="Reason / Subject" style="flex:1; min-width: 150px; margin-bottom:0;">
-                        <button class="btn-success" onclick="saveNewEntry()">✅ Save Entry</button>
-                    </div>
-                </div>
+                <div id="history-box" style="display:none; margin-bottom:15px; max-height:300px; overflow-y:auto;"></div>
 
-                <div class="glass-panel card table-wrapper">
-                    <h3 style="color:#1e3c72; margin-top:0;">📞 My Assigned Leads</h3>
-                    <table id="my-calls-table">
-                        <thead>
-                            <tr>
-                                <th>Student Details</th>
-                                <th>Reason / Title</th>
-                                <th>Status</th>
-                                <th>Actions (Contact)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            </tbody>
-                    </table>
-                </div>
-            </div>
+                <label>Student Name</label>
+                <input type="text" id="emp-name" placeholder="Student Name">
 
-            <div id="tab-books" class="tab-content">
-                <div class="glass-panel card table-wrapper">
-                    <h3 style="color:#1e3c72; margin-top:0;">📖 Send Book Links</h3>
-                    <table id="books-table">
-                        <thead>
-                            <tr>
-                                <th>Book Name</th>
-                                <th>Price Details & Stock</th>
-                                <th>Exampustak</th>
-                                <th>ApnaBookStore</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            </tbody>
-                    </table>
-                </div>
-            </div>
+                <label>Problem Type</label>
+                <select id="emp-problem">
+                    <option value="" disabled selected>📂 Select category...</option>
+                    <option value="Online Course Related">Online Course Related</option>
+                    <option value="Online Test Series Related">Test Series Related</option>
+                    <option value="Offline Test Series Related">Offline Test Series</option>
+                    <option value="Notes Related">Notes Related</option>
+                    <option value="Others">Others</option>
+                </select>
 
-            <div id="tab-messages" class="tab-content">
-                <div class="glass-panel card table-wrapper" style="position:relative;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                        <h3 style="color:#1e3c72; margin-top:0;">💬 WhatsApp Templates</h3>
-                        <button class="btn-primary" onclick="openTemplateEditor()" style="border-radius:50%; width:40px; height:40px; padding:0; font-size:20px;">➕</button>
-                    </div>
-                    <table id="messages-table">
-                        <thead>
-                            <tr>
-                                <th>Template Title</th>
-                                <th>Message Preview</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            </tbody>
-                    </table>
-                </div>
-            </div>
+                <label>Issue Details</label>
+                <textarea id="emp-issue" placeholder="Describe problem..."></textarea>
+                <label>Your Response</label>
+                <textarea id="emp-response" placeholder="What solution did you provide?"></textarea>
 
-        </div>
-    </div>
-
-    <div id="template-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center;">
-        <div class="glass-panel card" style="width:90%; max-width:450px; background:white; box-shadow: 0 15px 50px rgba(0,0,0,0.5);">
-            <h3 id="tpl-modal-title" style="color:#1e3c72; margin-top:0;">📝 Create/Edit Template</h3>
-            <input type="hidden" id="msg-id">
-            <input type="text" id="msg-title" placeholder="Template Title">
-            <textarea id="msg-content" rows="5" placeholder="Type your message here..."></textarea>
-            <div style="display:flex; gap:10px; margin-top:15px;">
-                <button class="btn-success" style="flex:1" onclick="saveTemplateData()">💾 Save</button>
-                <button class="btn-danger" style="flex:1" onclick="closeTemplateEditor()">❌ Close</button>
+                <button id="submit-btn" class="btn-primary" onclick="submitEntry()">Submit Entry ✅</button>
+                <div id="form-msg" class="toast"></div>
             </div>
         </div>
+
+        <div id="tab-calls" class="tab-content">
+            <div class="glass-panel">
+                <h3 style="color:#1e3c72; margin-top:0;">📞 Leads Assigned By Admin</h3>
+                <div id="assigned-calls-list">Loading...</div>
+            </div>
+        </div>
+
+        <div id="tab-books" class="tab-content">
+            <div class="glass-panel" style="overflow-x:auto;">
+                <h3 style="color:#1e3c72; margin-top:0;">📚 Inventory & Pricing</h3>
+                <table id="books-table">
+                    <thead>
+                        <tr>
+                            <th>Book Name</th>
+                            <th>Price Details & Stock</th>
+                            <th>Exampustak Link</th>
+                            <th>ApnaBookStore Link</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="tab-whatsapp" class="tab-content">
+            <div class="glass-panel">
+                <h3 style="color:#1e3c72; margin-top:0;">💬 Send Message</h3>
+                <label>Student Mobile Number</label>
+                <div style="display:flex; gap:10px;">
+                    <input type="number" id="wa-mobile" placeholder="Mobile Number" style="margin-bottom:0;">
+                    <button class="btn-primary" style="width:auto; padding:10px 15px;" onclick="document.getElementById('wa-mobile').value = document.getElementById('emp-mobile').value">Get from Form</button>
+                </div>
+                
+                <h4 style="color:#1e3c72; margin-bottom:5px;">Select Template to Send:</h4>
+                <div id="templates-list" style="max-height: 200px; overflow-y:auto; border:1px solid rgba(255,255,255,0.8); border-radius:8px; padding:10px; background:rgba(255,255,255,0.4); margin-bottom:20px;"></div>
+
+                <hr style="border:1px solid rgba(255,255,255,0.3); margin:20px 0;">
+
+                <h3 style="color:#1e3c72; margin-top:0;">📝 Create My Own Template</h3>
+                <input type="text" id="my-temp-title" placeholder="Template Name">
+                <textarea id="my-temp-content" rows="3" placeholder="Write your custom message..."></textarea>
+                <button class="btn-success" style="width:100%" onclick="saveMyTemplate()">Save My Template</button>
+            </div>
+        </div>
+
     </div>
 
     <script>
-        // AAPKA GOOGLE APPS SCRIPT LINK
         const API_URL = "https://script.google.com/macros/s/AKfycbyI9FRnm9GUhhjKY7Er__pdONW4FqSSc7LBdVQ6MHTSqndwBowM8Krl36Nj12l1-F0tjA/exec"; 
-        
-        let currentUser = null;
+        let currentUser = null, empData = {};
 
         window.onload = () => { 
-            let storedUser = localStorage.getItem("qei_emp_data");
-            if (storedUser) { 
-                currentUser = JSON.parse(storedUser);
-                document.getElementById("emp-name-display").innerText = currentUser.name;
-                showScreen("emp-screen"); 
-                loadEmployeeData(); 
+            if(localStorage.getItem("qei_user")) { 
+                currentUser = JSON.parse(localStorage.getItem("qei_user")); 
+                showScreen("employee-screen"); 
+                document.getElementById("emp-name-display").innerText = "👤 Hi, " + currentUser.name; 
+                loadDashboardData(); 
             } 
         };
 
-        async function apiCall(p) { 
-            try { 
-                const r = await fetch(API_URL, {method:'POST', body:JSON.stringify(p)}); 
-                return await r.json(); 
-            } catch (error) { 
-                console.error("API Error:", error);
-                return {success:false}; 
-            } 
-        }
+        async function apiCall(p) { try { const r = await fetch(API_URL, {method:'POST', body:JSON.stringify(p)}); return await r.json(); } catch { return {success:false}; } }
+        function showScreen(id) { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active-screen')); document.getElementById(id).classList.add('active-screen'); }
+        function switchTab(id) { document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active')); document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); document.getElementById(id).classList.add('active'); event.target.classList.add('active'); }
 
-        function showScreen(id) { 
-            document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active-screen')); 
-            document.getElementById(id).classList.add('active-screen'); 
-        }
-        function switchTab(id) { 
-            document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active')); 
-            document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); 
-            document.getElementById(id).classList.add('active'); 
-            event.target.classList.add('active'); 
-        }
-
-        async function login() { 
-            const u = document.getElementById("login-username").value;
-            const p = document.getElementById("login-password").value; 
+        async function login() {
+            const u=document.getElementById("login-username").value, p=document.getElementById("login-password").value;
             const msgBox = document.getElementById("login-msg");
+            msgBox.style.display="block"; msgBox.innerText="Logging in..."; msgBox.style.color="blue";
             
-            msgBox.style.display = "block";
-            msgBox.style.color = "#1e3c72";
-            msgBox.innerText = "Checking credentials... Please wait.";
-
-            const r = await apiCall({action:"login", username:u, password:p}); 
-            
-            if(r.success && r.user) { 
-                localStorage.setItem("qei_emp_data", JSON.stringify(r.user)); 
-                location.reload(); 
-            } else { 
-                msgBox.style.color = "#d63031";
-                msgBox.innerText = "❌ Invalid Username or Password!"; 
-            } 
-        }
-
-        function logout() { 
-            localStorage.removeItem("qei_emp_data"); 
-            location.reload(); 
-        }
-
-        async function loadEmployeeData() {
-            const res = await apiCall({ action: "getAdminData" });
-            if (res.success) {
-                let myCalls = res.assignedCalls.filter(c => c.employeeId === currentUser.employeeId);
-                renderMyCalls(myCalls);
-                renderBooks(res.books);
-
-                const msgRes = await apiCall({ action: "getMessages" });
-                if(msgRes.success) {
-                    renderMessages(msgRes.messages);
-                }
+            const res = await apiCall({action:"login", username:u, password:p});
+            if(res.success){ 
+                currentUser=res.user; localStorage.setItem("qei_user", JSON.stringify(currentUser)); location.reload(); 
             } else {
-                alert("Data load karne mein problem aayi. Please refresh karein.");
+                msgBox.innerText="Invalid Login"; msgBox.style.color="red";
+            }
+        }
+        function logout() { localStorage.removeItem("qei_user"); location.reload(); }
+
+        async function loadDashboardData() {
+            const res = await apiCall({action: "getEmpDashboardData", empId: currentUser.employeeId});
+            if(res.success) {
+                empData = res;
+                
+                // ================= RENDER BOOKS (UPDATED) =================
+                document.querySelector("#books-table tbody").innerHTML = res.books.map(b => {
+                    let examLink = b.exampustak || '#'; 
+                    let apnaLink = b.apnabookstore || '#'; 
+                    let stockColor = (b.stock === 'In Stock') ? 'green' : 'red';
+                    
+                    return `<tr>
+                        <td><b>${b.name}</b></td>
+                        <td>
+                            <b>₹${b.price}</b> <small>(+₹${b.delivery} Del)</small><br>
+                            <span style="color:${stockColor}; font-size:12px; font-weight:bold;">${b.stock}</span>
+                        </td>
+                        <td><button class="btn-wa" style="padding:6px 10px; font-size:12px; border:none; border-radius:4px; cursor:pointer;" onclick="sendBookLink('${b.name}', '${examLink}')">📤 Send WA</button></td>
+                        <td><button class="btn-wa" style="padding:6px 10px; font-size:12px; border:none; border-radius:4px; cursor:pointer;" onclick="sendBookLink('${b.name}', '${apnaLink}')">📤 Send WA</button></td>
+                    </tr>`;
+                }).join('');
+                
+                // ================= RENDER ASSIGNED CALLS =================
+                const pendingCalls = res.assignedCalls.filter(c=>c.status==='Pending');
+                if(pendingCalls.length>0){ document.getElementById("calls-badge").innerText = pendingCalls.length; document.getElementById("calls-badge").style.display = "inline-block"; }
+                
+                if(pendingCalls.length===0) document.getElementById("assigned-calls-list").innerHTML = "<div style='padding:20px; text-align:center; color:green;'>🎉 Great! No pending calls.</div>";
+                else document.getElementById("assigned-calls-list").innerHTML = pendingCalls.map(c=>`
+                    <div class="history-card" style="border-color:#1e3c72; background:rgba(255,255,255,0.8);">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:5px;"><b>${c.name}</b> <span style="color:#007bff; font-weight:bold;">📞 ${c.number}</span></div>
+                        <div style="color:#555; font-size:0.9em; margin-bottom:10px;"><b>Reason:</b> ${c.title}</div>
+                        <div style="display:flex; gap:10px;">
+                            <button class="btn-success" style="padding:6px; flex:1;" onclick="window.open('tel:${c.number}')">Call Now</button>
+                            <button class="btn-primary" style="padding:6px; flex:1;" onclick="startEntryFromCall('${c.name}', '${c.number}')">Make Entry</button>
+                            <button class="btn-danger" style="padding:6px; flex:1;" onclick="markDone('${c.callId}')">Mark Done</button>
+                        </div>
+                    </div>`).join('');
+
+                // ================= RENDER TEMPLATES =================
+                let tmplHTML = `<div style="color:gray;font-size:0.8em;margin-bottom:5px;">Admin Templates</div>`;
+                res.adminMsgs.forEach(m => tmplHTML += `<div style="padding:10px; background:#fff; margin-bottom:5px; border-radius:5px; cursor:pointer; border:1px solid #ddd;" onclick="sendWA(\`${encodeURIComponent(m.content)}\`)">📄 ${m.title}</div>`);
+                
+                tmplHTML += `<div style="color:gray;font-size:0.8em;margin:10px 0 5px 0;">My Templates</div>`;
+                res.myMsgs.forEach(m => tmplHTML += `<div style="display:flex; gap:5px; margin-bottom:5px;"><div style="flex:1; padding:10px; background:#eef; border-radius:5px; cursor:pointer;" onclick="sendWA(\`${encodeURIComponent(m.content)}\`)">📄 ${m.title}</div><button class="btn-danger" style="padding:5px 10px;" onclick="delMyTemp('${m.tempId}')">🗑️</button></div>`);
+                
+                document.getElementById("templates-list").innerHTML = tmplHTML;
             }
         }
 
-        // ================= 1. ENTRY & CALLS =================
-        // Nayi Entry (Lead) add karne ka function
-        async function saveNewEntry() {
-            const name = document.getElementById("new-entry-name").value;
-            const number = document.getElementById("new-entry-number").value;
-            const title = document.getElementById("new-entry-title").value;
-
-            if(!name || !number || !title) return alert("Kripya Name, Number aur Reason teeno bharein!");
-
-            // Employee ki ID use karke uske account mein call assign kar rahe hain
-            await apiCall({
-                action: "assignCall", 
-                callData: {
-                    employeeId: currentUser.employeeId, 
-                    name: name, 
-                    number: number, 
-                    title: title
-                }
-            });
-
-            document.getElementById("new-entry-name").value = "";
-            document.getElementById("new-entry-number").value = "";
-            document.getElementById("new-entry-title").value = "";
-            
-            alert("✅ Nayi Entry Safaltapurvak Add Ho Gayi!");
-            loadEmployeeData(); // Table refresh karega
-        }
-
-        function renderMyCalls(calls) {
-            let tbody = document.querySelector("#my-calls-table tbody");
-            if(calls.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">🎉 Koi pending calls nahi hain!</td></tr>`;
-                return;
+        function sendBookLink(bookName, link) {
+            if(!link || link === "undefined" || link === "#") return alert(`Is book ka link abhi add nahi hua hai.`);
+            // Fetch number from the common WhatsApp mobile input
+            let num = document.getElementById("wa-mobile").value;
+            if(!num || num.length < 10) {
+                num = prompt("Link bhejne ke liye 10-digit WhatsApp number dalein:");
             }
-
-            tbody.innerHTML = calls.slice().reverse().map(c => {
-                let statusBadge = c.status === 'Pending' ? `<span class="badge badge-pending">⏳ Pending</span>` : `<span class="badge badge-done">✅ ${c.status}</span>`;
-                
-                return `<tr>
-                    <td>
-                        <strong style="color:#1e3c72; font-size:15px;">${c.name}</strong><br>
-                        <span style="color:#555;">📞 ${c.number}</span><br>
-                        <small style="color:#888;">Date: ${new Date(c.date).toLocaleDateString()}</small>
-                    </td>
-                    <td><b>${c.title}</b></td>
-                    <td>
-                        ${statusBadge}
-                        <div style="margin-top:5px;">
-                            <select id="status-${c.callId}" style="padding:4px; font-size:12px; width:auto; margin-bottom:0;">
-                                <option value="">Update Status...</option>
-                                <option value="Completed">Completed</option>
-                                <option value="Interested">Interested</option>
-                                <option value="Not Interested">Not Interested</option>
-                            </select>
-                            <button class="btn-primary" style="padding:4px 8px; font-size:11px;" onclick="updateCallStatus('${c.callId}')">Save</button>
-                        </div>
-                    </td>
-                    <td>
-                        <div style="display:flex; gap:5px; flex-direction:column;">
-                            <a href="tel:${c.number}" class="btn-call" style="text-decoration:none; padding:6px 10px; border-radius:6px; text-align:center;">☎️ Call</a>
-                            <a href="https://wa.me/91${c.number}" target="_blank" class="btn-wa" style="text-decoration:none; padding:6px 10px; border-radius:6px; text-align:center;">🟢 WhatsApp</a>
-                        </div>
-                    </td>
-                </tr>`;
-            }).join('');
-        }
-
-        async function updateCallStatus(callId) {
-            let newStatus = document.getElementById(`status-${callId}`).value;
-            if(!newStatus) return alert("Pehle dropdown se status select karein!");
-            await apiCall({action: "updateAssignedCall", callId: callId, status: newStatus});
-            alert("Status Updated Successfully!");
-            loadEmployeeData(); 
-        }
-
-        // ================= 2. BOOKS INFO (Cleaned Up) =================
-        function renderBooks(books) {
-            document.querySelector("#books-table tbody").innerHTML = books.map(b => {
-                let examLink = b.exampustak || '#'; 
-                let apnaLink = b.apnabookstore || '#'; 
-                
-                // Color coding for Stock
-                let stockColor = (b.stock === 'In Stock') ? 'green' : 'red';
-
-                return `<tr>
-                    <td><b>${b.name}</b></td>
-                    <td>
-                        <strong style="font-size: 15px;">₹${b.price}</strong> <small style="color:#555;">(+ ₹${b.delivery} Delivery)</small><br>
-                        <span style="color:${stockColor}; font-weight:bold; font-size: 12px;">Stock: ${b.stock}</span>
-                    </td>
-                    <td><button class="btn-primary" style="padding:6px 10px; font-size:12px;" onclick="sendLink('${b.name}', '${examLink}', 'Exampustak')">📤 Send Exampustak</button></td>
-                    <td><button class="btn-primary" style="background:linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding:6px 10px; font-size:12px;" onclick="sendLink('${b.name}', '${apnaLink}', 'ApnaBookStore')">📤 Send ApnaBook</button></td>
-                </tr>`;
-            }).join('');
-        }
-
-        function sendLink(bookName, link, store) {
-            if(!link || link === "undefined" || link === "#") return alert(`Is book ka ${store} link abhi available nahi hai.`);
-            let num = prompt(`Student ka WhatsApp number dalein (${store} link bhejne ke liye):`);
-            if(num && num.trim() !== "") {
+            if(num && num.length >= 10) {
                 let msg = encodeURIComponent(`Hello! Aap "${bookName}" yahan se kharid sakte hain: ${link}`);
                 window.open(`https://wa.me/91${num}?text=${msg}`, '_blank');
             }
         }
 
-        // ================= 3. MESSAGES (TEMPLATES) =================
-        function renderMessages(messages) {
-            document.querySelector("#messages-table tbody").innerHTML = messages.map(m => `
-                <tr>
-                    <td><b>${m.title}</b></td>
-                    <td style="font-size:13px; color:#444;">${m.content.substring(0, 40)}...</td>
-                    <td>
-                        <button class="btn-wa" style="padding:6px 12px; font-size: 12px; margin-bottom:4px;" onclick="sendTemplate('${encodeURIComponent(m.content)}')">📤 Send</button>
-                        <button class="btn-primary" style="padding:6px 12px; font-size: 12px;" onclick="editTemplate('${m.msgId}', '${encodeURIComponent(m.title)}', '${encodeURIComponent(m.content)}')">✏️ Edit</button>
-                    </td>
-                </tr>
-            `).join('');
+        function startEntryFromCall(name, number) {
+            document.getElementById("emp-mobile").value = number; document.getElementById("emp-name").value = name;
+            switchTab('tab-entry'); fetchHistory();
+        }
+        async function markDone(id) { await apiCall({action:"markCallDone", callId:id}); loadDashboardData(); }
+
+        // ================= ADD ENTRY & HISTORY =================
+        async function fetchHistory() {
+            const m = document.getElementById("emp-mobile").value; const hBox = document.getElementById("history-box");
+            if(m.length<10){ hBox.style.display="none"; return; }
+            hBox.style.display="block"; hBox.innerHTML = "<i>Searching...</i>";
+            const res = await apiCall({action:"fetchMobileInfo", mobile:m});
+            if(res.success && res.history.length>0) {
+                document.getElementById("emp-name").value = res.lastRecord.studentName;
+                hBox.innerHTML = res.history.slice().reverse().map(r=>`
+                    <div class="history-card" style="border-left-color:${r.status=='Pending'?'red':'green'}">
+                        <div style="display:flex;justify-content:space-between;border-bottom:1px solid #ddd;padding-bottom:5px;margin-bottom:5px;"><b>${new Date(r.date).toLocaleDateString()}</b><b style="color:${r.status=='Pending'?'red':'green'}">${r.status}</b></div>
+                        <div><b>Issue:</b> ${r.issue}</div>
+                        <div style="color:#0984e3; margin:5px 0;"><b>Your Reply:</b> ${r.employeeResponse}</div>
+                        <div style="background:#fff; padding:5px; border-radius:4px;"><b>👨‍💼 Admin:</b> ${r.adminComment||'Wait...'}</div>
+                    </div>`).join('');
+            } else { hBox.innerHTML = "<span style='color:green;font-weight:bold;'>✅ New Student!</span>"; }
         }
 
-        function sendTemplate(encodedMsg) {
-            let msg = decodeURIComponent(encodedMsg);
-            let num = prompt("Template bhejne ke liye 10-digit WhatsApp number dalein:");
-            if(num && num.trim() !== "") {
-                window.open(`https://wa.me/91${num}?text=${encodeURIComponent(msg)}`, '_blank');
-            }
+        async function submitEntry() {
+            const btn=document.getElementById("submit-btn"); const m=document.getElementById("emp-mobile").value, n=document.getElementById("emp-name").value, p=document.getElementById("emp-problem").value, i=document.getElementById("emp-issue").value, r=document.getElementById("emp-response").value;
+            if(!m||!n||!p||!i) return alert("Fill mandatory fields");
+            btn.disabled=true; btn.innerText="Saving...";
+            const res = await apiCall({action:"addComplaint", data:{mobile:m, studentName:n, problemType:p, issue:i, employeeResponse:r, employeeId:currentUser.employeeId}});
+            if(res.success){ alert("Saved Successfully!"); document.getElementById("emp-mobile").value=""; document.getElementById("emp-name").value=""; document.getElementById("emp-issue").value=""; document.getElementById("emp-response").value=""; document.getElementById("history-box").style.display="none"; }
+            btn.disabled=false; btn.innerText="Submit Entry ✅";
         }
 
-        // Template Editor Modal Controls
-        function openTemplateEditor() {
-            document.getElementById('msg-id').value = "";
-            document.getElementById('msg-title').value = "";
-            document.getElementById('msg-content').value = "";
-            document.getElementById('tpl-modal-title').innerText = "📝 Create New Template";
-            document.getElementById('template-modal').style.display = "flex";
+        // ================= WHATSAPP & CUSTOM TEMPLATES =================
+        function sendWA(encodedContent) {
+            const content = decodeURIComponent(encodedContent);
+            const num = document.getElementById("wa-mobile").value;
+            if(num.length < 10) return alert("Enter student mobile number first in the box above!");
+            window.open(`https://wa.me/91${num}?text=${encodeURIComponent(content)}`, '_blank');
         }
-
-        function closeTemplateEditor() {
-            document.getElementById('template-modal').style.display = "none";
+        async function saveMyTemplate() {
+            const t=document.getElementById("my-temp-title").value, c=document.getElementById("my-temp-content").value;
+            if(!t||!c) return alert("Fill template details");
+            await apiCall({action:"saveEmpTemplate", template:{employeeId:currentUser.employeeId, title:t, content:c}});
+            document.getElementById("my-temp-title").value=""; document.getElementById("my-temp-content").value=""; loadDashboardData();
         }
-
-        function editTemplate(id, title, content) {
-            document.getElementById('msg-id').value = id;
-            document.getElementById('msg-title').value = decodeURIComponent(title);
-            document.getElementById('msg-content').value = decodeURIComponent(content);
-            document.getElementById('tpl-modal-title').innerText = "✏️ Edit Template";
-            document.getElementById('template-modal').style.display = "flex";
-        }
-
-        async function saveTemplateData() { 
-            const id = document.getElementById("msg-id").value;
-            const t = document.getElementById("msg-title").value; 
-            const c = document.getElementById("msg-content").value; 
-            
-            if(!t || !c) return alert("Title and Content required!"); 
-            
-            let payload = {action:"saveMessage", message:{title:t, content:c}};
-            if(id) payload.message.msgId = id; 
-            
-            await apiCall(payload); 
-            closeTemplateEditor();
-            loadEmployeeData(); 
-        }
+        async function delMyTemp(id) { if(confirm("Delete your template?")){ await apiCall({action:"deleteEmpTemplate", tempId:id}); loadDashboardData(); } }
     </script>
 </body>
 </html>
