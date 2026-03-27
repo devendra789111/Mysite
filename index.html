@@ -17,7 +17,7 @@
         .tab-btn.active { background: #007bff; color: white; border-color: #007bff; box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3); }
         .tab-content { display: none; width: 100%; max-width: 800px; } .tab-content.active { display: block; animation: fadeIn 0.4s; }
         input, select, textarea { width: 100%; padding: 12px; border: 1px solid rgba(255,255,255,0.8); border-radius: 8px; font-size: 0.95em; outline: none; background: rgba(255, 255, 255, 0.8); margin-bottom: 15px; transition: 0.3s; }
-        input:focus, select:focus, textarea:focus { background: #fff; border-color: #007bff; }
+        input:focus, select:focus, textarea:focus { background: #fff; border-color: #007bff; box-shadow: 0 0 5px rgba(0,123,255,0.2); }
         button { border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.3s; font-size: 13px; }
         .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; width: 100%; }
         .btn-success { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; }
@@ -30,11 +30,18 @@
         th { background: rgba(255,255,255,0.9); color: #1e3c72; }
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; padding: 15px; }
         .modal-content { background: #fff; width: 100%; max-width: 400px; border-radius: 15px; padding: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); animation: fadeIn 0.3s ease; }
-        .toast { padding: 12px; border-radius: 8px; margin-top: 15px; text-align: center; font-weight: 600; display: none; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        #global-loader { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); z-index:9999; justify-content:center; align-items:center; flex-direction:column; backdrop-filter:blur(5px); }
+        .spinner { font-size: 40px; animation: spin 1s linear infinite; margin-bottom:10px; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
+
+    <div id="global-loader">
+        <div class="spinner">⏳</div>
+        <h3 style="color:#1e3c72; margin:0;">Working... Please wait</h3>
+    </div>
 
     <div id="login-screen" class="screen active-screen">
         <div class="glass-panel" style="max-width: 400px; margin: 10vh auto; text-align: center;">
@@ -43,7 +50,7 @@
             <input type="text" id="login-username" placeholder="Username">
             <input type="password" id="login-password" placeholder="Password">
             <button class="btn-primary" onclick="login()">Login 🚀</button>
-            <div id="login-msg" class="toast"></div>
+            <div id="login-msg" style="color:red; margin-top:10px; display:none;"></div>
         </div>
     </div>
 
@@ -162,6 +169,9 @@
         const API_URL = "https://script.google.com/macros/s/AKfycbyI9FRnm9GUhhjKY7Er__pdONW4FqSSc7LBdVQ6MHTSqndwBowM8Krl36Nj12l1-F0tjA/exec"; 
         let currentUser = null, empData = {};
 
+        function showLoader() { document.getElementById("global-loader").style.display = "flex"; }
+        function hideLoader() { document.getElementById("global-loader").style.display = "none"; }
+
         function formatDateString(dateString) {
             if(!dateString) return "";
             const options = { day: 'numeric', month: 'long', year: 'numeric' };
@@ -184,44 +194,51 @@
         async function login() {
             const u=document.getElementById("login-username").value, p=document.getElementById("login-password").value;
             const msgBox = document.getElementById("login-msg");
-            msgBox.style.display="block"; msgBox.innerText="Logging in..."; msgBox.style.color="blue";
+            showLoader();
             const res = await apiCall({action:"login", username:u, password:p});
+            hideLoader();
             if(res.success){ currentUser=res.user; localStorage.setItem("qei_user", JSON.stringify(currentUser)); location.reload(); } 
-            else { msgBox.innerText="❌ Invalid Login"; msgBox.style.color="red"; }
+            else { msgBox.style.display="block"; msgBox.innerText="❌ Invalid Login"; }
         }
         function logout() { localStorage.removeItem("qei_user"); location.reload(); }
 
         async function loadDashboardData() {
+            showLoader();
             const res = await apiCall({action: "getEmpDashboardData", empId: currentUser.employeeId});
+            hideLoader();
             if(res.success) {
                 empData = res;
                 
-                // RENDER BOOKS (SEPARATE EXAM AND APNA COLUMNS)
-                document.querySelector("#books-table tbody").innerHTML = res.books.map(b => {
-                    let eStockCol = b.examStock === 'Available' ? '#27ae60' : (b.examStock === 'Upcoming' ? '#d35400' : '#e74c3c');
-                    let aStockCol = b.apnaStock === 'Available' ? '#27ae60' : (b.apnaStock === 'Upcoming' ? '#d35400' : '#e74c3c');
+                // RENDER BOOKS
+                if(res.books && res.books.length > 0) {
+                    document.querySelector("#books-table tbody").innerHTML = res.books.map(b => {
+                        let eStockCol = b.examStock === 'Available' ? '#27ae60' : (b.examStock === 'Upcoming' ? '#d35400' : '#e74c3c');
+                        let aStockCol = b.apnaStock === 'Available' ? '#27ae60' : (b.apnaStock === 'Upcoming' ? '#d35400' : '#e74c3c');
 
-                    let encName = encodeURIComponent(b.name || '');
-                    let encExamLink = encodeURIComponent(b.examLink || '');
-                    let encApnaLink = encodeURIComponent(b.apnaLink || '');
+                        let encName = encodeURIComponent(b.name || '');
+                        let encExamLink = encodeURIComponent(b.examLink || '');
+                        let encApnaLink = encodeURIComponent(b.apnaLink || '');
 
-                    return `<tr>
-                        <td><b style="color:#1e3c72; font-size:14px;">${b.name}</b></td>
-                        <td>
-                            <b>₹${b.examPrice}</b> <small style="color:#666;">(+₹${b.examDelivery} Del)</small><br>
-                            <span style="color:${eStockCol}; font-size:11px; font-weight:bold;">${b.examStock}</span><br>
-                            <button class="btn-wa" style="padding:4px 8px; margin-top:5px;" onclick="sendBookLink('${encName}', '${encExamLink}')">📤 Send</button>
-                        </td>
-                        <td>
-                            <b>₹${b.apnaPrice}</b> <small style="color:#666;">(+₹${b.apnaDelivery} Del)</small><br>
-                            <span style="color:${aStockCol}; font-size:11px; font-weight:bold;">${b.apnaStock}</span><br>
-                            <button class="btn-wa" style="padding:4px 8px; margin-top:5px;" onclick="sendBookLink('${encName}', '${encApnaLink}')">📤 Send</button>
-                        </td>
-                    </tr>`;
-                }).join('');
+                        return `<tr>
+                            <td><b style="color:#1e3c72; font-size:14px;">${b.name || 'Unnamed Book'}</b></td>
+                            <td>
+                                <b>₹${b.examPrice || '0'}</b> <small style="color:#666;">(+₹${b.examDelivery || '0'} Del)</small><br>
+                                <span style="color:${eStockCol}; font-size:11px; font-weight:bold;">${b.examStock || 'Available'}</span><br>
+                                <button class="btn-wa" style="padding:4px 8px; margin-top:5px;" onclick="sendBookLink('${encName}', '${encExamLink}')">📤 Send</button>
+                            </td>
+                            <td>
+                                <b>₹${b.apnaPrice || '0'}</b> <small style="color:#666;">(+₹${b.apnaDelivery || '0'} Del)</small><br>
+                                <span style="color:${aStockCol}; font-size:11px; font-weight:bold;">${b.apnaStock || 'Available'}</span><br>
+                                <button class="btn-wa" style="padding:4px 8px; margin-top:5px;" onclick="sendBookLink('${encName}', '${encApnaLink}')">📤 Send</button>
+                            </td>
+                        </tr>`;
+                    }).join('');
+                } else {
+                    document.querySelector("#books-table tbody").innerHTML = "<tr><td colspan='3'>No books available right now.</td></tr>";
+                }
                 
                 // RENDER CALLS
-                const pendingCalls = res.assignedCalls.filter(c=>c.status==='Pending');
+                const pendingCalls = (res.assignedCalls || []).filter(c=>c.status==='Pending');
                 if(pendingCalls.length>0){ document.getElementById("calls-badge").innerText = pendingCalls.length; document.getElementById("calls-badge").style.display = "inline-block"; }
                 
                 if(pendingCalls.length===0) document.getElementById("assigned-calls-list").innerHTML = "<div style='padding:20px; text-align:center; color:green; background:#e8f5e9; border-radius:8px;'>🎉 Great! No pending calls.</div>";
@@ -238,20 +255,20 @@
 
                 // RENDER TEMPLATES
                 let adminHTML = "";
-                res.adminMsgs.forEach(m => {
+                (res.adminMsgs || []).forEach(m => {
                     adminHTML += `<div style="background:#f8f9fa; border:1px solid #e2e8f0; padding:12px; border-radius:8px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
-                        <div><strong style="color:#1e3c72;">${m.title}</strong><br><small style="color:#666;">${m.content.substring(0,30)}...</small></div>
-                        <button class="btn-wa" style="width:auto; padding:6px 12px; border-radius:20px;" onclick="triggerWAPrompt(\`${encodeURIComponent(m.content)}\`)">📤 Send</button></div>`;
+                        <div><strong style="color:#1e3c72;">${m.title}</strong><br><small style="color:#666;">${(m.content||'').substring(0,30)}...</small></div>
+                        <button class="btn-wa" style="width:auto; padding:6px 12px; border-radius:20px;" onclick="triggerWAPrompt(\`${encodeURIComponent(m.content||'')}\`)">📤 Send</button></div>`;
                 });
                 document.getElementById("admin-templates-list").innerHTML = adminHTML || "<p style='font-size:13px; color:#888;'>No admin templates available.</p>";
                 
                 let myHTML = "";
-                res.myMsgs.forEach(m => {
+                (res.myMsgs || []).forEach(m => {
                     myHTML += `<div style="background:#eef2ff; border:1px solid #c7d2fe; padding:12px; border-radius:8px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
-                        <div style="flex:1;"><strong style="color:#3730a3;">${m.title}</strong><br><small style="color:#666;">${m.content.substring(0,30)}...</small></div>
+                        <div style="flex:1;"><strong style="color:#3730a3;">${m.title}</strong><br><small style="color:#666;">${(m.content||'').substring(0,30)}...</small></div>
                         <div style="display:flex; gap:5px;">
-                            <button class="btn-wa" style="width:auto; padding:6px 10px; border-radius:6px;" onclick="triggerWAPrompt(\`${encodeURIComponent(m.content)}\`)">📤</button>
-                            <button class="btn-edit" style="width:auto; padding:6px 10px; border-radius:6px;" onclick="editMyTemplate('${m.tempId}', \`${encodeURIComponent(m.title)}\`, \`${encodeURIComponent(m.content)}\`)">✏️</button>
+                            <button class="btn-wa" style="width:auto; padding:6px 10px; border-radius:6px;" onclick="triggerWAPrompt(\`${encodeURIComponent(m.content||'')}\`)">📤</button>
+                            <button class="btn-edit" style="width:auto; padding:6px 10px; border-radius:6px;" onclick="editMyTemplate('${m.tempId}', \`${encodeURIComponent(m.title||'')}\`, \`${encodeURIComponent(m.content||'')}\`)">✏️</button>
                             <button class="btn-danger" style="width:auto; padding:6px 10px; border-radius:6px;" onclick="delMyTemp('${m.tempId}')">🗑️</button>
                         </div></div>`;
                 });
@@ -259,7 +276,6 @@
             }
         }
 
-        // SEND BOOK LINK FIX
         function sendBookLink(encName, encLink) {
             let bookName = decodeURIComponent(encName);
             let link = decodeURIComponent(encLink);
@@ -273,7 +289,7 @@
         }
 
         function startEntryFromCall(name, number) { document.getElementById("emp-mobile").value = number; document.getElementById("emp-name").value = name; switchTab('tab-entry'); fetchHistory(); }
-        async function markDone(id) { await apiCall({action:"markCallDone", callId:id}); loadDashboardData(); }
+        async function markDone(id) { showLoader(); await apiCall({action:"markCallDone", callId:id}); loadDashboardData(); }
 
         async function fetchHistory() {
             const m = document.getElementById("emp-mobile").value; const hBox = document.getElementById("history-box");
@@ -298,12 +314,12 @@
         }
 
         async function submitEntry() {
-            const btn=document.getElementById("submit-btn"); const m=document.getElementById("emp-mobile").value, n=document.getElementById("emp-name").value, p=document.getElementById("emp-problem").value, i=document.getElementById("emp-issue").value, r=document.getElementById("emp-response").value;
+            const m=document.getElementById("emp-mobile").value, n=document.getElementById("emp-name").value, p=document.getElementById("emp-problem").value, i=document.getElementById("emp-issue").value, r=document.getElementById("emp-response").value;
             if(!m||!n||!p||!i) return alert("Please fill all mandatory fields.");
-            btn.disabled=true; btn.innerText="Saving Data... ⏳";
+            showLoader();
             const res = await apiCall({action:"addComplaint", data:{mobile:m, studentName:n, problemType:p, issue:i, employeeResponse:r, employeeId:currentUser.employeeId}});
+            hideLoader();
             if(res.success){ alert("✅ Entry Saved Successfully!"); document.getElementById("emp-mobile").value=""; document.getElementById("emp-name").value=""; document.getElementById("emp-issue").value=""; document.getElementById("emp-response").value=""; document.getElementById("emp-problem").value=""; document.getElementById("history-box").style.display="none"; }
-            btn.disabled=false; btn.innerText="Submit Entry ✅";
         }
 
         function closeModal(modalId) { document.getElementById(modalId).style.display = "none"; }
@@ -324,14 +340,15 @@
 
         function openTemplateEditor() { document.getElementById("msg-temp-id").value = ""; document.getElementById("msg-temp-title").value = ""; document.getElementById("msg-temp-content").value = ""; document.getElementById("tpl-modal-title").innerText = "📝 Create New Template"; document.getElementById("template-editor-modal").style.display = "flex"; }
         function editMyTemplate(id, encTitle, encContent) { document.getElementById("msg-temp-id").value = id; document.getElementById("msg-temp-title").value = decodeURIComponent(encTitle); document.getElementById("msg-temp-content").value = decodeURIComponent(encContent); document.getElementById("tpl-modal-title").innerText = "✏️ Edit Template"; document.getElementById("template-editor-modal").style.display = "flex"; }
+        
         async function saveTemplateData() {
             const id = document.getElementById("msg-temp-id").value, t = document.getElementById("msg-temp-title").value, c = document.getElementById("msg-temp-content").value;
             if(!t || !c) return alert("Title and Content are required.");
             let templateObj = {employeeId:currentUser.employeeId, title:t, content:c};
             if(id) templateObj.tempId = id; 
-            await apiCall({action:"saveEmpTemplate", template: templateObj}); closeModal('template-editor-modal'); loadDashboardData(); 
+            showLoader(); await apiCall({action:"saveEmpTemplate", template: templateObj}); closeModal('template-editor-modal'); loadDashboardData(); 
         }
-        async function delMyTemp(id) { if(confirm("Are you sure you want to delete this template?")){ await apiCall({action:"deleteEmpTemplate", tempId:id}); loadDashboardData(); } }
+        async function delMyTemp(id) { if(confirm("Are you sure you want to delete this template?")){ showLoader(); await apiCall({action:"deleteEmpTemplate", tempId:id}); loadDashboardData(); } }
     </script>
 </body>
 </html>
