@@ -34,9 +34,6 @@
         #global-loader { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); z-index:9999; justify-content:center; align-items:center; flex-direction:column; backdrop-filter:blur(5px); }
         .spinner { font-size: 40px; animation: spin 1s linear infinite; margin-bottom:10px; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
-
-        /* FLOATING BADGE FOR MSG COUNT */
-        .msg-counter-badge { position: fixed; bottom: 20px; right: 20px; background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; padding: 10px 20px; border-radius: 30px; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.2); z-index: 500; font-size: 14px; display: none; border: 2px solid white; }
         @keyframes blink { 50% { opacity: 0; } }
     </style>
 </head>
@@ -46,8 +43,6 @@
         <div class="spinner">⏳</div>
         <h3 style="color:#1e3c72; margin:0;">Working... Please wait</h3>
     </div>
-
-    <div id="msg-counter-badge" class="msg-counter-badge">💬 Sent: <span id="msg-count-val">0</span></div>
 
     <div id="login-screen" class="screen active-screen">
         <div class="glass-panel" style="max-width: 400px; margin: 10vh auto; text-align: center;">
@@ -61,12 +56,16 @@
     </div>
 
     <div id="employee-screen" class="screen">
+        
         <div class="header">
             <div style="display: flex; align-items: center; gap: 12px;">
                 <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 20px;">🎧</div>
                 <div>
                     <h3 style="margin: 0; color: #1e3c72; font-size: 16px; font-weight: 700;">Quality Education</h3>
-                    <div id="emp-name-display" style="font-size: 12px; color: #555; font-weight: 600;">Telecaller Desk</div>
+                    <div style="font-size: 12px; color: #555; font-weight: 600; display:flex; align-items:center; gap:5px;">
+                        <span id="emp-name-display">Telecaller</span> | 
+                        <span style="background:#eafaf1; color:#27ae60; padding:2px 6px; border-radius:10px; border:1px solid #27ae60;">💬 Sent: <span id="msg-count-val">0</span></span>
+                    </div>
                 </div>
             </div>
             <button class="btn-danger" style="padding: 6px 15px; width: auto;" onclick="logout()">Logout</button>
@@ -94,7 +93,7 @@
                     <option value="Online Course Related">Online Course Related</option>
                     <option value="Online test series related">Online test series related</option>
                     <option value="offline test series related">offline test series related</option>
-                    <option value="Notes Related">Notes Related</option>
+                    <option value="notes related">notes related</option>
                     <option value="youtube related">youtube related</option>
                     <option value="teacher feedback">teacher feedback</option>
                     <option value="app issue/feedback">app issue/feedback</option>
@@ -128,13 +127,7 @@
             <div class="glass-panel" style="overflow-x:auto;">
                 <h3 style="color:#1e3c72; margin-top:0;">📚 Book Links & Stock</h3>
                 <table id="books-table">
-                    <thead>
-                        <tr>
-                            <th>Book Name</th>
-                            <th>Exampustak</th>
-                            <th>ApnaBookStore</th>
-                        </tr>
-                    </thead>
+                    <thead><tr><th>Book Name</th><th>Exampustak</th><th>ApnaBookStore</th></tr></thead>
                     <tbody></tbody>
                 </table>
             </div>
@@ -159,7 +152,6 @@
                 <div id="senior-transfers-list">Loading...</div>
             </div>
         </div>
-
     </div>
 
     <div id="wa-number-modal" class="modal-overlay">
@@ -175,17 +167,15 @@
         </div>
     </div>
 
-    <div id="template-editor-modal" class="modal-overlay">
+    <div id="close-callback-modal" class="modal-overlay">
         <div class="modal-content">
-            <h3 id="tpl-modal-title" style="color:#1e3c72; margin-top:0;">📝 Create Template</h3>
-            <input type="hidden" id="msg-temp-id">
-            <label style="font-size:12px; font-weight:bold; color:#555;">Template Title:</label>
-            <input type="text" id="msg-temp-title" placeholder="e.g. Course Renewal Reminder" style="background:#f4f7f6;">
-            <label style="font-size:12px; font-weight:bold; color:#555;">Message Content:</label>
-            <textarea id="msg-temp-content" rows="5" placeholder="Write your complete message here..." style="background:#f4f7f6;"></textarea>
-            <div style="display:flex; gap:10px; margin-top:10px;">
-                <button class="btn-success" style="flex:1; padding: 12px;" onclick="saveTemplateData()">💾 Save</button>
-                <button class="btn-danger" style="flex:1; padding: 12px;" onclick="closeModal('template-editor-modal')">Cancel</button>
+            <h3 style="color:#27ae60; margin-top:0; text-align:center;">✔️ Close Call Back</h3>
+            <p style="font-size:13px; color:#555; text-align:center;">Add a final remark before closing this call back.</p>
+            <input type="hidden" id="close-cb-id">
+            <textarea id="close-cb-remark" rows="3" placeholder="E.g., Student agreed to buy tomorrow..." style="background:#f4f7f6;"></textarea>
+            <div style="display:flex; gap:10px; margin-top:15px;">
+                <button class="btn-success" style="flex:1; padding: 12px;" onclick="executeCloseCallBack()">Mark Closed</button>
+                <button class="btn-danger" style="flex:1; padding: 12px;" onclick="closeModal('close-callback-modal')">Cancel</button>
             </div>
         </div>
     </div>
@@ -228,6 +218,21 @@
         </div>
     </div>
 
+    <div id="template-editor-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 id="tpl-modal-title" style="color:#1e3c72; margin-top:0;">📝 Create Template</h3>
+            <input type="hidden" id="msg-temp-id">
+            <label style="font-size:12px; font-weight:bold; color:#555;">Template Title:</label>
+            <input type="text" id="msg-temp-title" placeholder="e.g. Course Renewal Reminder" style="background:#f4f7f6;">
+            <label style="font-size:12px; font-weight:bold; color:#555;">Message Content:</label>
+            <textarea id="msg-temp-content" rows="5" placeholder="Write your complete message here..." style="background:#f4f7f6;"></textarea>
+            <div style="display:flex; gap:10px; margin-top:10px;">
+                <button class="btn-success" style="flex:1; padding: 12px;" onclick="saveTemplateData()">💾 Save</button>
+                <button class="btn-danger" style="flex:1; padding: 12px;" onclick="closeModal('template-editor-modal')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbyI9FRnm9GUhhjKY7Er__pdONW4FqSSc7LBdVQ6MHTSqndwBowM8Krl36Nj12l1-F0tjA/exec"; 
         let currentUser = null, empData = {};
@@ -240,9 +245,8 @@
             if(localStorage.getItem("qei_user")) { 
                 currentUser = JSON.parse(localStorage.getItem("qei_user")); 
                 showScreen("employee-screen"); 
-                document.getElementById("emp-name-display").innerText = "Hi, " + currentUser.name + (currentUser.role==='senior' ? " 👑" : ""); 
+                document.getElementById("emp-name-display").innerText = currentUser.name + (currentUser.role==='senior' ? " 👑" : ""); 
                 if(currentUser.role === 'senior') document.getElementById("btn-senior-tab").style.display = "block";
-                document.getElementById("msg-counter-badge").style.display = "block"; // Show Counter
                 loadDashboardData(); 
             } 
         };
@@ -253,12 +257,9 @@
 
         async function login() {
             const u=document.getElementById("login-username").value, p=document.getElementById("login-password").value;
-            const msgBox = document.getElementById("login-msg");
-            showLoader();
-            const res = await apiCall({action:"login", username:u, password:p});
-            hideLoader();
+            showLoader(); const res = await apiCall({action:"login", username:u, password:p}); hideLoader();
             if(res.success){ currentUser=res.user; localStorage.setItem("qei_user", JSON.stringify(currentUser)); location.reload(); } 
-            else { msgBox.style.display="block"; msgBox.innerText="❌ Invalid Login"; }
+            else { document.getElementById("login-msg").style.display="block"; document.getElementById("login-msg").innerText="❌ Invalid Login"; }
         }
         function logout() { localStorage.removeItem("qei_user"); location.reload(); }
 
@@ -269,38 +270,31 @@
             if(res.success) {
                 empData = res;
                 
-                // 1. UPDATE MSG COUNTER
+                // 1. MSG COUNTER
                 document.getElementById("msg-count-val").innerText = res.msgCount || 0;
 
-                // 2. RENDER BOOKS
+                // 2. BOOKS
                 if(res.books && res.books.length > 0) {
                     document.querySelector("#books-table tbody").innerHTML = res.books.map(b => {
                         let eStockCol = b.examStock === 'Available' ? '#27ae60' : (b.examStock === 'Upcoming' ? '#d35400' : '#e74c3c');
                         let aStockCol = b.apnaStock === 'Available' ? '#27ae60' : (b.apnaStock === 'Upcoming' ? '#d35400' : '#e74c3c');
-                        let encName = encodeURIComponent(b.name || '');
-                        let encExamLink = encodeURIComponent(b.examLink || '');
-                        let encApnaLink = encodeURIComponent(b.apnaLink || '');
+                        let encName = encodeURIComponent(b.name || ''); let encExamLink = encodeURIComponent(b.examLink || ''); let encApnaLink = encodeURIComponent(b.apnaLink || '');
 
                         return `<tr>
-                            <td><b style="color:#1e3c72; font-size:14px;">${b.name || 'Unnamed Book'}</b></td>
-                            <td>
-                                <b>₹${b.examPrice || '0'}</b> <small style="color:#666;">(+₹${b.examDelivery || '0'} Del)</small><br>
+                            <td><b style="color:#1e3c72; font-size:14px;">${b.name || 'Unnamed'}</b></td>
+                            <td><b>₹${b.examPrice || '0'}</b> <small style="color:#666;">(+₹${b.examDelivery || '0'} Del)</small><br>
                                 <span style="color:${eStockCol}; font-size:11px; font-weight:bold;">${b.examStock || 'Available'}</span><br>
-                                <button class="btn-wa" style="padding:4px 8px; margin-top:5px;" onclick="sendBookLink('${encName}', '${encExamLink}')">📤 Send</button>
-                            </td>
-                            <td>
-                                <b>₹${b.apnaPrice || '0'}</b> <small style="color:#666;">(+₹${b.apnaDelivery || '0'} Del)</small><br>
+                                <button class="btn-wa" style="padding:4px 8px; margin-top:5px;" onclick="sendBookLink('${encName}', '${encExamLink}')">📤 Send WA</button></td>
+                            <td><b>₹${b.apnaPrice || '0'}</b> <small style="color:#666;">(+₹${b.apnaDelivery || '0'} Del)</small><br>
                                 <span style="color:${aStockCol}; font-size:11px; font-weight:bold;">${b.apnaStock || 'Available'}</span><br>
-                                <button class="btn-wa" style="padding:4px 8px; margin-top:5px;" onclick="sendBookLink('${encName}', '${encApnaLink}')">📤 Send</button>
-                            </td>
+                                <button class="btn-wa" style="padding:4px 8px; margin-top:5px;" onclick="sendBookLink('${encName}', '${encApnaLink}')">📤 Send WA</button></td>
                         </tr>`;
                     }).join('');
                 }
 
-                // 3. RENDER CALLS (Added Transfer Button)
+                // 3. CALLS (With Transfer Button)
                 const pendingCalls = (res.assignedCalls || []).filter(c=>c.status==='Pending');
                 if(pendingCalls.length>0){ document.getElementById("calls-badge").innerText = pendingCalls.length; document.getElementById("calls-badge").style.display = "inline-block"; }
-                
                 if(pendingCalls.length===0) document.getElementById("assigned-calls-list").innerHTML = "<div style='padding:20px; text-align:center; color:green; background:#e8f5e9; border-radius:8px;'>🎉 Great! No pending calls.</div>";
                 else document.getElementById("assigned-calls-list").innerHTML = pendingCalls.map(c=>`
                     <div class="history-card" style="border-color:#1e3c72;">
@@ -311,35 +305,33 @@
                             <button class="btn-primary" style="padding:8px; font-size:12px; flex:1;" onclick="startEntryFromCall('${c.name}', '${c.number}')">📝 Entry</button>
                             <button class="btn-danger" style="padding:8px; font-size:12px; flex:1;" onclick="markCallStatus('${c.callId}', 'Completed')">✔️ Done</button>
                         </div>
-                        <button style="width:100%; background:#e67e22; color:white; padding:6px; border-radius:6px; font-size:12px;" onclick="openTransferModal('${c.name}', '${c.number}')">🔄 Transfer to Senior</button>
+                        <button style="width:100%; background:#e67e22; color:white; border:none; padding:8px; border-radius:6px; font-weight:bold; font-size:12px; cursor:pointer;" onclick="openTransferModal('${c.name}', '${c.number}')">🔄 Transfer to Senior</button>
                     </div>`).join('');
 
-                // 4. RENDER CALL BACKS (24h Alert Logic)
-                let callBcks = (res.myEntries || []).filter(e => e.problemType === 'Call Back' || e.status === 'Call Back');
+                // 4. CALL BACKS (Filtered properly to hide solved ones)
+                let callBcks = (res.myEntries || []).filter(e => (e.problemType === 'Call Back' || e.status === 'Call Back') && e.status !== 'Solved' && e.status !== 'Closed / Solved');
                 if(callBcks.length>0){ document.getElementById("cb-badge").innerText = callBcks.length; document.getElementById("cb-badge").style.display = "inline-block"; }
-                
                 if(callBcks.length===0) document.getElementById("call-back-list").innerHTML = "<p style='color:gray;'>No call backs scheduled.</p>";
                 else {
                     document.getElementById("call-back-list").innerHTML = callBcks.slice().reverse().map(c => {
-                        let entryTime = new Date(c.date).getTime();
-                        let now = new Date().getTime();
-                        let diffHours = (now - entryTime) / (1000 * 60 * 60);
+                        let entryTime = new Date(c.date).getTime(); let diffHours = (new Date().getTime() - entryTime) / (1000 * 60 * 60);
                         let alertSign = diffHours > 24 ? '<span style="color:red; font-weight:bold; animation: blink 1s infinite;">⚠️ URGENT (24h+)</span>' : '';
                         
                         return `<div class="history-card" style="border-color:${diffHours > 24 ? 'red' : 'orange'}; background:${diffHours > 24 ? '#fdedec' : '#fdf2e9'}">
                             <div style="display:flex; justify-content:space-between; margin-bottom:5px;"><b>${c.studentName}</b> ${alertSign}</div>
                             <div style="color:#007bff; font-weight:bold; margin-bottom:5px;">📞 ${c.mobile}</div>
-                            <div style="color:#555; font-size:12px; margin-bottom:8px;"><b>Scheduled On:</b> ${safeDate(c.date)}</div>
+                            <div style="color:#555; font-size:12px; margin-bottom:8px;"><b>Scheduled:</b> ${safeDate(c.date)}</div>
                             <div style="color:#444; font-size:13px; margin-bottom:8px;"><b>Issue:</b> ${c.issue}</div>
-                            <div style="display:flex; gap:8px;">
+                            <div style="display:flex; gap:8px; margin-bottom:8px;">
                                 <button class="btn-success" style="padding:6px; font-size:12px; flex:1;" onclick="window.open('tel:${c.mobile}')">☎️ Call Now</button>
-                                <button class="btn-danger" style="padding:6px; font-size:12px; flex:1;" onclick="markCallStatus('${c.complaintId}', 'Solved')">✔️ Mark Closed</button>
+                                <button class="btn-danger" style="padding:6px; font-size:12px; flex:1;" onclick="openCloseCallBackModal('${c.complaintId}')">✔️ Mark Closed</button>
                             </div>
+                            <button style="width:100%; background:#e67e22; color:white; border:none; padding:6px; border-radius:6px; font-weight:bold; font-size:12px; cursor:pointer;" onclick="openTransferModal('${c.studentName}', '${c.mobile}')">🔄 Transfer to Senior</button>
                         </div>`;
                     }).join('');
                 }
 
-                // 5. RENDER TEMPLATES
+                // 5. TEMPLATES
                 let adminHTML = "";
                 (res.adminMsgs || []).forEach(m => {
                     adminHTML += `<div style="background:#f8f9fa; border:1px solid #e2e8f0; padding:12px; border-radius:8px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
@@ -360,17 +352,15 @@
                 });
                 document.getElementById("my-templates-list").innerHTML = myHTML || "<p style='font-size:13px; color:#888;'>No templates yet.</p>";
 
-                // 6. SETUP SENIORS DROPDOWN
-                if(res.seniors) {
-                    document.getElementById("transfer-senior-list").innerHTML = `<option value="">Select Senior...</option>` + res.seniors.map(s => `<option value="${s.employeeId}">${s.name}</option>`).join('');
-                }
+                // 6. SENIORS
+                if(res.seniors) document.getElementById("transfer-senior-list").innerHTML = `<option value="">Select Senior...</option>` + res.seniors.map(s => `<option value="${s.employeeId}">${s.name}</option>`).join('');
 
-                // 7. RENDER SENIOR DESK (If Role == Senior)
+                // 7. SENIOR DESK
                 if(currentUser.role === 'senior' && res.transfers) {
                     let pendingTransfers = res.transfers.filter(t => t.status !== 'Closed / Solved');
                     if(pendingTransfers.length === 0) document.getElementById("senior-transfers-list").innerHTML = "<p style='color:green;'>No pending escalated leads! 🎉</p>";
                     else {
-                        document.getElementById("senior-transfers-list").innerHTML = pendingCalls.map(t => `
+                        document.getElementById("senior-transfers-list").innerHTML = pendingTransfers.slice().reverse().map(t => `
                         <div class="history-card" style="border-color:#d35400; background:#fdf2e9;">
                             <div style="display:flex; justify-content:space-between; margin-bottom:5px;"><b style="font-size:15px; color:#d35400;">${t.studentName}</b> <span style="background:#e67e22; color:white; padding:2px 6px; border-radius:4px; font-size:11px;">From: ${t.fromEmpName}</span></div>
                             <div style="color:#007bff; font-weight:bold; margin-bottom:5px;">📞 ${t.studentNumber}</div>
@@ -386,27 +376,55 @@
             }
         }
 
-        // SEND WA LOGIC WITH COUNTER INCREMENT
-        function sendBookLink(encName, encLink) {
-            let bookName = decodeURIComponent(encName); let link = decodeURIComponent(encLink);
-            if(!link || link.trim() === '' || link === '#' || link === 'undefined') { alert(`Is book ka link available nahi hai!`); return; }
-            let msg = encodeURIComponent(`Hello! Aap "${bookName}" yahan se kharid sakte hain: ${link}`);
-            triggerWAPrompt(msg);
+        // --- CALL BACK CLOSE LOGIC ---
+        function openCloseCallBackModal(id) {
+            document.getElementById('close-cb-id').value = id;
+            document.getElementById('close-cb-remark').value = "";
+            document.getElementById('close-callback-modal').style.display = 'flex';
+        }
+        async function executeCloseCallBack() {
+            let id = document.getElementById('close-cb-id').value;
+            let remark = document.getElementById('close-cb-remark').value;
+            showLoader();
+            await apiCall({action:"updateComplaint", complaintId:id, adminComment: "Closed Remark: " + remark});
+            closeModal('close-callback-modal');
+            loadDashboardData();
         }
 
+        // --- TRANSFER LOGIC ---
+        function openTransferModal(name, number) {
+            document.getElementById("transfer-name").value = name || "";
+            document.getElementById("transfer-number").value = number || "";
+            document.getElementById("transfer-reason").value = "";
+            document.getElementById("transfer-modal").style.display = "flex";
+        }
+        async function executeTransfer() {
+            let sId = document.getElementById("transfer-senior-list").value; let n = document.getElementById("transfer-name").value;
+            let num = document.getElementById("transfer-number").value; let r = document.getElementById("transfer-reason").value;
+            if(!sId || !n || !num || !r) return alert("Please fill all details and select a Senior!");
+            showLoader();
+            await apiCall({action: "transferLead", data: {fromEmpId: currentUser.employeeId, fromEmpName: currentUser.name, toSeniorId: sId, studentName: n, studentNumber: num, reason: r}});
+            closeModal('transfer-modal'); alert("Lead Transferred Successfully!"); loadDashboardData();
+        }
+
+        // --- SENIOR ACTION ---
+        function openSeniorAction(id) { document.getElementById("senior-transfer-id").value = id; document.getElementById("senior-remark").value = ""; document.getElementById("senior-action-modal").style.display = "flex"; }
+        async function saveSeniorAction() {
+            let id = document.getElementById("senior-transfer-id").value, st = document.getElementById("senior-status").value, rem = document.getElementById("senior-remark").value;
+            showLoader(); await apiCall({action: "updateTransfer", transferId: id, status: st, remark: rem}); closeModal('senior-action-modal'); loadDashboardData();
+        }
+
+        // --- WA LOGIC ---
         function triggerWAPrompt(encodedMsg) {
             let formNumber = document.getElementById("emp-mobile").value;
             document.getElementById("prompt-wa-number").value = (formNumber && formNumber.length >= 10) ? formNumber : "";
-            document.getElementById("pending-wa-message").value = encodedMsg; 
-            document.getElementById("wa-number-modal").style.display = "flex";
+            document.getElementById("pending-wa-message").value = encodedMsg; document.getElementById("wa-number-modal").style.display = "flex";
         }
-
         async function executeSendWA() {
-            let num = document.getElementById("prompt-wa-number").value;
-            let encodedMsg = document.getElementById("pending-wa-message").value;
-            if(!num || num.length < 10) { alert("Please enter a valid 10-digit mobile number!"); return; }
+            let num = document.getElementById("prompt-wa-number").value; let encodedMsg = document.getElementById("pending-wa-message").value;
+            if(!num || num.length < 10) return alert("Please enter a valid 10-digit mobile number!");
             
-            // Increment Backend Counter silently
+            // Increment message counter silently
             apiCall({action:"incrementMsgCount", empId: currentUser.employeeId}).then(r => {
                 if(r.success) document.getElementById("msg-count-val").innerText = r.count;
             });
@@ -414,69 +432,32 @@
             window.open(`https://wa.me/91${num}?text=${encodedMsg}`, '_blank');
             closeModal('wa-number-modal');
         }
-
-        // TRANSFER TO SENIOR LOGIC
-        function openTransferModal(name, number) {
-            document.getElementById("transfer-name").value = name || "";
-            document.getElementById("transfer-number").value = number || "";
-            document.getElementById("transfer-reason").value = "";
-            document.getElementById("transfer-modal").style.display = "flex";
+        function sendBookLink(encName, encLink) {
+            let bookName = decodeURIComponent(encName); let link = decodeURIComponent(encLink);
+            if(!link || link.trim() === '' || link === '#' || link === 'undefined') return alert(`Is book ka link available nahi hai!`);
+            let msg = encodeURIComponent(`Hello! Aap "${bookName}" yahan se kharid sakte hain: ${link}`); triggerWAPrompt(msg);
         }
 
-        async function executeTransfer() {
-            let sId = document.getElementById("transfer-senior-list").value;
-            let n = document.getElementById("transfer-name").value;
-            let num = document.getElementById("transfer-number").value;
-            let r = document.getElementById("transfer-reason").value;
-
-            if(!sId || !n || !num || !r) return alert("Please fill all details and select a Senior!");
-            
-            showLoader();
-            await apiCall({action: "transferLead", data: {fromEmpId: currentUser.employeeId, fromEmpName: currentUser.name, toSeniorId: sId, studentName: n, studentNumber: num, reason: r}});
-            closeModal('transfer-modal');
-            alert("Lead Transferred Successfully!");
-            loadDashboardData();
-        }
-
-        // SENIOR ACTION LOGIC
-        function openSeniorAction(id) {
-            document.getElementById("senior-transfer-id").value = id;
-            document.getElementById("senior-remark").value = "";
-            document.getElementById("senior-action-modal").style.display = "flex";
-        }
-        async function saveSeniorAction() {
-            let id = document.getElementById("senior-transfer-id").value;
-            let st = document.getElementById("senior-status").value;
-            let rem = document.getElementById("senior-remark").value;
-            showLoader();
-            await apiCall({action: "updateTransfer", transferId: id, status: st, remark: rem});
-            closeModal('senior-action-modal');
-            loadDashboardData();
-        }
-
+        // --- MISC LOGIC ---
         function startEntryFromCall(name, number) { document.getElementById("emp-mobile").value = number; document.getElementById("emp-name").value = name; switchTab('tab-entry'); fetchHistory(); }
-        
         async function markCallStatus(id, newStatus) { 
             showLoader(); 
-            // Will work for both Assigned Calls and Complaints(Entries) depending on ID prefix
             if(id.startsWith("CALL_")) await apiCall({action:"markCallDone", callId:id, status: newStatus}); 
             else await apiCall({action:"updateComplaint", complaintId:id, status: newStatus});
             loadDashboardData(); 
         }
-
+        
         async function fetchHistory() {
             const m = document.getElementById("emp-mobile").value; const hBox = document.getElementById("history-box");
             if(m.length<10){ hBox.style.display="none"; return; }
             hBox.style.display="block"; hBox.innerHTML = "<i style='color:#555; padding:10px;'>🔍 Fetching student history...</i>";
             const res = await apiCall({action:"fetchMobileInfo", mobile:m});
-            
             if(res.success && res.history.length>0) {
                 document.getElementById("emp-name").value = res.lastRecord.studentName;
                 hBox.innerHTML = res.history.slice().reverse().map(r=>`
                     <div class="history-card" style="border-left-color:${r.status=='Pending'?'#e74c3c':'#2ecc71'}; background:#fdfdfe;">
                         <div style="display:flex;justify-content:space-between;border-bottom:1px solid #eee;padding-bottom:5px;margin-bottom:8px;">
-                            <b style="color:#333;">📅 ${safeDate(r.date)}</b>
-                            <b style="color:${r.status=='Pending'?'#e74c3c':'#2ecc71'}; background:#f4f6f7; padding:2px 8px; border-radius:10px; font-size:11px;">${r.status}</b>
+                            <b style="color:#333;">📅 ${safeDate(r.date)}</b><b style="color:${r.status=='Pending'?'#e74c3c':'#2ecc71'}; background:#f4f6f7; padding:2px 8px; border-radius:10px; font-size:11px;">${r.status}</b>
                         </div>
                         <div style="color:#444; font-size:13px;"><b>Problem:</b> ${r.problemType}</div>
                         <div style="color:#444; font-size:13px;"><b>Issue:</b> ${r.issue}</div>
@@ -489,22 +470,17 @@
         async function submitEntry() {
             const m=document.getElementById("emp-mobile").value, n=document.getElementById("emp-name").value, p=document.getElementById("emp-problem").value, i=document.getElementById("emp-issue").value, r=document.getElementById("emp-response").value;
             if(!m||!n||!p||!i) return alert("Please fill all mandatory fields.");
-            showLoader();
-            const res = await apiCall({action:"addComplaint", data:{mobile:m, studentName:n, problemType:p, issue:i, employeeResponse:r, employeeId:currentUser.employeeId}});
-            hideLoader();
-            if(res.success){ alert("✅ Entry Saved Successfully!"); document.getElementById("emp-mobile").value=""; document.getElementById("emp-name").value=""; document.getElementById("emp-issue").value=""; document.getElementById("emp-response").value=""; document.getElementById("emp-problem").value=""; document.getElementById("history-box").style.display="none"; loadDashboardData(); }
+            showLoader(); const res = await apiCall({action:"addComplaint", data:{mobile:m, studentName:n, problemType:p, issue:i, employeeResponse:r, employeeId:currentUser.employeeId}}); hideLoader();
+            if(res.success){ alert("✅ Entry Saved Successfully!"); document.getElementById("emp-mobile").value=""; document.getElementById("emp-name").value=""; document.getElementById("emp-issue").value=""; document.getElementById("emp-response").value=""; document.getElementById("emp-problem").value=""; document.getElementById("history-box").style.display="none"; loadDashboardData();}
         }
 
         function closeModal(modalId) { document.getElementById(modalId).style.display = "none"; }
-
         function openTemplateEditor() { document.getElementById("msg-temp-id").value = ""; document.getElementById("msg-temp-title").value = ""; document.getElementById("msg-temp-content").value = ""; document.getElementById("tpl-modal-title").innerText = "📝 Create New Template"; document.getElementById("template-editor-modal").style.display = "flex"; }
         function editMyTemplate(id, encTitle, encContent) { document.getElementById("msg-temp-id").value = id; document.getElementById("msg-temp-title").value = decodeURIComponent(encTitle); document.getElementById("msg-temp-content").value = decodeURIComponent(encContent); document.getElementById("tpl-modal-title").innerText = "✏️ Edit Template"; document.getElementById("template-editor-modal").style.display = "flex"; }
-        
         async function saveTemplateData() {
             const id = document.getElementById("msg-temp-id").value, t = document.getElementById("msg-temp-title").value, c = document.getElementById("msg-temp-content").value;
             if(!t || !c) return alert("Title and Content are required.");
-            let templateObj = {employeeId:currentUser.employeeId, title:t, content:c};
-            if(id) templateObj.tempId = id; 
+            let templateObj = {employeeId:currentUser.employeeId, title:t, content:c}; if(id) templateObj.tempId = id; 
             showLoader(); await apiCall({action:"saveEmpTemplate", template: templateObj}); closeModal('template-editor-modal'); loadDashboardData(); 
         }
         async function delMyTemp(id) { if(confirm("Are you sure you want to delete this template?")){ showLoader(); await apiCall({action:"deleteEmpTemplate", tempId:id}); loadDashboardData(); } }
