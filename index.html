@@ -238,7 +238,12 @@
 
         function showLoader() { document.getElementById("global-loader").style.display = "flex"; }
         function hideLoader() { document.getElementById("global-loader").style.display = "none"; }
-        function safeDate(dStr) { if(!dStr) return "N/A"; let d = new Date(dStr); return isNaN(d.getTime()) ? dStr : d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }); }
+
+        function safeDate(dStr) {
+            if(!dStr) return "N/A";
+            let d = new Date(dStr);
+            return isNaN(d.getTime()) ? dStr : d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
 
         window.onload = () => { 
             if(localStorage.getItem("qei_user")) { 
@@ -255,15 +260,14 @@
             } 
         };
 
-        // SECURE AUTO LOGOUT POLLING
+        // SECURE AUTO LOGOUT POLLING (Silent Logout)
         async function verifyAuthStatus() {
             if(!currentUser) return;
             try {
                 let res = await fetch(API_URL, {method:'POST', body:JSON.stringify({action:"verifySession", empId: currentUser.employeeId, password: currentUser.password})});
                 let data = await res.json();
                 if(!data.success) {
-                    alert("Admin ne aapka password change kar diya hai ya id hata di hai. Security purpose ke liye aap log out ho gaye hain.");
-                    logout();
+                    logout(); // Silently log out
                 }
             } catch(e){} // Ignore silent network drops
         }
@@ -274,9 +278,12 @@
 
         async function login() {
             const u=document.getElementById("login-username").value, p=document.getElementById("login-password").value;
-            showLoader(); const res = await apiCall({action:"login", username:u, password:p}); hideLoader();
+            const msgBox = document.getElementById("login-msg");
+            showLoader();
+            const res = await apiCall({action:"login", username:u, password:p});
+            hideLoader();
             if(res.success){ currentUser=res.user; localStorage.setItem("qei_user", JSON.stringify(currentUser)); location.reload(); } 
-            else { document.getElementById("login-msg").style.display="block"; document.getElementById("login-msg").innerText="❌ Invalid Login"; }
+            else { msgBox.style.display="block"; msgBox.innerText="❌ Invalid Login"; }
         }
         function logout() { localStorage.removeItem("qei_user"); location.reload(); }
 
@@ -311,11 +318,14 @@
                             </td>
                         </tr>`;
                     }).join('');
+                } else {
+                    document.querySelector("#books-table tbody").innerHTML = "<tr><td colspan='3'>No books available right now.</td></tr>";
                 }
-
+                
                 // 3. CALLS 
                 const pendingCalls = (res.assignedCalls || []).filter(c=>c.status==='Pending');
                 if(pendingCalls.length>0){ document.getElementById("calls-badge").innerText = pendingCalls.length; document.getElementById("calls-badge").style.display = "inline-block"; }
+                else { document.getElementById("calls-badge").style.display = "none"; }
                 
                 if(pendingCalls.length===0) document.getElementById("assigned-calls-list").innerHTML = "<div style='padding:20px; text-align:center; color:green; background:#e8f5e9; border-radius:8px;'>🎉 Great! No pending calls.</div>";
                 else document.getElementById("assigned-calls-list").innerHTML = pendingCalls.map(c=>`
@@ -330,7 +340,7 @@
                         <button style="width:100%; background:#e67e22; color:white; border:none; padding:8px; border-radius:6px; font-weight:bold; font-size:12px; cursor:pointer;" onclick="openTransferModal('${c.name}', '${c.number}')">🔄 Transfer to Senior</button>
                     </div>`).join('');
 
-                // 4. CALL BACKS 
+                // 4. CALL BACKS
                 let callBcks = (res.myEntries || []).filter(e => (e.problemType === 'Call Back' || e.status === 'Call Back') && e.status !== 'Solved' && e.status !== 'Closed / Solved');
                 if(callBcks.length>0){ document.getElementById("cb-badge").innerText = callBcks.length; document.getElementById("cb-badge").style.display = "inline-block"; }
                 else { document.getElementById("cb-badge").style.display = "none"; }
@@ -410,7 +420,6 @@
             let id = document.getElementById('close-cb-id').value;
             let remark = document.getElementById('close-cb-remark').value;
             showLoader();
-            // Updating status to Solved ensures it hides from Callback list
             await apiCall({action:"updateComplaint", complaintId:id, adminComment: "Closed Remark: " + remark});
             closeModal('close-callback-modal');
             loadDashboardData();
