@@ -34,6 +34,10 @@
         #global-loader { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); z-index:9999; justify-content:center; align-items:center; flex-direction:column; backdrop-filter:blur(5px); }
         .spinner { font-size: 40px; animation: spin 1s linear infinite; margin-bottom:10px; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* FLOATING BADGE FOR MSG COUNT */
+        .msg-counter-badge { position: fixed; bottom: 20px; right: 20px; background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; padding: 10px 20px; border-radius: 30px; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.2); z-index: 500; font-size: 14px; display: none; border: 2px solid white; }
+        @keyframes blink { 50% { opacity: 0; } }
     </style>
 </head>
 <body>
@@ -42,6 +46,8 @@
         <div class="spinner">⏳</div>
         <h3 style="color:#1e3c72; margin:0;">Working... Please wait</h3>
     </div>
+
+    <div id="msg-counter-badge" class="msg-counter-badge">💬 Sent: <span id="msg-count-val">0</span></div>
 
     <div id="login-screen" class="screen active-screen">
         <div class="glass-panel" style="max-width: 400px; margin: 10vh auto; text-align: center;">
@@ -66,11 +72,13 @@
             <button class="btn-danger" style="padding: 6px 15px; width: auto;" onclick="logout()">Logout</button>
         </div>
 
-        <div class="tab-menu">
+        <div class="tab-menu" id="emp-tabs">
             <button class="tab-btn active" onclick="switchTab('tab-entry')">📝 Add Entry</button>
             <button class="tab-btn" onclick="switchTab('tab-calls')">📞 My Calls <span id="calls-badge" style="background:red;color:white;padding:2px 6px;border-radius:10px;font-size:0.8em;display:none;"></span></button>
+            <button class="tab-btn" onclick="switchTab('tab-callbacks')">📞 Call Backs <span id="cb-badge" style="background:orange;color:white;padding:2px 6px;border-radius:10px;font-size:0.8em;display:none;"></span></button>
             <button class="tab-btn" onclick="switchTab('tab-books')">📚 Books Info</button>
             <button class="tab-btn" onclick="switchTab('tab-whatsapp')">💬 WhatsApp</button>
+            <button class="tab-btn" id="btn-senior-tab" style="display:none; background:#ff9f43; color:white;" onclick="switchTab('tab-senior')">👑 Senior Desk</button>
         </div>
         
         <div id="tab-entry" class="tab-content active">
@@ -86,10 +94,11 @@
                     <option value="Online Course Related">Online Course Related</option>
                     <option value="Online test series related">Online test series related</option>
                     <option value="offline test series related">offline test series related</option>
-                    <option value="notes related">notes related</option>
+                    <option value="Notes Related">Notes Related</option>
                     <option value="youtube related">youtube related</option>
                     <option value="teacher feedback">teacher feedback</option>
                     <option value="app issue/feedback">app issue/feedback</option>
+                    <option value="Call Back">Call Back (Schedule Later)</option>
                     <option value="others">others</option>
                 </select>
                 <label style="font-weight:600; color:#1e3c72; font-size:14px;">Issue Details</label>
@@ -104,6 +113,14 @@
             <div class="glass-panel">
                 <h3 style="color:#1e3c72; margin-top:0;">📞 Leads Assigned By Admin</h3>
                 <div id="assigned-calls-list">Loading...</div>
+            </div>
+        </div>
+
+        <div id="tab-callbacks" class="tab-content">
+            <div class="glass-panel">
+                <h3 style="color:#e67e22; margin-top:0;">📞 Scheduled Call Backs</h3>
+                <p style="font-size:12px; color:#555;">(Leads marked as 'Call Back' will appear here. Red alert shows if delayed by 24hrs.)</p>
+                <div id="call-back-list">Loading...</div>
             </div>
         </div>
 
@@ -135,6 +152,14 @@
                 <div id="my-templates-list"></div>
             </div>
         </div>
+
+        <div id="tab-senior" class="tab-content">
+            <div class="glass-panel">
+                <h3 style="color:#d35400; margin-top:0;">👑 Senior Desk - Escalated Leads</h3>
+                <div id="senior-transfers-list">Loading...</div>
+            </div>
+        </div>
+
     </div>
 
     <div id="wa-number-modal" class="modal-overlay">
@@ -165,24 +190,59 @@
         </div>
     </div>
 
+    <div id="transfer-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 style="color:#e67e22; margin-top:0; text-align:center;">🔄 Transfer to Senior</h3>
+            <label style="font-size:12px; font-weight:bold; color:#555;">Select Senior:</label>
+            <select id="transfer-senior-list" style="background:#f4f7f6;"></select>
+            <label style="font-size:12px; font-weight:bold; color:#555;">Student Details:</label>
+            <div style="display:flex; gap:5px;">
+                <input type="text" id="transfer-name" placeholder="Student Name" style="background:#f4f7f6;">
+                <input type="number" id="transfer-number" placeholder="Mobile" style="background:#f4f7f6;">
+            </div>
+            <label style="font-size:12px; font-weight:bold; color:#555;">Reason for Transfer:</label>
+            <textarea id="transfer-reason" rows="3" placeholder="Why are you transferring this lead?" style="background:#f4f7f6;"></textarea>
+            <div style="display:flex; gap:10px; margin-top:10px;">
+                <button class="btn-success" style="flex:1; padding: 12px;" onclick="executeTransfer()">Transfer 📤</button>
+                <button class="btn-danger" style="flex:1; padding: 12px;" onclick="closeModal('transfer-modal')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="senior-action-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 style="color:#d35400; margin-top:0;">👑 Update Transferred Lead</h3>
+            <input type="hidden" id="senior-transfer-id">
+            <label style="font-size:12px; font-weight:bold; color:#555;">Action Status:</label>
+            <select id="senior-status" style="background:#f4f7f6;">
+                <option value="Pending">Pending</option>
+                <option value="Call Back">Call Back</option>
+                <option value="Closed / Solved">Closed / Solved</option>
+            </select>
+            <label style="font-size:12px; font-weight:bold; color:#555;">Your Remark:</label>
+            <textarea id="senior-remark" rows="3" placeholder="Add a remark for the employee..." style="background:#f4f7f6;"></textarea>
+            <div style="display:flex; gap:10px; margin-top:10px;">
+                <button class="btn-success" style="flex:1; padding: 12px;" onclick="saveSeniorAction()">💾 Update</button>
+                <button class="btn-danger" style="flex:1; padding: 12px;" onclick="closeModal('senior-action-modal')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbyI9FRnm9GUhhjKY7Er__pdONW4FqSSc7LBdVQ6MHTSqndwBowM8Krl36Nj12l1-F0tjA/exec"; 
         let currentUser = null, empData = {};
 
         function showLoader() { document.getElementById("global-loader").style.display = "flex"; }
         function hideLoader() { document.getElementById("global-loader").style.display = "none"; }
-
-        function safeDate(dStr) {
-            if(!dStr) return "N/A";
-            let d = new Date(dStr);
-            return isNaN(d.getTime()) ? dStr : d.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
-        }
+        function safeDate(dStr) { if(!dStr) return "N/A"; let d = new Date(dStr); return isNaN(d.getTime()) ? dStr : d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }); }
 
         window.onload = () => { 
             if(localStorage.getItem("qei_user")) { 
                 currentUser = JSON.parse(localStorage.getItem("qei_user")); 
                 showScreen("employee-screen"); 
-                document.getElementById("emp-name-display").innerText = "Hi, " + currentUser.name; 
+                document.getElementById("emp-name-display").innerText = "Hi, " + currentUser.name + (currentUser.role==='senior' ? " 👑" : ""); 
+                if(currentUser.role === 'senior') document.getElementById("btn-senior-tab").style.display = "block";
+                document.getElementById("msg-counter-badge").style.display = "block"; // Show Counter
                 loadDashboardData(); 
             } 
         };
@@ -209,11 +269,14 @@
             if(res.success) {
                 empData = res;
                 
+                // 1. UPDATE MSG COUNTER
+                document.getElementById("msg-count-val").innerText = res.msgCount || 0;
+
+                // 2. RENDER BOOKS
                 if(res.books && res.books.length > 0) {
                     document.querySelector("#books-table tbody").innerHTML = res.books.map(b => {
                         let eStockCol = b.examStock === 'Available' ? '#27ae60' : (b.examStock === 'Upcoming' ? '#d35400' : '#e74c3c');
                         let aStockCol = b.apnaStock === 'Available' ? '#27ae60' : (b.apnaStock === 'Upcoming' ? '#d35400' : '#e74c3c');
-
                         let encName = encodeURIComponent(b.name || '');
                         let encExamLink = encodeURIComponent(b.examLink || '');
                         let encApnaLink = encodeURIComponent(b.apnaLink || '');
@@ -232,10 +295,9 @@
                             </td>
                         </tr>`;
                     }).join('');
-                } else {
-                    document.querySelector("#books-table tbody").innerHTML = "<tr><td colspan='3'>No books available right now.</td></tr>";
                 }
-                
+
+                // 3. RENDER CALLS (Added Transfer Button)
                 const pendingCalls = (res.assignedCalls || []).filter(c=>c.status==='Pending');
                 if(pendingCalls.length>0){ document.getElementById("calls-badge").innerText = pendingCalls.length; document.getElementById("calls-badge").style.display = "inline-block"; }
                 
@@ -244,13 +306,40 @@
                     <div class="history-card" style="border-color:#1e3c72;">
                         <div style="display:flex; justify-content:space-between; margin-bottom:5px;"><b style="font-size:15px;">${c.name}</b> <span style="color:#007bff; font-weight:bold;">📞 ${c.number}</span></div>
                         <div style="color:#555; font-size:13px; margin-bottom:12px;"><b>Reason:</b> ${c.title}</div>
-                        <div style="display:flex; gap:8px;">
+                        <div style="display:flex; gap:8px; margin-bottom:8px;">
                             <button class="btn-success" style="padding:8px; font-size:12px; flex:1;" onclick="window.open('tel:${c.number}')">☎️ Call</button>
                             <button class="btn-primary" style="padding:8px; font-size:12px; flex:1;" onclick="startEntryFromCall('${c.name}', '${c.number}')">📝 Entry</button>
-                            <button class="btn-danger" style="padding:8px; font-size:12px; flex:1;" onclick="markDone('${c.callId}')">✔️ Done</button>
+                            <button class="btn-danger" style="padding:8px; font-size:12px; flex:1;" onclick="markCallStatus('${c.callId}', 'Completed')">✔️ Done</button>
                         </div>
+                        <button style="width:100%; background:#e67e22; color:white; padding:6px; border-radius:6px; font-size:12px;" onclick="openTransferModal('${c.name}', '${c.number}')">🔄 Transfer to Senior</button>
                     </div>`).join('');
 
+                // 4. RENDER CALL BACKS (24h Alert Logic)
+                let callBcks = (res.myEntries || []).filter(e => e.problemType === 'Call Back' || e.status === 'Call Back');
+                if(callBcks.length>0){ document.getElementById("cb-badge").innerText = callBcks.length; document.getElementById("cb-badge").style.display = "inline-block"; }
+                
+                if(callBcks.length===0) document.getElementById("call-back-list").innerHTML = "<p style='color:gray;'>No call backs scheduled.</p>";
+                else {
+                    document.getElementById("call-back-list").innerHTML = callBcks.slice().reverse().map(c => {
+                        let entryTime = new Date(c.date).getTime();
+                        let now = new Date().getTime();
+                        let diffHours = (now - entryTime) / (1000 * 60 * 60);
+                        let alertSign = diffHours > 24 ? '<span style="color:red; font-weight:bold; animation: blink 1s infinite;">⚠️ URGENT (24h+)</span>' : '';
+                        
+                        return `<div class="history-card" style="border-color:${diffHours > 24 ? 'red' : 'orange'}; background:${diffHours > 24 ? '#fdedec' : '#fdf2e9'}">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:5px;"><b>${c.studentName}</b> ${alertSign}</div>
+                            <div style="color:#007bff; font-weight:bold; margin-bottom:5px;">📞 ${c.mobile}</div>
+                            <div style="color:#555; font-size:12px; margin-bottom:8px;"><b>Scheduled On:</b> ${safeDate(c.date)}</div>
+                            <div style="color:#444; font-size:13px; margin-bottom:8px;"><b>Issue:</b> ${c.issue}</div>
+                            <div style="display:flex; gap:8px;">
+                                <button class="btn-success" style="padding:6px; font-size:12px; flex:1;" onclick="window.open('tel:${c.mobile}')">☎️ Call Now</button>
+                                <button class="btn-danger" style="padding:6px; font-size:12px; flex:1;" onclick="markCallStatus('${c.complaintId}', 'Solved')">✔️ Mark Closed</button>
+                            </div>
+                        </div>`;
+                    }).join('');
+                }
+
+                // 5. RENDER TEMPLATES
                 let adminHTML = "";
                 (res.adminMsgs || []).forEach(m => {
                     adminHTML += `<div style="background:#f8f9fa; border:1px solid #e2e8f0; padding:12px; border-radius:8px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
@@ -270,19 +359,110 @@
                         </div></div>`;
                 });
                 document.getElementById("my-templates-list").innerHTML = myHTML || "<p style='font-size:13px; color:#888;'>No templates yet.</p>";
+
+                // 6. SETUP SENIORS DROPDOWN
+                if(res.seniors) {
+                    document.getElementById("transfer-senior-list").innerHTML = `<option value="">Select Senior...</option>` + res.seniors.map(s => `<option value="${s.employeeId}">${s.name}</option>`).join('');
+                }
+
+                // 7. RENDER SENIOR DESK (If Role == Senior)
+                if(currentUser.role === 'senior' && res.transfers) {
+                    let pendingTransfers = res.transfers.filter(t => t.status !== 'Closed / Solved');
+                    if(pendingTransfers.length === 0) document.getElementById("senior-transfers-list").innerHTML = "<p style='color:green;'>No pending escalated leads! 🎉</p>";
+                    else {
+                        document.getElementById("senior-transfers-list").innerHTML = pendingCalls.map(t => `
+                        <div class="history-card" style="border-color:#d35400; background:#fdf2e9;">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:5px;"><b style="font-size:15px; color:#d35400;">${t.studentName}</b> <span style="background:#e67e22; color:white; padding:2px 6px; border-radius:4px; font-size:11px;">From: ${t.fromEmpName}</span></div>
+                            <div style="color:#007bff; font-weight:bold; margin-bottom:5px;">📞 ${t.studentNumber}</div>
+                            <div style="color:#444; font-size:13px; margin-bottom:8px;"><b>Reason:</b> ${t.reason}</div>
+                            <div style="color:#444; font-size:12px; margin-bottom:8px;"><b>Status:</b> ${t.status} | <b>Remark:</b> ${t.remark || 'N/A'}</div>
+                            <div style="display:flex; gap:8px;">
+                                <button class="btn-success" style="padding:6px; font-size:12px; flex:1;" onclick="window.open('tel:${t.studentNumber}')">☎️ Call</button>
+                                <button class="btn-edit" style="padding:6px; font-size:12px; flex:1;" onclick="openSeniorAction('${t.transferId}')">📝 Action</button>
+                            </div>
+                        </div>`).join('');
+                    }
+                }
             }
         }
 
+        // SEND WA LOGIC WITH COUNTER INCREMENT
         function sendBookLink(encName, encLink) {
-            let bookName = decodeURIComponent(encName);
-            let link = decodeURIComponent(encLink);
+            let bookName = decodeURIComponent(encName); let link = decodeURIComponent(encLink);
             if(!link || link.trim() === '' || link === '#' || link === 'undefined') { alert(`Is book ka link available nahi hai!`); return; }
             let msg = encodeURIComponent(`Hello! Aap "${bookName}" yahan se kharid sakte hain: ${link}`);
             triggerWAPrompt(msg);
         }
 
+        function triggerWAPrompt(encodedMsg) {
+            let formNumber = document.getElementById("emp-mobile").value;
+            document.getElementById("prompt-wa-number").value = (formNumber && formNumber.length >= 10) ? formNumber : "";
+            document.getElementById("pending-wa-message").value = encodedMsg; 
+            document.getElementById("wa-number-modal").style.display = "flex";
+        }
+
+        async function executeSendWA() {
+            let num = document.getElementById("prompt-wa-number").value;
+            let encodedMsg = document.getElementById("pending-wa-message").value;
+            if(!num || num.length < 10) { alert("Please enter a valid 10-digit mobile number!"); return; }
+            
+            // Increment Backend Counter silently
+            apiCall({action:"incrementMsgCount", empId: currentUser.employeeId}).then(r => {
+                if(r.success) document.getElementById("msg-count-val").innerText = r.count;
+            });
+
+            window.open(`https://wa.me/91${num}?text=${encodedMsg}`, '_blank');
+            closeModal('wa-number-modal');
+        }
+
+        // TRANSFER TO SENIOR LOGIC
+        function openTransferModal(name, number) {
+            document.getElementById("transfer-name").value = name || "";
+            document.getElementById("transfer-number").value = number || "";
+            document.getElementById("transfer-reason").value = "";
+            document.getElementById("transfer-modal").style.display = "flex";
+        }
+
+        async function executeTransfer() {
+            let sId = document.getElementById("transfer-senior-list").value;
+            let n = document.getElementById("transfer-name").value;
+            let num = document.getElementById("transfer-number").value;
+            let r = document.getElementById("transfer-reason").value;
+
+            if(!sId || !n || !num || !r) return alert("Please fill all details and select a Senior!");
+            
+            showLoader();
+            await apiCall({action: "transferLead", data: {fromEmpId: currentUser.employeeId, fromEmpName: currentUser.name, toSeniorId: sId, studentName: n, studentNumber: num, reason: r}});
+            closeModal('transfer-modal');
+            alert("Lead Transferred Successfully!");
+            loadDashboardData();
+        }
+
+        // SENIOR ACTION LOGIC
+        function openSeniorAction(id) {
+            document.getElementById("senior-transfer-id").value = id;
+            document.getElementById("senior-remark").value = "";
+            document.getElementById("senior-action-modal").style.display = "flex";
+        }
+        async function saveSeniorAction() {
+            let id = document.getElementById("senior-transfer-id").value;
+            let st = document.getElementById("senior-status").value;
+            let rem = document.getElementById("senior-remark").value;
+            showLoader();
+            await apiCall({action: "updateTransfer", transferId: id, status: st, remark: rem});
+            closeModal('senior-action-modal');
+            loadDashboardData();
+        }
+
         function startEntryFromCall(name, number) { document.getElementById("emp-mobile").value = number; document.getElementById("emp-name").value = name; switchTab('tab-entry'); fetchHistory(); }
-        async function markDone(id) { showLoader(); await apiCall({action:"markCallDone", callId:id}); loadDashboardData(); }
+        
+        async function markCallStatus(id, newStatus) { 
+            showLoader(); 
+            // Will work for both Assigned Calls and Complaints(Entries) depending on ID prefix
+            if(id.startsWith("CALL_")) await apiCall({action:"markCallDone", callId:id, status: newStatus}); 
+            else await apiCall({action:"updateComplaint", complaintId:id, status: newStatus});
+            loadDashboardData(); 
+        }
 
         async function fetchHistory() {
             const m = document.getElementById("emp-mobile").value; const hBox = document.getElementById("history-box");
@@ -312,24 +492,10 @@
             showLoader();
             const res = await apiCall({action:"addComplaint", data:{mobile:m, studentName:n, problemType:p, issue:i, employeeResponse:r, employeeId:currentUser.employeeId}});
             hideLoader();
-            if(res.success){ alert("✅ Entry Saved Successfully!"); document.getElementById("emp-mobile").value=""; document.getElementById("emp-name").value=""; document.getElementById("emp-issue").value=""; document.getElementById("emp-response").value=""; document.getElementById("emp-problem").value=""; document.getElementById("history-box").style.display="none"; }
+            if(res.success){ alert("✅ Entry Saved Successfully!"); document.getElementById("emp-mobile").value=""; document.getElementById("emp-name").value=""; document.getElementById("emp-issue").value=""; document.getElementById("emp-response").value=""; document.getElementById("emp-problem").value=""; document.getElementById("history-box").style.display="none"; loadDashboardData(); }
         }
 
         function closeModal(modalId) { document.getElementById(modalId).style.display = "none"; }
-        function triggerWAPrompt(encodedMsg) {
-            let formNumber = document.getElementById("emp-mobile").value;
-            document.getElementById("prompt-wa-number").value = (formNumber && formNumber.length >= 10) ? formNumber : "";
-            document.getElementById("pending-wa-message").value = encodedMsg; 
-            document.getElementById("wa-number-modal").style.display = "flex";
-        }
-
-        function executeSendWA() {
-            let num = document.getElementById("prompt-wa-number").value;
-            let encodedMsg = document.getElementById("pending-wa-message").value;
-            if(!num || num.length < 10) { alert("Please enter a valid 10-digit mobile number!"); return; }
-            window.open(`https://wa.me/91${num}?text=${encodedMsg}`, '_blank');
-            closeModal('wa-number-modal');
-        }
 
         function openTemplateEditor() { document.getElementById("msg-temp-id").value = ""; document.getElementById("msg-temp-title").value = ""; document.getElementById("msg-temp-content").value = ""; document.getElementById("tpl-modal-title").innerText = "📝 Create New Template"; document.getElementById("template-editor-modal").style.display = "flex"; }
         function editMyTemplate(id, encTitle, encContent) { document.getElementById("msg-temp-id").value = id; document.getElementById("msg-temp-title").value = decodeURIComponent(encTitle); document.getElementById("msg-temp-content").value = decodeURIComponent(encContent); document.getElementById("tpl-modal-title").innerText = "✏️ Edit Template"; document.getElementById("template-editor-modal").style.display = "flex"; }
