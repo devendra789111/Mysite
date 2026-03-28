@@ -56,15 +56,14 @@
     </div>
 
     <div id="employee-screen" class="screen">
-        
         <div class="header">
             <div style="display: flex; align-items: center; gap: 12px;">
                 <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 20px;">🎧</div>
                 <div>
                     <h3 style="margin: 0; color: #1e3c72; font-size: 16px; font-weight: 700;">Quality Education</h3>
                     <div style="font-size: 12px; color: #555; font-weight: 600; display:flex; align-items:center; gap:5px;">
-                        <span id="emp-name-display">Telecaller</span> | 
-                        <span style="background:#eafaf1; color:#27ae60; padding:2px 6px; border-radius:10px; border:1px solid #27ae60;">💬 Sent: <span id="msg-count-val">0</span></span>
+                        <span id="emp-name-display">Telecaller Desk</span> | 
+                        <span style="background:#eafaf1; color:#27ae60; padding:2px 6px; border-radius:10px; border:1px solid #27ae60; display:none;" id="msg-counter-badge">💬 Sent: <span id="msg-count-val">0</span></span>
                     </div>
                 </div>
             </div>
@@ -247,9 +246,27 @@
                 showScreen("employee-screen"); 
                 document.getElementById("emp-name-display").innerText = currentUser.name + (currentUser.role==='senior' ? " 👑" : ""); 
                 if(currentUser.role === 'senior') document.getElementById("btn-senior-tab").style.display = "block";
+                document.getElementById("msg-counter-badge").style.display = "flex"; 
+                
                 loadDashboardData(); 
+                
+                // AUTO LOGOUT SECURITY CHECK EVERY 20 SECONDS
+                setInterval(verifyAuthStatus, 20000);
             } 
         };
+
+        // SECURE AUTO LOGOUT POLLING
+        async function verifyAuthStatus() {
+            if(!currentUser) return;
+            try {
+                let res = await fetch(API_URL, {method:'POST', body:JSON.stringify({action:"verifySession", empId: currentUser.employeeId, password: currentUser.password})});
+                let data = await res.json();
+                if(!data.success) {
+                    alert("Admin ne aapka password change kar diya hai ya id hata di hai. Security purpose ke liye aap log out ho gaye hain.");
+                    logout();
+                }
+            } catch(e){} // Ignore silent network drops
+        }
 
         async function apiCall(p) { try { const r = await fetch(API_URL, {method:'POST', body:JSON.stringify(p)}); return await r.json(); } catch { return {success:false}; } }
         function showScreen(id) { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active-screen')); document.getElementById(id).classList.add('active-screen'); }
@@ -281,20 +298,25 @@
                         let encName = encodeURIComponent(b.name || ''); let encExamLink = encodeURIComponent(b.examLink || ''); let encApnaLink = encodeURIComponent(b.apnaLink || '');
 
                         return `<tr>
-                            <td><b style="color:#1e3c72; font-size:14px;">${b.name || 'Unnamed'}</b></td>
-                            <td><b>₹${b.examPrice || '0'}</b> <small style="color:#666;">(+₹${b.examDelivery || '0'} Del)</small><br>
+                            <td><b style="color:#1e3c72; font-size:14px;">${b.name || 'Unnamed Book'}</b></td>
+                            <td>
+                                <b>₹${b.examPrice || '0'}</b> <small style="color:#666;">(+₹${b.examDelivery || '0'} Del)</small><br>
                                 <span style="color:${eStockCol}; font-size:11px; font-weight:bold;">${b.examStock || 'Available'}</span><br>
-                                <button class="btn-wa" style="padding:4px 8px; margin-top:5px;" onclick="sendBookLink('${encName}', '${encExamLink}')">📤 Send WA</button></td>
-                            <td><b>₹${b.apnaPrice || '0'}</b> <small style="color:#666;">(+₹${b.apnaDelivery || '0'} Del)</small><br>
+                                <button class="btn-wa" style="padding:4px 8px; margin-top:5px;" onclick="sendBookLink('${encName}', '${encExamLink}')">📤 Send WA</button>
+                            </td>
+                            <td>
+                                <b>₹${b.apnaPrice || '0'}</b> <small style="color:#666;">(+₹${b.apnaDelivery || '0'} Del)</small><br>
                                 <span style="color:${aStockCol}; font-size:11px; font-weight:bold;">${b.apnaStock || 'Available'}</span><br>
-                                <button class="btn-wa" style="padding:4px 8px; margin-top:5px;" onclick="sendBookLink('${encName}', '${encApnaLink}')">📤 Send WA</button></td>
+                                <button class="btn-wa" style="padding:4px 8px; margin-top:5px;" onclick="sendBookLink('${encName}', '${encApnaLink}')">📤 Send WA</button>
+                            </td>
                         </tr>`;
                     }).join('');
                 }
 
-                // 3. CALLS (With Transfer Button)
+                // 3. CALLS 
                 const pendingCalls = (res.assignedCalls || []).filter(c=>c.status==='Pending');
                 if(pendingCalls.length>0){ document.getElementById("calls-badge").innerText = pendingCalls.length; document.getElementById("calls-badge").style.display = "inline-block"; }
+                
                 if(pendingCalls.length===0) document.getElementById("assigned-calls-list").innerHTML = "<div style='padding:20px; text-align:center; color:green; background:#e8f5e9; border-radius:8px;'>🎉 Great! No pending calls.</div>";
                 else document.getElementById("assigned-calls-list").innerHTML = pendingCalls.map(c=>`
                     <div class="history-card" style="border-color:#1e3c72;">
@@ -308,9 +330,11 @@
                         <button style="width:100%; background:#e67e22; color:white; border:none; padding:8px; border-radius:6px; font-weight:bold; font-size:12px; cursor:pointer;" onclick="openTransferModal('${c.name}', '${c.number}')">🔄 Transfer to Senior</button>
                     </div>`).join('');
 
-                // 4. CALL BACKS (Filtered properly to hide solved ones)
+                // 4. CALL BACKS 
                 let callBcks = (res.myEntries || []).filter(e => (e.problemType === 'Call Back' || e.status === 'Call Back') && e.status !== 'Solved' && e.status !== 'Closed / Solved');
                 if(callBcks.length>0){ document.getElementById("cb-badge").innerText = callBcks.length; document.getElementById("cb-badge").style.display = "inline-block"; }
+                else { document.getElementById("cb-badge").style.display = "none"; }
+                
                 if(callBcks.length===0) document.getElementById("call-back-list").innerHTML = "<p style='color:gray;'>No call backs scheduled.</p>";
                 else {
                     document.getElementById("call-back-list").innerHTML = callBcks.slice().reverse().map(c => {
@@ -386,6 +410,7 @@
             let id = document.getElementById('close-cb-id').value;
             let remark = document.getElementById('close-cb-remark').value;
             showLoader();
+            // Updating status to Solved ensures it hides from Callback list
             await apiCall({action:"updateComplaint", complaintId:id, adminComment: "Closed Remark: " + remark});
             closeModal('close-callback-modal');
             loadDashboardData();
@@ -424,7 +449,6 @@
             let num = document.getElementById("prompt-wa-number").value; let encodedMsg = document.getElementById("pending-wa-message").value;
             if(!num || num.length < 10) return alert("Please enter a valid 10-digit mobile number!");
             
-            // Increment message counter silently
             apiCall({action:"incrementMsgCount", empId: currentUser.employeeId}).then(r => {
                 if(r.success) document.getElementById("msg-count-val").innerText = r.count;
             });
